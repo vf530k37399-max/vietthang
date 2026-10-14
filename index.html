@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Hệ Thống Quản Lý Sân Cầu Lông (Sân 1 - Sân 4) - Realtime Online</title>
+  <title>Hệ Thống Quản Lý Sân Cầu Lông (Sân 1 - Sân 4) - Pro</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Vue 3 CDN -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-  <!-- Socket.io Client (CDN + Local fallback) -->
+  <!-- Socket.io Client -->
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -36,14 +36,13 @@
       :class="isOnline ? 'bg-emerald-950/80 border-emerald-800/60 text-emerald-300' : 'bg-slate-900 border-slate-800 text-slate-400'">
       <div class="max-w-7xl mx-auto w-full flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full" :class="isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'"></span>
-          <span v-if="isOnline">HỆ THỐNG ONLINE REAL-TIME: Đồng bộ dữ liệu trực tiếp đa thiết bị ({{ onlineDevices }} thiết bị đang kết nối)</span>
-          <span v-else>CHẾ ĐỘ NỘI BỘ TRỰC QUAN (Chạy 'node server.js' hoặc nhấp đúp 'start.bat' để bật đồng bộ Real-time đa thiết bị)</span>
+          <span class="w-2.5 h-2.5 rounded-full" :class="isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-emerald-400'"></span>
+          <span>HỆ THỐNG QUẢN LÝ SÂN CẦU LÔNG CLOUD PRO &bull; TỰ ĐỘNG LƯU TRỮ VĨNH VIỄN</span>
         </div>
         <div class="hidden sm:flex items-center gap-3 text-[11px] opacity-90">
           <span>Sân 1 - Sân 4</span>
           <span>&bull;</span>
-          <span>Tính giờ tự động</span>
+          <span>Đơn giá & Sản phẩm động</span>
         </div>
       </div>
     </div>
@@ -57,7 +56,7 @@
           </div>
           <div>
             <h1 class="text-lg font-black tracking-tight text-white flex items-center gap-2">
-              SÂN CẦU LÔNG THẮNG PRO
+              {{ clubInfo.name || 'SÂN CẦU LÔNG THẮNG PRO' }}
               <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Sân 1 - 4</span>
             </h1>
             <p class="text-xs text-slate-400 flex items-center gap-1.5">
@@ -73,18 +72,18 @@
           <button 
             @click="openShareQrModal" 
             title="Tạo mã QR cho khách quét đặt sân bằng điện thoại"
-            class="hidden md:flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-amber-400 transition">
+            class="hidden lg:flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-amber-400 transition">
             <i data-lucide="qr-code" class="w-4 h-4"></i>
-            <span>QR Cho Khách Quét</span>
+            <span>QR Đặt Sân</span>
           </button>
 
-          <div class="flex bg-slate-950 p-1 rounded-2xl border border-slate-800">
+          <div class="flex bg-slate-950 p-1 rounded-2xl border border-slate-800 flex-wrap gap-1">
             <button 
               @click="activeTab = 'staff'" 
               :class="activeTab === 'staff' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'"
               class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition">
               <i data-lucide="layout-grid" class="w-4 h-4"></i>
-              <span>Nhân Viên</span>
+              <span>Sơ Đồ Sân</span>
             </button>
             <button 
               @click="activeTab = 'customer'" 
@@ -97,8 +96,8 @@
               @click="activeTab = 'inventory'" 
               :class="activeTab === 'inventory' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'"
               class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition">
-              <i data-lucide="package" class="w-4 h-4"></i>
-              <span>Kho Hàng</span>
+              <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+              <span>Shop & Kho Hàng</span>
             </button>
             <button 
               @click="activeTab = 'monthly'" 
@@ -106,6 +105,13 @@
               class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition">
               <i data-lucide="calendar" class="w-4 h-4"></i>
               <span>Khách Quen</span>
+            </button>
+            <button 
+              @click="activeTab = 'settings'" 
+              :class="activeTab === 'settings' ? 'bg-cyan-600 text-white shadow-md' : 'text-slate-400 hover:text-white'"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+              <i data-lucide="settings" class="w-4 h-4"></i>
+              <span>Cài Đặt Bảng Giá</span>
             </button>
           </div>
         </div>
@@ -136,11 +142,13 @@
             </span>
           </div>
 
-          <div class="flex items-center gap-2 text-xs bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-slate-300">
+          <!-- Dynamic Rate Preview Badge -->
+          <div class="flex items-center gap-2 text-xs bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-slate-300 flex-wrap">
             <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i>
-            <span>&lt; 17:00: <strong class="text-emerald-400">60k/h</strong></span>
-            <span class="text-slate-600">|</span>
-            <span>&ge; 17:00: <strong class="text-rose-400">90k/h (Giờ vàng)</strong></span>
+            <span class="font-bold text-slate-400">Khung giá đang áp dụng:</span>
+            <span v-for="slot in pricingSlots" :key="slot.id" class="px-2 py-0.5 rounded-md bg-slate-800 text-[11px]">
+              {{ slot.name }} ({{ slot.startTime }}-{{ slot.endTime }}): <strong class="text-amber-400">{{ formatCurrency(slot.rate) }}/h</strong>
+            </span>
           </div>
         </div>
 
@@ -199,6 +207,7 @@
 
               <!-- 🔴 2. TRẠNG THÁI ĐANG CHƠI -->
               <div v-if="court.status === 'PLAYING' && court.session" class="space-y-4 py-1">
+                <!-- Real-time Timer and Bill -->
                 <div class="bg-slate-950 rounded-2xl p-4 border border-rose-500/30 flex items-center justify-between">
                   <div>
                     <span class="text-xs text-slate-400 block font-medium">Thời gian đã chơi</span>
@@ -214,25 +223,28 @@
                   </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2 text-xs bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-                  <div>
-                    <span class="text-slate-400">Khách chơi:</span>
-                    <p class="font-bold text-slate-200 truncate">{{ court.session.customerName || 'Khách vãng lai' }}</p>
+                <!-- Phân tách theo khung giờ tự động -->
+                <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 text-xs space-y-2">
+                  <div class="flex justify-between">
+                    <div>
+                      <span class="text-slate-400">Khách chơi: </span>
+                      <strong class="text-slate-200">{{ court.session.customerName || 'Khách vãng lai' }}</strong>
+                    </div>
+                    <div>
+                      <span class="text-slate-400">Giờ vào: </span>
+                      <strong class="text-slate-200 font-mono">{{ formatTime(court.session.checkInTime) }}</strong>
+                    </div>
                   </div>
-                  <div>
-                    <span class="text-slate-400">Giờ vào:</span>
-                    <p class="font-bold text-slate-200 font-mono">{{ formatTime(court.session.checkInTime) }}</p>
-                  </div>
-                  <div>
-                    <span class="text-slate-400">Giờ Thường (&lt;17h):</span>
-                    <p class="font-bold text-emerald-400">{{ court.session.normalMinutes || 0 }}p ({{ formatCurrency(court.session.normalFee) }})</p>
-                  </div>
-                  <div>
-                    <span class="text-slate-400">Giờ Vàng (&ge;17h):</span>
-                    <p class="font-bold text-rose-400">{{ court.session.peakMinutes || 0 }}p ({{ formatCurrency(court.session.peakFee) }})</p>
+                  <!-- Details by slot -->
+                  <div v-if="court.session.slotBreakdown && court.session.slotBreakdown.length > 0" class="pt-2 border-t border-slate-800/80 space-y-1">
+                    <div v-for="b in court.session.slotBreakdown" :key="b.name" class="flex justify-between text-slate-400 text-[11px]">
+                      <span>{{ b.name }} ({{ b.minutes }} phút &bull; {{ formatCurrency(b.rate) }}/h):</span>
+                      <span class="font-bold text-amber-400">{{ formatCurrency(b.fee) }}</span>
+                    </div>
                   </div>
                 </div>
 
+                <!-- Đồ uống đã gọi -->
                 <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 text-xs">
                   <div class="flex items-center justify-between mb-2">
                     <span class="font-bold text-slate-300 flex items-center gap-1.5">
@@ -278,7 +290,7 @@
                     <div>
                       <span class="text-[10px] text-purple-400 font-bold uppercase tracking-wider">Hợp đồng tháng: {{ court.fixedSchedule.days }}</span>
                       <h4 class="text-lg font-black text-white">{{ court.fixedSchedule.groupName }}</h4>
-                      <p class="text-xs text-slate-400">Trưởng nhóm: {{ court.fixedSchedule.repName }} ({{ court.fixedSchedule.phone }})</p>
+                      <p class="text-xs text-slate-400">Đại diện: {{ court.fixedSchedule.repName }} ({{ court.fixedSchedule.phone }})</p>
                     </div>
                     <span :class="court.fixedSchedule.paid ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30'"
                       class="px-2.5 py-1 rounded-lg border text-xs font-bold">
@@ -402,21 +414,13 @@
             <div>
               <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Giờ bắt đầu</label>
               <select v-model="customerBooking.startTime" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm font-semibold text-white">
-                <option value="16:00">16:00 (Giờ thường 60k)</option>
-                <option value="17:00">17:00 (Giờ vàng 90k)</option>
-                <option value="18:00">18:00 (Giờ vàng 90k)</option>
-                <option value="19:00">19:00 (Giờ vàng 90k)</option>
-                <option value="20:00">20:00 (Giờ vàng 90k)</option>
+                <option v-for="h in availableHours" :key="'start-'+h" :value="h">{{ h }}</option>
               </select>
             </div>
             <div>
               <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Giờ kết thúc</label>
               <select v-model="customerBooking.endTime" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm font-semibold text-white">
-                <option value="17:00">17:00</option>
-                <option value="18:00">18:00</option>
-                <option value="19:00">19:00</option>
-                <option value="20:00">20:00</option>
-                <option value="21:00">21:00</option>
+                <option v-for="h in availableHours" :key="'end-'+h" :value="h">{{ h }}</option>
               </select>
             </div>
           </div>
@@ -435,7 +439,7 @@
           <div class="bg-slate-950 rounded-2xl p-4 border border-amber-500/20 space-y-2 text-xs">
             <div class="flex justify-between items-center">
               <span class="text-slate-400">Tiền cọc giữ chỗ:</span>
-              <span class="font-black text-amber-400 text-base">50.000đ</span>
+              <span class="font-black text-amber-400 text-base">{{ formatCurrency(clubInfo.depositAmount || 50000) }}</span>
             </div>
             <div class="flex justify-between text-slate-400">
               <span>Phương thức thanh toán:</span>
@@ -452,40 +456,66 @@
         </div>
       </div>
 
-      <!-- ================= 3. TAB: KHO HÀNG & SẢN PHẨM ================= -->
+      <!-- ================= 3. TAB: KHO HÀNG & SHOP CỦA CHỦ SÂN ================= -->
       <div v-if="activeTab === 'inventory'" class="space-y-5">
-        <div class="flex justify-between items-center bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+        <div class="flex flex-wrap justify-between items-center bg-slate-900/60 p-4 rounded-2xl border border-slate-800 gap-3">
           <div>
-            <h2 class="text-lg font-black text-white">Kho Đồ Uống & Dịch Vụ Sân</h2>
-            <p class="text-xs text-slate-400">Số lượng tự động trừ tức thì khi nhân viên gọi món trên sân</p>
+            <h2 class="text-lg font-black text-white flex items-center gap-2">
+              <i data-lucide="shopping-bag" class="w-5 h-5 text-indigo-400"></i>
+              Quản Lý Shop & Kho Hàng Của Chủ Sân
+            </h2>
+            <p class="text-xs text-slate-400">Chủ sân toàn quyền thêm, sửa giá bán, cập nhật số lượng tồn kho các mặt hàng</p>
           </div>
+          <button 
+            @click="openAddProductModal" 
+            class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black flex items-center gap-2 shadow-lg shadow-indigo-600/25 transition">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>+ THÊM SẢN PHẨM MỚI</span>
+          </button>
         </div>
 
+        <!-- Product Cards Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <div 
             v-for="p in products" 
             :key="p.id" 
-            class="bg-slate-900 rounded-3xl p-4 border border-slate-800 flex flex-col justify-between space-y-3 shadow-xl">
+            class="bg-slate-900 rounded-3xl p-5 border border-slate-800 flex flex-col justify-between space-y-4 shadow-xl hover:border-slate-700 transition">
             <div>
-              <div class="flex justify-between items-start">
-                <h3 class="font-bold text-white text-base">{{ p.name }}</h3>
+              <div class="flex justify-between items-start gap-2">
+                <div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-800 text-indigo-400">{{ p.category || 'Mặt hàng' }}</span>
+                  <h3 class="font-black text-white text-base mt-1">{{ p.name }}</h3>
+                </div>
                 <span 
-                  :class="p.stock <= p.minAlert ? 'bg-rose-500/20 text-rose-400 border-rose-500/40' : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'"
-                  class="px-2 py-0.5 rounded-lg border text-xs font-bold font-mono">
+                  :class="p.stock <= p.minAlert ? 'bg-rose-500/20 text-rose-400 border-rose-500/40 animate-pulse' : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'"
+                  class="px-2 py-0.5 rounded-lg border text-xs font-bold font-mono whitespace-nowrap">
                   Còn: {{ p.stock }} {{ p.unit }}
                 </span>
               </div>
-              <p class="text-xs text-slate-400 mt-1">Đơn vị tính: {{ p.unit }}</p>
+              <p class="text-xs text-slate-400 mt-2">Đơn vị: <strong class="text-slate-200">{{ p.unit }}</strong> &bull; Giá vốn: <span class="text-slate-500">{{ formatCurrency(p.costPrice || 0) }}</span></p>
             </div>
 
-            <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
-              <div>
-                <span class="text-xs text-slate-400 block">Đơn giá:</span>
-                <span class="text-sm font-black text-amber-400">{{ formatCurrency(p.price) }}</span>
+            <div class="pt-3 border-t border-slate-800 space-y-3">
+              <div class="flex justify-between items-center">
+                <div>
+                  <span class="text-[11px] text-slate-400 block">Giá bán:</span>
+                  <span class="text-base font-black text-amber-400">{{ formatCurrency(p.price) }}</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button @click="openEditProductModal(p)" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white" title="Sửa sản phẩm">
+                    <i data-lucide="edit-3" class="w-4 h-4"></i>
+                  </button>
+                  <button @click="deleteProduct(p)" class="p-2 rounded-lg bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-400" title="Xóa">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </div>
               </div>
-              <div class="flex items-center gap-1">
-                <button @click="adjustStock(p, -1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-sm font-bold">-</button>
-                <button @click="adjustStock(p, 5)" class="px-2.5 h-8 rounded-lg bg-indigo-600/30 text-indigo-300 hover:bg-indigo-600/50 text-xs font-bold">+5 Nhập</button>
+
+              <!-- Quick Stock Actions -->
+              <div class="flex items-center gap-1.5 pt-1">
+                <button @click="adjustStock(p, -1)" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm font-bold text-slate-300 flex items-center justify-center">-1</button>
+                <button @click="adjustStock(p, 5)" class="flex-1 h-8 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/30 text-indigo-300 font-bold text-xs">+5 Nhập</button>
+                <button @click="adjustStock(p, 20)" class="flex-1 h-8 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/30 text-indigo-300 font-bold text-xs">+20 Thùng</button>
               </div>
             </div>
           </div>
@@ -499,6 +529,9 @@
             <h2 class="text-lg font-black text-white">Quản Lý Khách Quen Thuê Cố Định Theo Tháng</h2>
             <p class="text-xs text-slate-400">Theo dõi quỹ tháng & Tính năng nhả sân online khi khách báo bận</p>
           </div>
+          <button @click="openAddContractModal" class="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 rounded-xl text-xs font-bold text-white transition">
+            + Thêm Nhóm Cố Định
+          </button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -510,7 +543,7 @@
               <div>
                 <span class="text-xs font-bold text-purple-400 uppercase tracking-wider">{{ contract.courtName }} &bull; {{ contract.days }}</span>
                 <h3 class="text-lg font-black text-white mt-1">{{ contract.groupName }}</h3>
-                <p class="text-xs text-slate-400">Trưởng nhóm: {{ contract.repName }} &bull; {{ contract.phone }}</p>
+                <p class="text-xs text-slate-400">Đại diện: {{ contract.repName }} &bull; {{ contract.phone }}</p>
               </div>
               <span 
                 :class="contract.paid ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30'"
@@ -550,9 +583,214 @@
         </div>
       </div>
 
+      <!-- ================= 5. TAB: CÀI ĐẶT ĐƠN GIÁ THEO KHUNG GIỜ & THÔNG TIN SÂN ================= -->
+      <div v-if="activeTab === 'settings'" class="space-y-6 max-w-4xl mx-auto">
+        
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-cyan-500/15 via-cyan-500/5 to-transparent p-5 rounded-3xl border border-cyan-500/30 flex justify-between items-center flex-wrap gap-3">
+          <div>
+            <h2 class="text-xl font-black text-white flex items-center gap-2">
+              <i data-lucide="sliders" class="w-6 h-6 text-cyan-400"></i>
+              CẤU HÌNH BẢNG GIÁ THEO KHUNG GIỜ & THÔNG TIN CHỦ SÂN
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Hệ thống sẽ tự động tách bill theo từng phút chính xác theo các khung giá bạn thiết lập ở đây</p>
+          </div>
+          <button @click="openAddPricingSlotModal" class="px-4 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs rounded-xl shadow-lg shadow-cyan-600/25 flex items-center gap-1.5 transition">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>+ THÊM KHUNG GIỜ MỚI</span>
+          </button>
+        </div>
+
+        <!-- Pricing Slots Table -->
+        <div class="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-2xl space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="text-base font-black text-white flex items-center gap-2">
+              <i data-lucide="clock" class="w-4 h-4 text-cyan-400"></i>
+              Bảng Đơn Giá Sân Theo Khung Giờ (24/24)
+            </h3>
+            <span class="text-xs text-slate-400">{{ pricingSlots.length }} khung giờ đang chạy</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="text-[11px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-800 bg-slate-950/60">
+                <tr>
+                  <th class="py-3 px-4">Tên Khung Giờ</th>
+                  <th class="py-3 px-4">Từ Giờ</th>
+                  <th class="py-3 px-4">Đến Giờ</th>
+                  <th class="py-3 px-4">Đơn Giá / Giờ</th>
+                  <th class="py-3 px-4">Giá / Phút</th>
+                  <th class="py-3 px-4 text-right">Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/80">
+                <tr v-for="slot in pricingSlots" :key="slot.id" class="hover:bg-slate-800/40 transition">
+                  <td class="py-3.5 px-4 font-bold text-white">
+                    <span class="inline-block w-2.5 h-2.5 rounded-full mr-2" :class="slot.isPeak ? 'bg-rose-500' : 'bg-emerald-400'"></span>
+                    {{ slot.name }}
+                  </td>
+                  <td class="py-3.5 px-4 font-mono font-bold text-slate-300">{{ slot.startTime }}</td>
+                  <td class="py-3.5 px-4 font-mono font-bold text-slate-300">{{ slot.endTime }}</td>
+                  <td class="py-3.5 px-4 font-black text-amber-400">{{ formatCurrency(slot.rate) }}/h</td>
+                  <td class="py-3.5 px-4 text-xs font-mono text-slate-400">{{ formatCurrency(Math.round(slot.rate / 60)) }}/p</td>
+                  <td class="py-3.5 px-4 text-right space-x-1">
+                    <button @click="openEditPricingSlotModal(slot)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200">Sửa</button>
+                    <button @click="deletePricingSlot(slot)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/50 text-xs font-bold text-rose-400">Xóa</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- General Court & VietQR Info Settings -->
+        <div class="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-2xl space-y-4">
+          <h3 class="text-base font-black text-white flex items-center gap-2">
+            <i data-lucide="landmark" class="w-4 h-4 text-amber-400"></i>
+            Thông Tin Sân & Tài Khoản Nhận Cọc VietQR
+          </h3>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div>
+              <label class="block font-bold uppercase text-slate-400 mb-1">Tên CLB / Sân Cầu Lông</label>
+              <input type="text" v-model="clubInfo.name" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-cyan-500">
+            </div>
+            <div>
+              <label class="block font-bold uppercase text-slate-400 mb-1">Số tiền cọc online mặc định</label>
+              <input type="number" v-model.number="clubInfo.depositAmount" step="10000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold text-amber-400 focus:border-cyan-500">
+            </div>
+            <div>
+              <label class="block font-bold uppercase text-slate-400 mb-1">Mã Ngân Hàng (MB, VCB, TCB, ACB...)</label>
+              <input type="text" v-model="clubInfo.bankId" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm font-mono text-white focus:border-cyan-500">
+            </div>
+            <div>
+              <label class="block font-bold uppercase text-slate-400 mb-1">Số Tài Khoản Nhận Tiền</label>
+              <input type="text" v-model="clubInfo.bankAccountNo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm font-mono text-white focus:border-cyan-500">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block font-bold uppercase text-slate-400 mb-1">Địa chỉ & Hotline in trên Bill K80</label>
+              <input type="text" v-model="clubInfo.address" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-cyan-500">
+            </div>
+          </div>
+
+          <button @click="saveClubSettings" class="w-full py-3.5 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-black text-sm shadow-xl shadow-cyan-600/30 transition">
+            LƯU TOÀN BỘ CẤU HÌNH
+          </button>
+        </div>
+
+      </div>
+
     </main>
 
     <!-- ================= MODALS & POPUPS ================= -->
+
+    <!-- Modal: Thêm / Sửa Sản Phẩm Shop -->
+    <div v-if="modals.productForm.open" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl">
+        <div class="flex justify-between items-center">
+          <h3 class="text-lg font-black text-white">{{ modals.productForm.isEdit ? 'Chỉnh Sửa Mặt Hàng' : 'Thêm Mặt Hàng Mới Vào Shop' }}</h3>
+          <button @click="modals.productForm.open = false" class="text-slate-400 hover:text-white text-xl">&times;</button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="block font-bold uppercase text-slate-400 mb-1">Tên sản phẩm *</label>
+            <input type="text" v-model="modals.productForm.data.name" placeholder="Ví dụ: Nước Pocari Sweat, Cầu Thành Lợi..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-indigo-500">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold uppercase text-slate-400 mb-1">Phân loại</label>
+              <select v-model="modals.productForm.data.category" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white">
+                <option value="Đồ uống">Đồ uống</option>
+                <option value="Cầu lông">Cầu lông</option>
+                <option value="Phụ kiện">Phụ kiện vợt</option>
+                <option value="Đồ ăn nhẹ">Đồ ăn nhẹ</option>
+                <option value="Dịch vụ">Cho thuê / Dịch vụ</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold uppercase text-slate-400 mb-1">Đơn vị tính *</label>
+              <input type="text" v-model="modals.productForm.data.unit" placeholder="Chai, Lon, Quả, Cái..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold uppercase text-slate-400 mb-1">Giá bán ra (đ) *</label>
+              <input type="number" v-model.number="modals.productForm.data.price" step="1000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm font-bold text-amber-400">
+            </div>
+            <div>
+              <label class="block font-bold uppercase text-slate-400 mb-1">Giá nhập vốn (đ)</label>
+              <input type="number" v-model.number="modals.productForm.data.costPrice" step="1000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-300">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold uppercase text-slate-400 mb-1">Số lượng tồn kho ban đầu</label>
+              <input type="number" v-model.number="modals.productForm.data.stock" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm font-mono text-emerald-400 font-bold">
+            </div>
+            <div>
+              <label class="block font-bold uppercase text-slate-400 mb-1">Báo động khi còn dưới</label>
+              <input type="number" v-model.number="modals.productForm.data.minAlert" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-rose-400 font-bold">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button @click="modals.productForm.open = false" class="flex-1 py-3 bg-slate-800 rounded-xl text-xs font-bold text-slate-300">Hủy</button>
+          <button @click="saveProductForm" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-black text-white">
+            {{ modals.productForm.isEdit ? 'LƯU THAY ĐỔI' : 'THÊM VÀO KHO' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Thêm / Sửa Khung Giờ Giá Sân -->
+    <div v-if="modals.pricingForm.open" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl">
+        <div class="flex justify-between items-center">
+          <h3 class="text-lg font-black text-white">{{ modals.pricingForm.isEdit ? 'Sửa Khung Giờ' : 'Thêm Khung Giờ Mới' }}</h3>
+          <button @click="modals.pricingForm.open = false" class="text-slate-400 hover:text-white text-xl">&times;</button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="block font-bold uppercase text-slate-400 mb-1">Tên khung giờ *</label>
+            <input type="text" v-model="modals.pricingForm.data.name" placeholder="Ví dụ: Giờ Sáng, Giờ Vàng Chiều Tối..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-cyan-500">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold uppercase text-slate-400 mb-1">Từ Giờ (HH:mm) *</label>
+              <input type="time" v-model="modals.pricingForm.data.startTime" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-mono">
+            </div>
+            <div>
+              <label class="block font-bold uppercase text-slate-400 mb-1">Đến Giờ (HH:mm) *</label>
+              <input type="time" v-model="modals.pricingForm.data.endTime" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-mono">
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold uppercase text-slate-400 mb-1">Đơn giá áp dụng (đ / Giờ) *</label>
+            <input type="number" v-model.number="modals.pricingForm.data.rate" step="5000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-base font-black text-amber-400 focus:border-cyan-500">
+          </div>
+
+          <div class="flex items-center gap-2 pt-1">
+            <input type="checkbox" id="isPeak" v-model="modals.pricingForm.data.isPeak" class="w-4 h-4 rounded text-rose-500">
+            <label for="isPeak" class="text-slate-300 font-bold">Đánh dấu đây là Khung Giờ Vàng (Cao điểm)</label>
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button @click="modals.pricingForm.open = false" class="flex-1 py-3 bg-slate-800 rounded-xl text-xs font-bold text-slate-300">Hủy</button>
+          <button @click="savePricingSlotForm" class="flex-1 py-3 bg-cyan-600 hover:bg-cyan-500 rounded-xl text-xs font-black text-white">
+            LƯU KHUNG GIỜ
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Modal 1: Bắt Đầu Chơi Ngay -->
     <div v-if="modals.startPlay.open" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -570,7 +808,7 @@
           <input type="tel" v-model="modals.startPlay.phone" placeholder="0988xxxxxx" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
         </div>
         <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs text-slate-400">
-          * Đồng hồ tính tiền sẽ bắt đầu chạy đồng bộ cho toàn bộ iPad/Điện thoại. Trước 17h: 60k/h, sau 17h: 90k/h.
+          * Đồng hồ tính tiền sẽ chạy tự động và bóc tách theo đúng các khung giờ bạn đã cấu hình trong Cài Đặt.
         </div>
         <div class="flex gap-2">
           <button @click="modals.startPlay.open = false" class="flex-1 py-3 bg-slate-800 rounded-xl text-xs font-bold">Hủy</button>
@@ -579,11 +817,11 @@
       </div>
     </div>
 
-    <!-- Modal 2: Thêm Dịch Vụ Vào Sân -->
+    <!-- Modal 2: Thêm Dịch Vụ Vào Sân (POS Động Từ Shop) -->
     <div v-if="modals.addService.open" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-2xl">
         <div class="flex justify-between items-center">
-          <h3 class="text-lg font-black text-white">Thêm Đồ Uống / Cầu - {{ modals.addService.court?.name }}</h3>
+          <h3 class="text-lg font-black text-white">Gọi Đồ Uống / Cầu - {{ modals.addService.court?.name }}</h3>
           <button @click="modals.addService.open = false" class="text-slate-400 hover:text-white text-xl">&times;</button>
         </div>
         
@@ -594,7 +832,9 @@
             @click="addServiceItemToCourt(p)"
             class="bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-2xl p-3 cursor-pointer transition select-none flex flex-col justify-between">
             <div>
-              <h4 class="font-bold text-white text-sm">{{ p.name }}</h4>
+              <div class="flex justify-between items-start">
+                <h4 class="font-bold text-white text-sm">{{ p.name }}</h4>
+              </div>
               <p class="text-xs text-amber-400 font-bold mt-0.5">{{ formatCurrency(p.price) }}</p>
             </div>
             <div class="mt-2 flex justify-between items-center text-xs text-slate-400">
@@ -635,8 +875,8 @@
         
         <div id="printable-receipt" class="bg-white text-slate-900 p-5 rounded-2xl font-mono text-xs shadow-inner space-y-3">
           <div class="text-center pb-2 border-b border-dashed border-slate-400">
-            <h2 class="text-sm font-black uppercase tracking-wider">SÂN CẦU LÔNG THẮNG PRO</h2>
-            <p class="text-[10px] text-slate-600">Sân 1 - Sân 4 &bull; Hotline: 0988.xxx.xxx</p>
+            <h2 class="text-sm font-black uppercase tracking-wider">{{ clubInfo.name || 'SÂN CẦU LÔNG THẮNG PRO' }}</h2>
+            <p class="text-[10px] text-slate-600">{{ clubInfo.address || 'Sân 1 - Sân 4 &bull; Hotline: 0988.xxx.xxx' }}</p>
             <p class="text-xs font-bold text-slate-800 mt-1">HÓA ĐƠN THANH TOÁN (K80)</p>
           </div>
 
@@ -648,15 +888,12 @@
             <div class="flex justify-between"><span>Tổng thời gian:</span><strong class="text-xs">{{ Math.ceil((modals.checkout.court?.session?.elapsedSeconds || 0) / 60) }} phút</strong></div>
           </div>
 
+          <!-- Chi tiết tách theo các khung giờ -->
           <div class="pt-2 border-t border-dashed border-slate-300 space-y-1 text-[11px]">
-            <div class="font-bold uppercase text-[10px]">1. Tiền giờ sân (Tách giờ vàng):</div>
-            <div class="flex justify-between pl-2">
-              <span>Giờ thường (&lt; 17h, 60k/h):</span>
-              <span>{{ formatCurrency(modals.checkout.court?.session?.normalFee) }}</span>
-            </div>
-            <div class="flex justify-between pl-2">
-              <span>Giờ vàng (&ge; 17h, 90k/h):</span>
-              <span>{{ formatCurrency(modals.checkout.court?.session?.peakFee) }}</span>
+            <div class="font-bold uppercase text-[10px]">1. Tiền giờ sân (Tách khung giờ):</div>
+            <div v-for="b in modals.checkout.court?.session?.slotBreakdown" :key="b.name" class="flex justify-between pl-2">
+              <span>{{ b.name }} ({{ b.minutes }}p &bull; {{ formatCurrency(b.rate) }}/h):</span>
+              <span>{{ formatCurrency(b.fee) }}</span>
             </div>
             <div class="flex justify-between font-bold pt-1">
               <span>CỘNG TIỀN SÂN:</span>
@@ -664,6 +901,7 @@
             </div>
           </div>
 
+          <!-- Chi tiết nước uống -->
           <div v-if="modals.checkout.court?.session?.services && modals.checkout.court.session.services.length > 0" class="pt-2 border-t border-dashed border-slate-300 space-y-1 text-[11px]">
             <div class="font-bold uppercase text-[10px]">2. Nước uống & Phụ kiện:</div>
             <div v-for="item in modals.checkout.court.session.services" :key="item.id" class="flex justify-between pl-2">
@@ -683,6 +921,7 @@
             </div>
           </div>
 
+          <!-- QR VietQR -->
           <div class="text-center pt-3 border-t border-dashed border-slate-400">
             <div class="w-32 h-32 mx-auto bg-slate-100 rounded-lg p-2 border border-slate-300 flex items-center justify-center">
               <img :src="generateVietQRUrl(modals.checkout.totalBill, 'THANHTOAN ' + modals.checkout.court?.name)" alt="VietQR" class="w-full h-full object-contain">
@@ -713,8 +952,8 @@
         <p class="text-xs text-slate-400">Khóa giữ chỗ 7 phút. Tiền vào tài khoản sẽ tự động chuyển màu vàng trên sơ đồ nhân viên!</p>
 
         <div class="bg-white p-4 rounded-2xl shadow-inner inline-block">
-          <img :src="generateVietQRUrl(50000, modals.onlineQR.refCode)" alt="VietQR" class="w-48 h-48 object-contain mx-auto">
-          <div class="mt-2 text-slate-900 font-bold text-xs font-mono">Cọc: 50.000đ &bull; ND: {{ modals.onlineQR.refCode }}</div>
+          <img :src="generateVietQRUrl(clubInfo.depositAmount || 50000, modals.onlineQR.refCode)" alt="VietQR" class="w-48 h-48 object-contain mx-auto">
+          <div class="mt-2 text-slate-900 font-bold text-xs font-mono">Cọc: {{ formatCurrency(clubInfo.depositAmount || 50000) }} &bull; ND: {{ modals.onlineQR.refCode }}</div>
         </div>
 
         <div class="space-y-2">
@@ -757,10 +996,22 @@
         const onlineDevices = ref(1);
         const dailyRevenue = ref(1850000);
 
-        // Pricing Configuration
-        const NORMAL_RATE = 60000;
-        const PEAK_RATE = 90000;
-        const PEAK_HOUR = 17;
+        // Club & Payment Settings
+        const clubInfo = ref({
+          name: 'SÂN CẦU LÔNG THẮNG PRO',
+          address: '45 Đường Cầu Lông, P. Linh Trung, TP. Thủ Đức &bull; Hotline: 0988.xxx.xxx',
+          depositAmount: 50000,
+          bankId: 'MB',
+          bankAccountNo: '0988776655'
+        });
+
+        // Dynamic Pricing Slots Configuration
+        const pricingSlots = ref([
+          { id: 1, name: 'Khung Giờ Sáng', startTime: '06:00', endTime: '14:00', rate: 50000, isPeak: false },
+          { id: 2, name: 'Khung Giờ Chiều Thường', startTime: '14:00', endTime: '17:00', rate: 60000, isPeak: false },
+          { id: 3, name: 'Khung Giờ Vàng (Cao Điểm)', startTime: '17:00', endTime: '22:00', rate: 90000, isPeak: true },
+          { id: 4, name: 'Khung Giờ Đêm', startTime: '22:00', endTime: '24:00', rate: 60000, isPeak: false }
+        ]);
 
         // Default initial courts
         const courts = ref([
@@ -780,14 +1031,11 @@
               customerName: 'Anh Hoàng (0903.123.456)',
               checkInTime: new Date(Date.now() - 78 * 60 * 1000).toISOString(),
               elapsedSeconds: 78 * 60,
-              normalMinutes: 45,
-              peakMinutes: 33,
-              normalFee: 45000,
-              peakFee: 49500,
               calculatedCourtFee: 94500,
+              slotBreakdown: [],
               services: [
                 { id: 1, name: 'Revive chanh muối', price: 15000, qty: 2 },
-                { id: 3, name: 'Quả cầu Hải Yến', price: 25000, qty: 1 }
+                { id: 3, name: 'Quả cầu Hải Yến đỏ', price: 25000, qty: 1 }
               ]
             },
             reservation: null,
@@ -826,13 +1074,15 @@
           }
         ]);
 
+        // Products Catalog & Shop Inventory
         const products = ref([
-          { id: 1, name: 'Revive chanh muối', unit: 'Chai', price: 15000, stock: 32, minAlert: 5 },
-          { id: 2, name: 'Nước suối Aquafina', unit: 'Chai', price: 10000, stock: 45, minAlert: 10 },
-          { id: 3, name: 'Quả cầu Hải Yến đỏ', unit: 'Quả', price: 25000, stock: 24, minAlert: 6 },
-          { id: 4, name: 'Quấn cán vợt Yonex', unit: 'Cái', price: 20000, stock: 15, minAlert: 3 },
-          { id: 5, name: 'Nước tăng lực Redbull', unit: 'Lon', price: 18000, stock: 20, minAlert: 5 },
-          { id: 6, name: 'Thuê vợt tập Pro', unit: 'Cây/ca', price: 30000, stock: 8, minAlert: 2 }
+          { id: 1, name: 'Revive chanh muối', category: 'Đồ uống', unit: 'Chai', price: 15000, costPrice: 9000, stock: 32, minAlert: 5 },
+          { id: 2, name: 'Nước suối Aquafina', category: 'Đồ uống', unit: 'Chai', price: 10000, costPrice: 5000, stock: 45, minAlert: 10 },
+          { id: 3, name: 'Quả cầu Hải Yến đỏ', category: 'Cầu lông', unit: 'Quả', price: 25000, costPrice: 18000, stock: 24, minAlert: 6 },
+          { id: 4, name: 'Ống cầu Hải Yến (12 quả)', category: 'Cầu lông', unit: 'Ống', price: 270000, costPrice: 215000, stock: 12, minAlert: 3 },
+          { id: 5, name: 'Quấn cán vợt Yonex', category: 'Phụ kiện', unit: 'Cái', price: 20000, costPrice: 12000, stock: 15, minAlert: 3 },
+          { id: 6, name: 'Nước tăng lực Redbull', category: 'Đồ uống', unit: 'Lon', price: 18000, costPrice: 11000, stock: 20, minAlert: 5 },
+          { id: 7, name: 'Thuê vợt tập Pro', category: 'Dịch vụ', unit: 'Cây/ca', price: 30000, costPrice: 0, stock: 8, minAlert: 2 }
         ]);
 
         const monthlyContracts = ref([
@@ -871,110 +1121,119 @@
           phone: ''
         });
 
+        const availableHours = ['06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'];
+
         const modals = ref({
           startPlay: { open: false, court: null, customerName: '', phone: '' },
           addService: { open: false, court: null },
           switchCourt: { open: false, court: null },
           checkout: { open: false, court: null, totalBill: 0 },
           onlineQR: { open: false, refCode: '', courtId: 1 },
-          shareQr: { open: false }
+          shareQr: { open: false },
+          productForm: { open: false, isEdit: false, data: {} },
+          pricingForm: { open: false, isEdit: false, data: {} }
         });
 
-        const shareUrl = ref(window.location.origin + '?tab=customer');
+        const shareUrl = ref(window.location.origin + window.location.pathname + '?tab=customer');
         const shareUrlQr = computed(() => {
           return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl.value)}`;
         });
 
-        const playChimeSound = () => {
+        // Persistent LocalStorage Helper
+        const saveToLocalStorage = () => {
           try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
-            gain.gain.setValueAtTime(0.3, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.6);
+            localStorage.setItem('badminton_clubInfo', JSON.stringify(clubInfo.value));
+            localStorage.setItem('badminton_pricingSlots', JSON.stringify(pricingSlots.value));
+            localStorage.setItem('badminton_products', JSON.stringify(products.value));
+            localStorage.setItem('badminton_courts', JSON.stringify(courts.value));
+            localStorage.setItem('badminton_monthlyContracts', JSON.stringify(monthlyContracts.value));
+            localStorage.setItem('badminton_dailyRevenue', dailyRevenue.value.toString());
           } catch(e) {}
         };
 
-        // Socket.IO Realtime Connection
-        let socket = null;
-        try {
-          if (typeof io !== 'undefined') {
-            socket = io();
+        const loadFromLocalStorage = () => {
+          try {
+            const savedClub = localStorage.getItem('badminton_clubInfo');
+            if (savedClub) clubInfo.value = JSON.parse(savedClub);
 
-            socket.on('connect', () => {
-              isOnline.value = true;
-            });
+            const savedSlots = localStorage.getItem('badminton_pricingSlots');
+            if (savedSlots) pricingSlots.value = JSON.parse(savedSlots);
 
-            socket.on('disconnect', () => {
-              isOnline.value = false;
-            });
+            const savedProducts = localStorage.getItem('badminton_products');
+            if (savedProducts) products.value = JSON.parse(savedProducts);
 
-            socket.on('online_devices_count', (count) => {
-              onlineDevices.value = count;
-            });
+            const savedCourts = localStorage.getItem('badminton_courts');
+            if (savedCourts) courts.value = JSON.parse(savedCourts);
 
-            socket.on('state_sync', (state) => {
-              courts.value = state.courts;
-              products.value = state.products;
-              monthlyContracts.value = state.monthlyContracts;
-              dailyRevenue.value = state.dailyRevenue;
-            });
+            const savedContracts = localStorage.getItem('badminton_monthlyContracts');
+            if (savedContracts) monthlyContracts.value = JSON.parse(savedContracts);
 
-            socket.on('timer_tick', (updatedCourts) => {
-              courts.value = updatedCourts;
-            });
+            const savedRev = localStorage.getItem('badminton_dailyRevenue');
+            if (savedRev) dailyRevenue.value = parseInt(savedRev) || 0;
+          } catch(e) {}
+        };
 
-            socket.on('payment_alert', (info) => {
-              playChimeSound();
-              alert(`🔔 ${info.title}\n${info.message}`);
-            });
+        // Realtime Fee Calculation Engine based on Dynamic Pricing Slots
+        const calculateDynamicCourtFee = (checkInDate, checkOutDate) => {
+          const breakdown = {};
+          pricingSlots.value.forEach(s => {
+            breakdown[s.name] = { name: s.name, minutes: 0, rate: s.rate, fee: 0 };
+          });
 
-            socket.on('court_reopened', (info) => {
-              alert(`🟢 ${info.message}`);
-            });
-          }
-        } catch (e) {
-          console.warn('Chạy ở chế độ local offline');
-        }
+          let cur = new Date(checkInDate);
+          while (cur < checkOutDate) {
+            const curH = cur.getHours().toString().padStart(2, '0');
+            const curM = cur.getMinutes().toString().padStart(2, '0');
+            const curTimeStr = `${curH}:${curM}`;
 
-        // Local ticker if offline
-        setInterval(() => {
-          if (!isOnline.value) {
-            courts.value.forEach(court => {
-              if (court.status === 'PLAYING' && court.session) {
-                court.session.elapsedSeconds++;
-                const checkIn = new Date(court.session.checkInTime);
-                const now = new Date();
-                let normalMins = 0;
-                let peakMins = 0;
-                let cur = new Date(checkIn);
+            // Match slot
+            let matchedSlot = pricingSlots.value.find(s => curTimeStr >= s.startTime && curTimeStr < s.endTime);
+            if (!matchedSlot && pricingSlots.value.length > 0) {
+              matchedSlot = pricingSlots.value[0];
+            }
 
-                while (cur < now) {
-                  if (cur.getHours() >= PEAK_HOUR) {
-                    peakMins++;
-                  } else {
-                    normalMins++;
-                  }
-                  cur.setMinutes(cur.getMinutes() + 1);
-                }
-
-                court.session.normalMinutes = normalMins;
-                court.session.peakMinutes = peakMins;
-                court.session.normalFee = Math.round((normalMins / 60) * NORMAL_RATE);
-                court.session.peakFee = Math.round((peakMins / 60) * PEAK_RATE);
-                court.session.calculatedCourtFee = court.session.normalFee + court.session.peakFee;
+            if (matchedSlot) {
+              if (!breakdown[matchedSlot.name]) {
+                breakdown[matchedSlot.name] = { name: matchedSlot.name, minutes: 0, rate: matchedSlot.rate, fee: 0 };
               }
-            });
+              breakdown[matchedSlot.name].minutes++;
+            }
+            cur.setMinutes(cur.getMinutes() + 1);
           }
+
+          let totalFee = 0;
+          const breakdownList = [];
+          Object.values(breakdown).forEach(item => {
+            if (item.minutes > 0) {
+              item.fee = Math.round((item.minutes / 60) * item.rate);
+              totalFee += item.fee;
+              breakdownList.push(item);
+            }
+          });
+
+          return { totalFee, breakdownList };
+        };
+
+        // Timer Tick (Every second)
+        setInterval(() => {
+          courts.value.forEach(court => {
+            if (court.status === 'PLAYING' && court.session) {
+              court.session.elapsedSeconds++;
+              const checkIn = new Date(court.session.checkInTime);
+              const now = new Date();
+              const result = calculateDynamicCourtFee(checkIn, now);
+              court.session.calculatedCourtFee = result.totalFee;
+              court.session.slotBreakdown = result.breakdownList;
+            }
+          });
         }, 1000);
 
+        // Auto Save to localStorage every 10s
+        setInterval(() => {
+          saveToLocalStorage();
+        }, 10000);
+
+        // Formatting Helpers
         const formatCurrency = (val) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val || 0);
 
         const formatTimer = (seconds) => {
@@ -1008,6 +1267,110 @@
 
         const availableCourtsForSwitch = computed(() => courts.value.filter(c => c.status === 'AVAILABLE'));
 
+        // Product Form Operations
+        const openAddProductModal = () => {
+          modals.value.productForm.isEdit = false;
+          modals.value.productForm.data = {
+            id: Date.now(),
+            name: '',
+            category: 'Đồ uống',
+            unit: 'Chai',
+            price: 15000,
+            costPrice: 9000,
+            stock: 20,
+            minAlert: 5
+          };
+          modals.value.productForm.open = true;
+        };
+
+        const openEditProductModal = (product) => {
+          modals.value.productForm.isEdit = true;
+          modals.value.productForm.data = { ...product };
+          modals.value.productForm.open = true;
+        };
+
+        const saveProductForm = () => {
+          const d = modals.value.productForm.data;
+          if (!d.name || !d.unit || !d.price) {
+            alert('Vui lòng điền đầy đủ Tên, Đơn vị và Giá bán!');
+            return;
+          }
+          if (modals.value.productForm.isEdit) {
+            const idx = products.value.findIndex(p => p.id === d.id);
+            if (idx !== -1) products.value[idx] = { ...d };
+          } else {
+            products.value.push({ ...d, id: Date.now() });
+          }
+          saveToLocalStorage();
+          modals.value.productForm.open = false;
+        };
+
+        const deleteProduct = (product) => {
+          if (confirm(`Bạn có chắc muốn xóa mặt hàng "${product.name}" khỏi shop?`)) {
+            products.value = products.value.filter(p => p.id !== product.id);
+            saveToLocalStorage();
+          }
+        };
+
+        const adjustStock = (product, amount) => {
+          product.stock = Math.max(0, product.stock + amount);
+          saveToLocalStorage();
+        };
+
+        // Pricing Slots Operations
+        const openAddPricingSlotModal = () => {
+          modals.value.pricingForm.isEdit = false;
+          modals.value.pricingForm.data = {
+            id: Date.now(),
+            name: '',
+            startTime: '17:00',
+            endTime: '22:00',
+            rate: 90000,
+            isPeak: true
+          };
+          modals.value.pricingForm.open = true;
+        };
+
+        const openEditPricingSlotModal = (slot) => {
+          modals.value.pricingForm.isEdit = true;
+          modals.value.pricingForm.data = { ...slot };
+          modals.value.pricingForm.open = true;
+        };
+
+        const savePricingSlotForm = () => {
+          const d = modals.value.pricingForm.data;
+          if (!d.name || !d.startTime || !d.endTime || !d.rate) {
+            alert('Vui lòng điền đầy đủ thông tin khung giờ!');
+            return;
+          }
+          if (modals.value.pricingForm.isEdit) {
+            const idx = pricingSlots.value.findIndex(s => s.id === d.id);
+            if (idx !== -1) pricingSlots.value[idx] = { ...d };
+          } else {
+            pricingSlots.value.push({ ...d, id: Date.now() });
+          }
+          pricingSlots.value.sort((a, b) => a.startTime.localeCompare(b.startTime));
+          saveToLocalStorage();
+          modals.value.pricingForm.open = false;
+        };
+
+        const deletePricingSlot = (slot) => {
+          if (pricingSlots.value.length <= 1) {
+            alert('Cần giữ lại ít nhất 1 khung giờ tính giá!');
+            return;
+          }
+          if (confirm(`Bạn có chắc muốn xóa khung giờ "${slot.name}"?`)) {
+            pricingSlots.value = pricingSlots.value.filter(s => s.id !== slot.id);
+            saveToLocalStorage();
+          }
+        };
+
+        const saveClubSettings = () => {
+          saveToLocalStorage();
+          alert('✅ Đã lưu toàn bộ thông tin sân và bảng giá thành công!');
+        };
+
+        // Court Actions
         const openStartPlayModal = (court) => {
           modals.value.startPlay.court = court;
           modals.value.startPlay.customerName = '';
@@ -1017,27 +1380,17 @@
 
         const confirmStartPlay = () => {
           const court = modals.value.startPlay.court;
-          if (socket && isOnline.value) {
-            socket.emit('court_start_play', {
-              courtId: court.id,
-              customerName: modals.value.startPlay.customerName,
-              phone: modals.value.startPlay.phone
-            });
-          } else {
-            court.status = 'PLAYING';
-            court.session = {
-              customerName: modals.value.startPlay.customerName || 'Khách vãng lai',
-              phone: modals.value.startPlay.phone || '',
-              checkInTime: new Date().toISOString(),
-              elapsedSeconds: 0,
-              normalMinutes: 0,
-              peakMinutes: 0,
-              normalFee: 0,
-              peakFee: 0,
-              calculatedCourtFee: 0,
-              services: []
-            };
-          }
+          court.status = 'PLAYING';
+          court.session = {
+            customerName: modals.value.startPlay.customerName || 'Khách vãng lai',
+            phone: modals.value.startPlay.phone || '',
+            checkInTime: new Date().toISOString(),
+            elapsedSeconds: 0,
+            calculatedCourtFee: 0,
+            slotBreakdown: [],
+            services: []
+          };
+          saveToLocalStorage();
           modals.value.startPlay.open = false;
         };
 
@@ -1052,26 +1405,20 @@
             return;
           }
           const court = modals.value.addService.court;
-          if (socket && isOnline.value) {
-            socket.emit('court_add_service', {
-              courtId: court.id,
-              productId: product.id
-            });
+          if (!court.session.services) court.session.services = [];
+          const existing = court.session.services.find(s => s.id === product.id);
+          if (existing) {
+            existing.qty++;
           } else {
-            if (!court.session.services) court.session.services = [];
-            const existing = court.session.services.find(s => s.id === product.id);
-            if (existing) {
-              existing.qty++;
-            } else {
-              court.session.services.push({
-                id: product.id,
-                name: product.name,
-                price: product.price,
-                qty: 1
-              });
-            }
-            product.stock--;
+            court.session.services.push({
+              id: product.id,
+              name: product.name,
+              price: product.price,
+              qty: 1
+            });
           }
+          product.stock--;
+          saveToLocalStorage();
         };
 
         const openSwitchCourtModal = (court) => {
@@ -1081,18 +1428,12 @@
 
         const confirmSwitchCourt = (targetCourtId) => {
           const sourceCourt = modals.value.switchCourt.court;
-          if (socket && isOnline.value) {
-            socket.emit('court_switch', {
-              sourceCourtId: sourceCourt.id,
-              targetCourtId: targetCourtId
-            });
-          } else {
-            const target = courts.value.find(c => c.id === targetCourtId);
-            target.status = 'PLAYING';
-            target.session = sourceCourt.session;
-            sourceCourt.status = 'AVAILABLE';
-            sourceCourt.session = null;
-          }
+          const target = courts.value.find(c => c.id === targetCourtId);
+          target.status = 'PLAYING';
+          target.session = sourceCourt.session;
+          sourceCourt.status = 'AVAILABLE';
+          sourceCourt.session = null;
+          saveToLocalStorage();
           modals.value.switchCourt.open = false;
         };
 
@@ -1105,14 +1446,11 @@
         };
 
         const finishCheckout = (court) => {
-          if (socket && isOnline.value) {
-            socket.emit('court_checkout', { courtId: court.id });
-          } else {
-            dailyRevenue.value += modals.value.checkout.totalBill;
-            court.status = 'AVAILABLE';
-            court.session = null;
-            court.reservation = null;
-          }
+          dailyRevenue.value += modals.value.checkout.totalBill;
+          court.status = 'AVAILABLE';
+          court.session = null;
+          court.reservation = null;
+          saveToLocalStorage();
           modals.value.checkout.open = false;
         };
 
@@ -1121,50 +1459,35 @@
         };
 
         const checkInReservation = (court) => {
-          if (socket && isOnline.value) {
-            socket.emit('court_checkin_reserved', { courtId: court.id });
-          } else {
-            court.status = 'PLAYING';
-            court.session = {
-              customerName: court.reservation ? court.reservation.customerName : 'Khách đặt trước',
-              phone: court.reservation ? court.reservation.phone : '',
-              checkInTime: new Date().toISOString(),
-              elapsedSeconds: 0,
-              normalMinutes: 0,
-              peakMinutes: 0,
-              normalFee: 0,
-              peakFee: 0,
-              calculatedCourtFee: 0,
-              services: []
-            };
-            court.reservation = null;
-          }
+          court.status = 'PLAYING';
+          court.session = {
+            customerName: court.reservation ? court.reservation.customerName : 'Khách đặt trước',
+            phone: court.reservation ? court.reservation.phone : '',
+            checkInTime: new Date().toISOString(),
+            elapsedSeconds: 0,
+            calculatedCourtFee: 0,
+            slotBreakdown: [],
+            services: []
+          };
+          court.reservation = null;
+          saveToLocalStorage();
         };
 
         const cancelSingleSession = (court) => {
-          if (confirm('Khách quen báo nghỉ buổi hôm nay? Hệ thống sẽ mở lại Sân Trống 🟢 để vợt khách online!')) {
-            if (socket && isOnline.value) {
-              socket.emit('court_cancel_single_session', { courtId: court.id });
-            } else {
-              court.status = 'AVAILABLE';
-              alert('Đã mở lại sân trống thành công!');
-            }
+          if (confirm('Khách quen báo nghỉ buổi hôm nay? Hệ thống sẽ mở lại Sân Trống 🟢 để đón khách online!')) {
+            court.status = 'AVAILABLE';
+            saveToLocalStorage();
           }
         };
 
         const cancelSingleSessionFromContract = (contract) => {
           const target = courts.value.find(c => c.name === contract.courtName);
-          if (target) {
-            cancelSingleSession(target);
-          }
+          if (target) cancelSingleSession(target);
         };
 
         const toggleContractPayment = (contract) => {
-          if (socket && isOnline.value) {
-            socket.emit('contract_toggle_paid', { contractId: contract.id });
-          } else {
-            contract.paid = !contract.paid;
-          }
+          contract.paid = !contract.paid;
+          saveToLocalStorage();
         };
 
         const submitOnlineBooking = () => {
@@ -1179,46 +1502,26 @@
         };
 
         const simulateWebhookSuccess = () => {
-          if (socket && isOnline.value) {
-            socket.emit('online_booking', {
-              courtId: customerBooking.value.courtId,
-              name: customerBooking.value.name,
-              phone: customerBooking.value.phone,
-              startTime: customerBooking.value.startTime,
-              endTime: customerBooking.value.endTime,
-              refCode: modals.value.onlineQR.refCode
-            });
-          } else {
-            const court = courts.value.find(c => c.id === customerBooking.value.courtId);
-            court.status = 'RESERVED';
-            court.reservation = {
-              customerName: customerBooking.value.name,
-              phone: customerBooking.value.phone,
-              startTime: customerBooking.value.startTime,
-              endTime: customerBooking.value.endTime,
-              deposit: 50000,
-              refCode: modals.value.onlineQR.refCode
-            };
-            activeTab.value = 'staff';
-          }
+          const court = courts.value.find(c => c.id === customerBooking.value.courtId);
+          court.status = 'RESERVED';
+          court.reservation = {
+            customerName: customerBooking.value.name,
+            phone: customerBooking.value.phone,
+            startTime: customerBooking.value.startTime,
+            endTime: customerBooking.value.endTime,
+            deposit: clubInfo.value.depositAmount || 50000,
+            refCode: modals.value.onlineQR.refCode
+          };
+          saveToLocalStorage();
+          activeTab.value = 'staff';
           modals.value.onlineQR.open = false;
         };
 
         const generateVietQRUrl = (amount, memo) => {
-          const bankId = 'MB';
-          const accountNo = '0988776655';
-          return `https://img.vietqr.io/image/${bankId}-${accountNo}-compact.png?amount=${amount}&addInfo=${encodeURIComponent(memo)}&accountName=SAN%20CAU%20LONG%20THANG%20PRO`;
-        };
-
-        const adjustStock = (product, amount) => {
-          if (socket && isOnline.value) {
-            socket.emit('inventory_adjust', {
-              productId: product.id,
-              amount: amount
-            });
-          } else {
-            product.stock = Math.max(0, product.stock + amount);
-          }
+          const bankId = clubInfo.value.bankId || 'MB';
+          const accountNo = clubInfo.value.bankAccountNo || '0988776655';
+          const accName = encodeURIComponent(clubInfo.value.name || 'SAN CAU LONG THANG PRO');
+          return `https://img.vietqr.io/image/${bankId}-${accountNo}-compact.png?amount=${amount}&addInfo=${encodeURIComponent(memo)}&accountName=${accName}`;
         };
 
         const openShareQrModal = () => {
@@ -1226,6 +1529,8 @@
         };
 
         onMounted(() => {
+          loadFromLocalStorage();
+
           const urlParams = new URLSearchParams(window.location.search);
           if (urlParams.get('tab') === 'customer') {
             activeTab.value = 'customer';
@@ -1242,10 +1547,13 @@
           isOnline,
           onlineDevices,
           dailyRevenue,
+          clubInfo,
+          pricingSlots,
           courts,
           products,
           monthlyContracts,
           customerBooking,
+          availableHours,
           modals,
           shareUrl,
           shareUrlQr,
@@ -1255,6 +1563,16 @@
           getStatusLabel,
           calculateServiceTotal,
           availableCourtsForSwitch,
+          openAddProductModal,
+          openEditProductModal,
+          saveProductForm,
+          deleteProduct,
+          adjustStock,
+          openAddPricingSlotModal,
+          openEditPricingSlotModal,
+          savePricingSlotForm,
+          deletePricingSlot,
+          saveClubSettings,
           openStartPlayModal,
           confirmStartPlay,
           openAddServiceModal,
@@ -1271,7 +1589,6 @@
           submitOnlineBooking,
           simulateWebhookSuccess,
           generateVietQRUrl,
-          adjustStock,
           openShareQrModal
         };
       }

@@ -16,12 +16,12 @@
       "session": {
         "customerName": "Anh Hoàng (0903.123.456)",
         "checkInTime": "2026-10-12T16:05:12.856Z",
-        "elapsedSeconds": 8603,
+        "elapsedSeconds": 10121,
         "normalMinutes": 2040,
-        "peakMinutes": 614,
+        "peakMinutes": 640,
         "normalFee": 2040000,
-        "peakFee": 921000,
-        "calculatedCourtFee": 2961000,
+        "peakFee": 960000,
+        "calculatedCourtFee": 3000000,
         "services": [
           {
             "id": 1,
@@ -48,12 +48,12 @@
         "customerName": "Chị Mai",
         "phone": "0912.888.999",
         "checkInTime": "2026-10-12T17:33:12.336Z",
-        "elapsedSeconds": 3329,
+        "elapsedSeconds": 4847,
         "normalMinutes": 2007,
-        "peakMinutes": 559,
+        "peakMinutes": 585,
         "normalFee": 2007000,
-        "peakFee": 838500,
-        "calculatedCourtFee": 2845500,
+        "peakFee": 877500,
+        "calculatedCourtFee": 2884500,
         "services": []
       },
       "reservation": null,
