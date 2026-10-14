@@ -1,0 +1,155 @@
+{
+  "dailyRevenue": 1850000,
+  "courts": [
+    {
+      "id": 1,
+      "name": "SÂN 1",
+      "status": "AVAILABLE",
+      "session": null,
+      "reservation": null,
+      "fixedSchedule": null
+    },
+    {
+      "id": 2,
+      "name": "SÂN 2",
+      "status": "PLAYING",
+      "session": {
+        "customerName": "Anh Hoàng (0903.123.456)",
+        "checkInTime": "2026-10-12T16:05:12.856Z",
+        "elapsedSeconds": 8603,
+        "normalMinutes": 2040,
+        "peakMinutes": 614,
+        "normalFee": 2040000,
+        "peakFee": 921000,
+        "calculatedCourtFee": 2961000,
+        "services": [
+          {
+            "id": 1,
+            "name": "Revive chanh muối",
+            "price": 15000,
+            "qty": 2
+          },
+          {
+            "id": 3,
+            "name": "Quả cầu Hải Yến",
+            "price": 25000,
+            "qty": 1
+          }
+        ]
+      },
+      "reservation": null,
+      "fixedSchedule": null
+    },
+    {
+      "id": 3,
+      "name": "SÂN 3",
+      "status": "PLAYING",
+      "session": {
+        "customerName": "Chị Mai",
+        "phone": "0912.888.999",
+        "checkInTime": "2026-10-12T17:33:12.336Z",
+        "elapsedSeconds": 3329,
+        "normalMinutes": 2007,
+        "peakMinutes": 559,
+        "normalFee": 2007000,
+        "peakFee": 838500,
+        "calculatedCourtFee": 2845500,
+        "services": []
+      },
+      "reservation": null,
+      "fixedSchedule": null
+    },
+    {
+      "id": 4,
+      "name": "SÂN 4",
+      "status": "FIXED",
+      "session": null,
+      "reservation": null,
+      "fixedSchedule": {
+        "groupName": "CLB Cầu Lông Phong Trào",
+        "repName": "Anh Hùng",
+        "phone": "0988.777.666",
+        "days": "Thứ 2 - 4 - 6",
+        "startTime": "18:00",
+        "endTime": "20:00",
+        "paid": true
+      }
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "Revive chanh muối",
+      "unit": "Chai",
+      "price": 15000,
+      "stock": 32,
+      "minAlert": 5
+    },
+    {
+      "id": 2,
+      "name": "Nước suối Aquafina",
+      "unit": "Chai",
+      "price": 10000,
+      "stock": 45,
+      "minAlert": 10
+    },
+    {
+      "id": 3,
+      "name": "Quả cầu Hải Yến đỏ",
+      "unit": "Quả",
+      "price": 25000,
+      "stock": 24,
+      "minAlert": 6
+    },
+    {
+      "id": 4,
+      "name": "Quấn cán vợt Yonex",
+      "unit": "Cái",
+      "price": 20000,
+      "stock": 15,
+      "minAlert": 3
+    },
+    {
+      "id": 5,
+      "name": "Nước tăng lực Redbull",
+      "unit": "Lon",
+      "price": 18000,
+      "stock": 20,
+      "minAlert": 5
+    },
+    {
+      "id": 6,
+      "name": "Thuê vợt tập Pro",
+      "unit": "Cây/ca",
+      "price": 30000,
+      "stock": 8,
+      "minAlert": 2
+    }
+  ],
+  "monthlyContracts": [
+    {
+      "id": 1,
+      "courtName": "SÂN 4",
+      "days": "Thứ 2 - 4 - 6",
+      "groupName": "CLB Cầu Lông Phong Trào",
+      "repName": "Anh Hùng",
+      "phone": "0988.777.666",
+      "time": "18:00 - 20:00",
+      "totalSessions": 13,
+      "totalFund": 2340000,
+      "paid": true
+    },
+    {
+      "id": 2,
+      "courtName": "SÂN 1",
+      "days": "Thứ 3 - 5 - 7",
+      "groupName": "Nhóm Thầy Cô Giáo",
+      "repName": "Cô Lan",
+      "phone": "0909.111.222",
+      "time": "17:00 - 19:00",
+      "totalSessions": 12,
+      "totalFund": 2160000,
+      "paid": false
+    }
+  ]
+}

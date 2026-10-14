@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Hệ Thống Quản Lý Sân Cầu Lông (Sân 1 - Sân 4) - Realtime Online</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Vue 3 CDN -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <!-- Socket.io Client (CDN + Local fallback) -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    [v-cloak] { display: none; }
+    @media print {
+      body * { visibility: hidden; }
+      #printable-receipt, #printable-receipt * { visibility: visible; }
+      #printable-receipt { position: absolute; left: 0; top: 0; width: 80mm; margin: 0; padding: 10px; }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen selection:bg-emerald-500 selection:text-slate-950">
+  <div id="app" v-cloak class="min-h-screen flex flex-col">
+    
+    <!-- Top Realtime Connectivity Status Banner -->
+    <div class="px-4 py-1.5 text-xs font-semibold flex items-center justify-between border-b"
+      :class="isOnline ? 'bg-emerald-950/80 border-emerald-800/60 text-emerald-300' : 'bg-slate-900 border-slate-800 text-slate-400'">
+      <div class="max-w-7xl mx-auto w-full flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full" :class="isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'"></span>
+          <span v-if="isOnline">HỆ THỐNG ONLINE REAL-TIME: Đồng bộ dữ liệu trực tiếp đa thiết bị ({{ onlineDevices }} thiết bị đang kết nối)</span>
+          <span v-else>CHẾ ĐỘ NỘI BỘ TRỰC QUAN (Chạy 'node server.js' hoặc nhấp đúp 'start.bat' để bật đồng bộ Real-time đa thiết bị)</span>
+        </div>
+        <div class="hidden sm:flex items-center gap-3 text-[11px] opacity-90">
+          <span>Sân 1 - Sân 4</span>
+          <span>&bull;</span>
+          <span>Tính giờ tự động</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Navigation Header -->
+    <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-40 px-4 py-3 shadow-lg">
+      <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center space-x-3">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/25">
+            <i data-lucide="trophy" class="w-6 h-6 text-slate-950 font-black"></i>
+          </div>
+          <div>
+            <h1 class="text-lg font-black tracking-tight text-white flex items-center gap-2">
+              SÂN CẦU LÔNG THẮNG PRO
+              <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Sân 1 - 4</span>
+            </h1>
+            <p class="text-xs text-slate-400 flex items-center gap-1.5">
+              <span>Điều hành trực quan</span>
+              <span>&bull;</span>
+              <span class="text-emerald-400 font-bold">Doanh thu ngày: {{ formatCurrency(dailyRevenue) }}</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex items-center gap-2">
+          <button 
+            @click="openShareQrModal" 
+            title="Tạo mã QR cho khách quét đặt sân bằng điện thoại"
+            class="hidden md:flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-amber-400 transition">
+            <i data-lucide="qr-code" class="w-4 h-4"></i>
+            <span>QR Cho Khách Quét</span>
+          </button>
+
+          <div class="flex bg-slate-950 p-1 rounded-2xl border border-slate-800">
+            <button 
+              @click="activeTab = 'staff'" 
+              :class="activeTab === 'staff' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+              <i data-lucide="layout-grid" class="w-4 h-4"></i>
+              <span>Nhân Viên</span>
+            </button>
+            <button 
+              @click="activeTab = 'customer'" 
+              :class="activeTab === 'customer' ? 'bg-amber-600 text-white shadow-md' : 'text-slate-400 hover:text-white'"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+              <i data-lucide="smartphone" class="w-4 h-4"></i>
+              <span>Khách Đặt Sân</span>
+            </button>
+            <button 
+              @click="activeTab = 'inventory'" 
+              :class="activeTab === 'inventory' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+              <i data-lucide="package" class="w-4 h-4"></i>
+              <span>Kho Hàng</span>
+            </button>
+            <button 
+              @click="activeTab = 'monthly'" 
+              :class="activeTab === 'monthly' ? 'bg-purple-600 text-white shadow-md' : 'text-slate-400 hover:text-white'"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+              <i data-lucide="calendar" class="w-4 h-4"></i>
+              <span>Khách Quen</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Body -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 space-y-6">
+      
+      <!-- ================= 1. TAB: NHÂN VIÊN SÂN (LƯỚI 2x2 TRỰC QUAN) ================= -->
+      <div v-if="activeTab === 'staff'" class="space-y-5">
+        
+        <!-- Legend & Dynamic Pricing Notice -->
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800">
+          <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-xs">
+            <span class="text-slate-400 font-semibold">Trạng thái:</span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span> 🟢 Sân Trống
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/30 font-bold">
+              <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span> 🔴 Đang Chơi
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 font-bold">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span> 🟡 Chờ Check-in
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/30 font-bold">
+              <span class="w-2 h-2 rounded-full bg-purple-400"></span> 🟣 Cố Định Tháng
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-slate-300">
+            <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i>
+            <span>&lt; 17:00: <strong class="text-emerald-400">60k/h</strong></span>
+            <span class="text-slate-600">|</span>
+            <span>&ge; 17:00: <strong class="text-rose-400">90k/h (Giờ vàng)</strong></span>
+          </div>
+        </div>
+
+        <!-- 2x2 Grid View for Court 1 - 4 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div 
+            v-for="court in courts" 
+            :key="court.id"
+            :class="[
+              'rounded-3xl border-2 p-5 transition-all duration-300 relative flex flex-col justify-between shadow-2xl',
+              court.status === 'AVAILABLE' ? 'bg-slate-900/80 border-emerald-500/40 hover:border-emerald-500 shadow-emerald-500/5' : '',
+              court.status === 'PLAYING' ? 'bg-slate-900/95 border-rose-500/70 shadow-rose-500/10 ring-1 ring-rose-500/30' : '',
+              court.status === 'RESERVED' ? 'bg-slate-900/90 border-amber-500/60 shadow-amber-500/10' : '',
+              court.status === 'FIXED' ? 'bg-slate-900/90 border-purple-500/60 shadow-purple-500/10' : ''
+            ]">
+            
+            <!-- Card Header -->
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <span class="text-3xl font-black text-white tracking-tight">{{ court.name }}</span>
+                  <span 
+                    :class="[
+                      'text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider',
+                      court.status === 'AVAILABLE' ? 'bg-emerald-500 text-slate-950' : '',
+                      court.status === 'PLAYING' ? 'bg-rose-500 text-white animate-pulse' : '',
+                      court.status === 'RESERVED' ? 'bg-amber-500 text-slate-950' : '',
+                      court.status === 'FIXED' ? 'bg-purple-600 text-white' : ''
+                    ]">
+                    {{ getStatusLabel(court.status) }}
+                  </span>
+                </div>
+
+                <div class="w-10 h-10 rounded-2xl flex items-center justify-center font-bold"
+                  :class="[
+                    court.status === 'AVAILABLE' ? 'bg-emerald-500/20 text-emerald-400' : '',
+                    court.status === 'PLAYING' ? 'bg-rose-500/20 text-rose-400' : '',
+                    court.status === 'RESERVED' ? 'bg-amber-500/20 text-amber-400' : '',
+                    court.status === 'FIXED' ? 'bg-purple-500/20 text-purple-400' : ''
+                  ]">
+                  <i v-if="court.status === 'AVAILABLE'" data-lucide="check-circle" class="w-6 h-6"></i>
+                  <i v-if="court.status === 'PLAYING'" data-lucide="activity" class="w-6 h-6 animate-spin"></i>
+                  <i v-if="court.status === 'RESERVED'" data-lucide="clock" class="w-6 h-6"></i>
+                  <i v-if="court.status === 'FIXED'" data-lucide="calendar-check" class="w-6 h-6"></i>
+                </div>
+              </div>
+
+              <!-- 🟢 1. TRẠNG THÁI SÂN TRỐNG -->
+              <div v-if="court.status === 'AVAILABLE'" class="py-6 text-center space-y-2">
+                <div class="w-16 h-16 mx-auto rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                  <i data-lucide="sparkles" class="w-8 h-8"></i>
+                </div>
+                <p class="text-sm font-bold text-emerald-300">Sân trống - Sẵn sàng đón khách</p>
+                <p class="text-xs text-slate-400">Khách vãng lai đến có thể bấm vào chơi ngay để tính giờ</p>
+              </div>
+
+              <!-- 🔴 2. TRẠNG THÁI ĐANG CHƠI -->
+              <div v-if="court.status === 'PLAYING' && court.session" class="space-y-4 py-1">
+                <div class="bg-slate-950 rounded-2xl p-4 border border-rose-500/30 flex items-center justify-between">
+                  <div>
+                    <span class="text-xs text-slate-400 block font-medium">Thời gian đã chơi</span>
+                    <span class="text-3xl font-black font-mono text-rose-400 tracking-wider">
+                      {{ formatTimer(court.session.elapsedSeconds) }}
+                    </span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-xs text-slate-400 block font-medium">Tạm tính tiền sân</span>
+                    <span class="text-2xl font-black text-white">
+                      {{ formatCurrency(court.session.calculatedCourtFee) }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                  <div>
+                    <span class="text-slate-400">Khách chơi:</span>
+                    <p class="font-bold text-slate-200 truncate">{{ court.session.customerName || 'Khách vãng lai' }}</p>
+                  </div>
+                  <div>
+                    <span class="text-slate-400">Giờ vào:</span>
+                    <p class="font-bold text-slate-200 font-mono">{{ formatTime(court.session.checkInTime) }}</p>
+                  </div>
+                  <div>
+                    <span class="text-slate-400">Giờ Thường (&lt;17h):</span>
+                    <p class="font-bold text-emerald-400">{{ court.session.normalMinutes || 0 }}p ({{ formatCurrency(court.session.normalFee) }})</p>
+                  </div>
+                  <div>
+                    <span class="text-slate-400">Giờ Vàng (&ge;17h):</span>
+                    <p class="font-bold text-rose-400">{{ court.session.peakMinutes || 0 }}p ({{ formatCurrency(court.session.peakFee) }})</p>
+                  </div>
+                </div>
+
+                <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 text-xs">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="font-bold text-slate-300 flex items-center gap-1.5">
+                      <i data-lucide="coffee" class="w-3.5 h-3.5 text-amber-400"></i>
+                      Dịch vụ kèm theo ({{ court.session.services ? court.session.services.length : 0 }})
+                    </span>
+                    <span class="font-bold text-amber-400">{{ formatCurrency(calculateServiceTotal(court.session.services)) }}</span>
+                  </div>
+                  <div v-if="!court.session.services || court.session.services.length === 0" class="text-slate-500 italic">Chưa gọi đồ uống/phụ kiện</div>
+                  <div v-else class="space-y-1">
+                    <div v-for="item in court.session.services" :key="item.id" class="flex justify-between text-slate-300">
+                      <span>{{ item.name }} &times; {{ item.qty }}</span>
+                      <span class="font-medium">{{ formatCurrency(item.qty * item.price) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 🟡 3. TRẠNG THÁI ĐẶT TRƯỚC (CHỜ CHECK-IN) -->
+              <div v-if="court.status === 'RESERVED' && court.reservation" class="space-y-3 py-3">
+                <div class="bg-slate-950 rounded-2xl p-4 border border-amber-500/30 space-y-2">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <span class="text-[10px] text-amber-400 font-bold uppercase tracking-wider">Đã cọc VietQR</span>
+                      <h4 class="text-lg font-black text-white">{{ court.reservation.customerName }}</h4>
+                      <p class="text-xs text-slate-400 font-mono">{{ court.reservation.phone }}</p>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-black">
+                      Đã cọc: {{ formatCurrency(court.reservation.deposit) }}
+                    </span>
+                  </div>
+                  <div class="pt-2 border-t border-slate-800 flex justify-between text-xs">
+                    <span class="text-slate-400">Khung giờ hẹn:</span>
+                    <span class="font-bold text-amber-300 font-mono">{{ court.reservation.startTime }} - {{ court.reservation.endTime }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 🟣 4. TRẠNG THÁI CỐ ĐỊNH THÁNG -->
+              <div v-if="court.status === 'FIXED' && court.fixedSchedule" class="space-y-3 py-3">
+                <div class="bg-slate-950 rounded-2xl p-4 border border-purple-500/30 space-y-2">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <span class="text-[10px] text-purple-400 font-bold uppercase tracking-wider">Hợp đồng tháng: {{ court.fixedSchedule.days }}</span>
+                      <h4 class="text-lg font-black text-white">{{ court.fixedSchedule.groupName }}</h4>
+                      <p class="text-xs text-slate-400">Trưởng nhóm: {{ court.fixedSchedule.repName }} ({{ court.fixedSchedule.phone }})</p>
+                    </div>
+                    <span :class="court.fixedSchedule.paid ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30'"
+                      class="px-2.5 py-1 rounded-lg border text-xs font-bold">
+                      {{ court.fixedSchedule.paid ? 'Đã đóng quỹ' : 'Chưa nộp tiền' }}
+                    </span>
+                  </div>
+                  <div class="pt-2 border-t border-slate-800 flex justify-between text-xs">
+                    <span class="text-slate-400">Khung giờ:</span>
+                    <span class="font-bold text-purple-300 font-mono">{{ court.fixedSchedule.startTime }} - {{ court.fixedSchedule.endTime }}</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Card Actions -->
+            <div class="mt-5 pt-4 border-t border-slate-800">
+              <div v-if="court.status === 'AVAILABLE'" class="grid grid-cols-2 gap-3">
+                <button 
+                  @click="openStartPlayModal(court)" 
+                  class="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-black text-sm shadow-lg shadow-emerald-600/30 transition">
+                  <i data-lucide="play" class="w-4 h-4 fill-white"></i>
+                  <span>Vào Chơi Ngay</span>
+                </button>
+                <button 
+                  @click="activeTab = 'customer'; customerBooking.courtId = court.id" 
+                  class="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition">
+                  <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+                  <span>Tạo Đơn Đặt</span>
+                </button>
+              </div>
+
+              <div v-if="court.status === 'PLAYING'" class="space-y-2">
+                <div class="grid grid-cols-2 gap-2">
+                  <button 
+                    @click="openAddServiceModal(court)" 
+                    class="flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-300 font-bold text-xs transition">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>Thêm Nước / Cầu</span>
+                  </button>
+                  <button 
+                    @click="openSwitchCourtModal(court)" 
+                    class="flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition">
+                    <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
+                    <span>Đổi Sân (1 Chạm)</span>
+                  </button>
+                </div>
+                <button 
+                  @click="triggerCheckout(court)" 
+                  class="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 active:scale-98 text-white font-black text-sm shadow-xl shadow-rose-600/30 transition">
+                  <i data-lucide="receipt" class="w-5 h-5"></i>
+                  <span>CHECK-OUT & IN HÓA ĐƠN</span>
+                </button>
+              </div>
+
+              <div v-if="court.status === 'RESERVED'" class="grid grid-cols-1 gap-2">
+                <button 
+                  @click="checkInReservation(court)" 
+                  class="flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm shadow-lg shadow-amber-500/30 transition">
+                  <i data-lucide="check" class="w-5 h-5 font-black"></i>
+                  <span>BẤM CHECK-IN (VÀO SÂN)</span>
+                </button>
+              </div>
+
+              <div v-if="court.status === 'FIXED'" class="grid grid-cols-2 gap-2">
+                <button 
+                  @click="openStartPlayModal(court)" 
+                  class="flex items-center justify-center gap-1.5 py-3 px-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition">
+                  <i data-lucide="play" class="w-4 h-4 fill-white"></i>
+                  <span>Vào Chơi</span>
+                </button>
+                <button 
+                  @click="cancelSingleSession(court)" 
+                  class="flex items-center justify-center gap-1.5 py-3 px-2 rounded-xl bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/40 text-amber-300 font-bold text-xs transition">
+                  <i data-lucide="unlock" class="w-4 h-4"></i>
+                  <span>Hủy Buổi Lẻ</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= 2. TAB: KHÁCH ĐẶT SÂN ONLINE (USER APP/WEB) ================= -->
+      <div v-if="activeTab === 'customer'" class="max-w-2xl mx-auto space-y-6">
+        <div class="bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent p-5 rounded-3xl border border-amber-500/30">
+          <h2 class="text-xl font-black text-white flex items-center gap-2">
+            <i data-lucide="smartphone" class="w-6 h-6 text-amber-400"></i>
+            ĐẶT LỊCH SÂN TRỰC TUYẾN 24/7 (SÂN 1 - 4)
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">Đồng bộ trực tuyến với nhân viên quầy. Quét mã VietQR nhận cọc tự động giữ chỗ trong 2 giây!</p>
+        </div>
+
+        <div class="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-2xl space-y-5">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">1. Chọn Ngày Chơi</label>
+            <input type="date" v-model="customerBooking.date" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-amber-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">2. Chọn Số Sân</label>
+            <div class="grid grid-cols-4 gap-2">
+              <button 
+                v-for="c in courts" 
+                :key="c.id" 
+                type="button"
+                @click="customerBooking.courtId = c.id"
+                :class="customerBooking.courtId === c.id ? 'bg-amber-500 text-slate-950 font-black border-amber-400 shadow-lg shadow-amber-500/30' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'"
+                class="py-3 px-2 rounded-2xl border text-center text-sm font-bold transition">
+                <div>{{ c.name }}</div>
+                <div class="text-[10px] mt-0.5 font-normal" :class="customerBooking.courtId === c.id ? 'text-slate-900 font-bold' : 'text-slate-500'">
+                  {{ c.status === 'AVAILABLE' ? '🟢 Còn' : '🔴 Kín' }}
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Giờ bắt đầu</label>
+              <select v-model="customerBooking.startTime" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm font-semibold text-white">
+                <option value="16:00">16:00 (Giờ thường 60k)</option>
+                <option value="17:00">17:00 (Giờ vàng 90k)</option>
+                <option value="18:00">18:00 (Giờ vàng 90k)</option>
+                <option value="19:00">19:00 (Giờ vàng 90k)</option>
+                <option value="20:00">20:00 (Giờ vàng 90k)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Giờ kết thúc</label>
+              <select v-model="customerBooking.endTime" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm font-semibold text-white">
+                <option value="17:00">17:00</option>
+                <option value="18:00">18:00</option>
+                <option value="19:00">19:00</option>
+                <option value="20:00">20:00</option>
+                <option value="21:00">21:00</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Họ tên của bạn</label>
+              <input type="text" v-model="customerBooking.name" placeholder="Ví dụ: Nguyễn Văn Hùng" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-amber-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Số điện thoại nhận xác nhận</label>
+              <input type="tel" v-model="customerBooking.phone" placeholder="Ví dụ: 0988123456" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-amber-500">
+            </div>
+          </div>
+
+          <div class="bg-slate-950 rounded-2xl p-4 border border-amber-500/20 space-y-2 text-xs">
+            <div class="flex justify-between items-center">
+              <span class="text-slate-400">Tiền cọc giữ chỗ:</span>
+              <span class="font-black text-amber-400 text-base">50.000đ</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>Phương thức thanh toán:</span>
+              <span class="text-slate-200 font-bold">Chuyển khoản VietQR nhận diện tự động</span>
+            </div>
+          </div>
+
+          <button 
+            @click="submitOnlineBooking" 
+            class="w-full py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 active:scale-98 text-slate-950 font-black text-base shadow-xl shadow-amber-500/20 transition flex items-center justify-center gap-2">
+            <i data-lucide="qr-code" class="w-5 h-5"></i>
+            <span>TIẾP TỤC & QUÉT MÃ VIETQR GIỮ SÂN</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= 3. TAB: KHO HÀNG & SẢN PHẨM ================= -->
+      <div v-if="activeTab === 'inventory'" class="space-y-5">
+        <div class="flex justify-between items-center bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+          <div>
+            <h2 class="text-lg font-black text-white">Kho Đồ Uống & Dịch Vụ Sân</h2>
+            <p class="text-xs text-slate-400">Số lượng tự động trừ tức thì khi nhân viên gọi món trên sân</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div 
+            v-for="p in products" 
+            :key="p.id" 
+            class="bg-slate-900 rounded-3xl p-4 border border-slate-800 flex flex-col justify-between space-y-3 shadow-xl">
+            <div>
+              <div class="flex justify-between items-start">
+                <h3 class="font-bold text-white text-base">{{ p.name }}</h3>
+                <span 
+                  :class="p.stock <= p.minAlert ? 'bg-rose-500/20 text-rose-400 border-rose-500/40' : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'"
+                  class="px-2 py-0.5 rounded-lg border text-xs font-bold font-mono">
+                  Còn: {{ p.stock }} {{ p.unit }}
+                </span>
+              </div>
+              <p class="text-xs text-slate-400 mt-1">Đơn vị tính: {{ p.unit }}</p>
+            </div>
+
+            <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+              <div>
+                <span class="text-xs text-slate-400 block">Đơn giá:</span>
+                <span class="text-sm font-black text-amber-400">{{ formatCurrency(p.price) }}</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <button @click="adjustStock(p, -1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-sm font-bold">-</button>
+                <button @click="adjustStock(p, 5)" class="px-2.5 h-8 rounded-lg bg-indigo-600/30 text-indigo-300 hover:bg-indigo-600/50 text-xs font-bold">+5 Nhập</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 4. TAB: LỊCH CỐ ĐỊNH THÁNG ================= -->
+      <div v-if="activeTab === 'monthly'" class="space-y-5">
+        <div class="flex justify-between items-center bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+          <div>
+            <h2 class="text-lg font-black text-white">Quản Lý Khách Quen Thuê Cố Định Theo Tháng</h2>
+            <p class="text-xs text-slate-400">Theo dõi quỹ tháng & Tính năng nhả sân online khi khách báo bận</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div 
+            v-for="contract in monthlyContracts" 
+            :key="contract.id"
+            class="bg-slate-900 rounded-3xl p-5 border border-purple-500/30 space-y-4 shadow-xl">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-xs font-bold text-purple-400 uppercase tracking-wider">{{ contract.courtName }} &bull; {{ contract.days }}</span>
+                <h3 class="text-lg font-black text-white mt-1">{{ contract.groupName }}</h3>
+                <p class="text-xs text-slate-400">Trưởng nhóm: {{ contract.repName }} &bull; {{ contract.phone }}</p>
+              </div>
+              <span 
+                :class="contract.paid ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30'"
+                class="px-2.5 py-1 rounded-full border text-xs font-bold">
+                {{ contract.paid ? 'Đã đóng quỹ' : 'Chưa nộp tiền' }}
+              </span>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 bg-slate-950 p-3 rounded-2xl border border-slate-800 text-xs">
+              <div>
+                <span class="text-slate-400">Khung giờ:</span>
+                <p class="font-bold text-purple-300 font-mono">{{ contract.time }}</p>
+              </div>
+              <div>
+                <span class="text-slate-400">Số buổi:</span>
+                <p class="font-bold text-white">{{ contract.totalSessions }} buổi</p>
+              </div>
+              <div>
+                <span class="text-slate-400">Tổng quỹ:</span>
+                <p class="font-bold text-emerald-400">{{ formatCurrency(contract.totalFund) }}</p>
+              </div>
+            </div>
+
+            <div class="flex gap-2">
+              <button 
+                @click="toggleContractPayment(contract)" 
+                class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition">
+                {{ contract.paid ? 'Hủy đánh dấu đóng tiền' : 'Xác nhận ĐÃ ĐÓNG QUỸ' }}
+              </button>
+              <button 
+                @click="cancelSingleSessionFromContract(contract)" 
+                class="py-2.5 px-3 rounded-xl bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/40 text-amber-300 text-xs font-bold transition">
+                Hủy Buổi Lẻ Hôm Nay
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ================= MODALS & POPUPS ================= -->
+
+    <!-- Modal 1: Bắt Đầu Chơi Ngay -->
+    <div v-if="modals.startPlay.open" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl">
+        <div class="flex justify-between items-center">
+          <h3 class="text-lg font-black text-white">Vào Sân {{ modals.startPlay.court?.name }}</h3>
+          <button @click="modals.startPlay.open = false" class="text-slate-400 hover:text-white text-xl">&times;</button>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Tên khách / Nhóm chơi</label>
+          <input type="text" v-model="modals.startPlay.customerName" placeholder="Khách vãng lai" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Số điện thoại (tùy chọn)</label>
+          <input type="tel" v-model="modals.startPlay.phone" placeholder="0988xxxxxx" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
+        </div>
+        <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs text-slate-400">
+          * Đồng hồ tính tiền sẽ bắt đầu chạy đồng bộ cho toàn bộ iPad/Điện thoại. Trước 17h: 60k/h, sau 17h: 90k/h.
+        </div>
+        <div class="flex gap-2">
+          <button @click="modals.startPlay.open = false" class="flex-1 py-3 bg-slate-800 rounded-xl text-xs font-bold">Hủy</button>
+          <button @click="confirmStartPlay" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-xs font-black text-white">BẮT ĐẦU CHƠI</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 2: Thêm Dịch Vụ Vào Sân -->
+    <div v-if="modals.addService.open" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-2xl">
+        <div class="flex justify-between items-center">
+          <h3 class="text-lg font-black text-white">Thêm Đồ Uống / Cầu - {{ modals.addService.court?.name }}</h3>
+          <button @click="modals.addService.open = false" class="text-slate-400 hover:text-white text-xl">&times;</button>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
+          <div 
+            v-for="p in products" 
+            :key="p.id" 
+            @click="addServiceItemToCourt(p)"
+            class="bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-2xl p-3 cursor-pointer transition select-none flex flex-col justify-between">
+            <div>
+              <h4 class="font-bold text-white text-sm">{{ p.name }}</h4>
+              <p class="text-xs text-amber-400 font-bold mt-0.5">{{ formatCurrency(p.price) }}</p>
+            </div>
+            <div class="mt-2 flex justify-between items-center text-xs text-slate-400">
+              <span>Còn: {{ p.stock }} {{ p.unit }}</span>
+              <span class="px-2 py-0.5 rounded bg-indigo-600 text-white font-bold text-xs">+ Thêm</span>
+            </div>
+          </div>
+        </div>
+
+        <button @click="modals.addService.open = false" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-xs font-black text-white">HOÀN TẤT</button>
+      </div>
+    </div>
+
+    <!-- Modal 3: Đổi Sân -->
+    <div v-if="modals.switchCourt.open" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl">
+        <h3 class="text-lg font-black text-white">Đổi {{ modals.switchCourt.court?.name }} Sang Sân Khác</h3>
+        <p class="text-xs text-slate-400">Chọn sân trống cần chuyển toàn bộ giờ chơi và đồ uống sang:</p>
+        
+        <div class="space-y-2">
+          <button 
+            v-for="target in availableCourtsForSwitch" 
+            :key="target.id"
+            @click="confirmSwitchCourt(target.id)"
+            class="w-full py-3 px-4 bg-slate-950 hover:bg-emerald-600/30 border border-slate-800 hover:border-emerald-500 rounded-xl text-left font-bold text-white flex justify-between items-center transition">
+            <span>{{ target.name }}</span>
+            <span class="text-xs text-emerald-400 font-bold">🟢 Sân Trống</span>
+          </button>
+        </div>
+
+        <button @click="modals.switchCourt.open = false" class="w-full py-2.5 bg-slate-800 rounded-xl text-xs font-bold">Hủy</button>
+      </div>
+    </div>
+
+    <!-- Modal 4: Check-out & In Bill Chuẩn K80 -->
+    <div v-if="modals.checkout.open" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl">
+        
+        <div id="printable-receipt" class="bg-white text-slate-900 p-5 rounded-2xl font-mono text-xs shadow-inner space-y-3">
+          <div class="text-center pb-2 border-b border-dashed border-slate-400">
+            <h2 class="text-sm font-black uppercase tracking-wider">SÂN CẦU LÔNG THẮNG PRO</h2>
+            <p class="text-[10px] text-slate-600">Sân 1 - Sân 4 &bull; Hotline: 0988.xxx.xxx</p>
+            <p class="text-xs font-bold text-slate-800 mt-1">HÓA ĐƠN THANH TOÁN (K80)</p>
+          </div>
+
+          <div class="space-y-1 text-[11px]">
+            <div class="flex justify-between"><span>Sân:</span><strong class="text-xs">{{ modals.checkout.court?.name }}</strong></div>
+            <div class="flex justify-between"><span>Khách hàng:</span><strong>{{ modals.checkout.court?.session?.customerName || 'Vãng lai' }}</strong></div>
+            <div class="flex justify-between"><span>Giờ vào:</span><span>{{ formatTime(modals.checkout.court?.session?.checkInTime) }}</span></div>
+            <div class="flex justify-between"><span>Giờ ra:</span><span>{{ formatTime(new Date()) }}</span></div>
+            <div class="flex justify-between"><span>Tổng thời gian:</span><strong class="text-xs">{{ Math.ceil((modals.checkout.court?.session?.elapsedSeconds || 0) / 60) }} phút</strong></div>
+          </div>
+
+          <div class="pt-2 border-t border-dashed border-slate-300 space-y-1 text-[11px]">
+            <div class="font-bold uppercase text-[10px]">1. Tiền giờ sân (Tách giờ vàng):</div>
+            <div class="flex justify-between pl-2">
+              <span>Giờ thường (&lt; 17h, 60k/h):</span>
+              <span>{{ formatCurrency(modals.checkout.court?.session?.normalFee) }}</span>
+            </div>
+            <div class="flex justify-between pl-2">
+              <span>Giờ vàng (&ge; 17h, 90k/h):</span>
+              <span>{{ formatCurrency(modals.checkout.court?.session?.peakFee) }}</span>
+            </div>
+            <div class="flex justify-between font-bold pt-1">
+              <span>CỘNG TIỀN SÂN:</span>
+              <span>{{ formatCurrency(modals.checkout.court?.session?.calculatedCourtFee) }}</span>
+            </div>
+          </div>
+
+          <div v-if="modals.checkout.court?.session?.services && modals.checkout.court.session.services.length > 0" class="pt-2 border-t border-dashed border-slate-300 space-y-1 text-[11px]">
+            <div class="font-bold uppercase text-[10px]">2. Nước uống & Phụ kiện:</div>
+            <div v-for="item in modals.checkout.court.session.services" :key="item.id" class="flex justify-between pl-2">
+              <span>{{ item.name }} &times; {{ item.qty }}</span>
+              <span>{{ formatCurrency(item.qty * item.price) }}</span>
+            </div>
+            <div class="flex justify-between font-bold pt-1">
+              <span>CỘNG DỊCH VỤ:</span>
+              <span>{{ formatCurrency(calculateServiceTotal(modals.checkout.court.session.services)) }}</span>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t-2 border-slate-900 space-y-1 text-xs font-black">
+            <div class="flex justify-between text-sm">
+              <span>TỔNG CỘNG:</span>
+              <span class="text-emerald-700">{{ formatCurrency(modals.checkout.totalBill) }}</span>
+            </div>
+          </div>
+
+          <div class="text-center pt-3 border-t border-dashed border-slate-400">
+            <div class="w-32 h-32 mx-auto bg-slate-100 rounded-lg p-2 border border-slate-300 flex items-center justify-center">
+              <img :src="generateVietQRUrl(modals.checkout.totalBill, 'THANHTOAN ' + modals.checkout.court?.name)" alt="VietQR" class="w-full h-full object-contain">
+            </div>
+            <p class="text-[10px] text-slate-500 mt-1">Quét mã VietQR chuyển khoản thanh toán</p>
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <button @click="printReceipt" class="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 text-white">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            <span>In Ra Máy K80</span>
+          </button>
+          <button @click="finishCheckout(modals.checkout.court)" class="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-black text-xs text-white">
+            HOÀN TẤT & TRẢ SÂN
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 5: Quét Mã VietQR Đặt Sân Online -->
+    <div v-if="modals.onlineQR.open" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl text-center">
+        <div class="w-12 h-12 mx-auto rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+          <i data-lucide="qr-code" class="w-6 h-6"></i>
+        </div>
+        <h3 class="text-lg font-black text-white">Quét Mã VietQR Chuyển Cọc</h3>
+        <p class="text-xs text-slate-400">Khóa giữ chỗ 7 phút. Tiền vào tài khoản sẽ tự động chuyển màu vàng trên sơ đồ nhân viên!</p>
+
+        <div class="bg-white p-4 rounded-2xl shadow-inner inline-block">
+          <img :src="generateVietQRUrl(50000, modals.onlineQR.refCode)" alt="VietQR" class="w-48 h-48 object-contain mx-auto">
+          <div class="mt-2 text-slate-900 font-bold text-xs font-mono">Cọc: 50.000đ &bull; ND: {{ modals.onlineQR.refCode }}</div>
+        </div>
+
+        <div class="space-y-2">
+          <button 
+            @click="simulateWebhookSuccess" 
+            class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-xs font-black text-white shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+            <span>Giả Lập: Tiền Ngân Hàng Đã Vào</span>
+          </button>
+          <button @click="modals.onlineQR.open = false" class="w-full py-2 bg-slate-800 rounded-xl text-xs font-semibold text-slate-300">Đóng</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 6: QR Code Cho Khách Quét -->
+    <div v-if="modals.shareQr.open" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl text-center">
+        <h3 class="text-lg font-black text-white">Mã QR Khách Đặt Sân</h3>
+        <p class="text-xs text-slate-400">Khách dùng Zalo hoặc Camera điện thoại quét mã này để mở ngay màn hình đặt sân:</p>
+        
+        <div class="bg-white p-4 rounded-2xl shadow-inner inline-block">
+          <img :src="shareUrlQr" alt="QR Đặt Sân" class="w-48 h-48 object-contain mx-auto">
+          <div class="mt-2 text-slate-900 font-mono text-[11px] font-bold truncate max-w-[200px]">{{ shareUrl }}</div>
+        </div>
+
+        <button @click="modals.shareQr.open = false" class="w-full py-2.5 bg-slate-800 rounded-xl text-xs font-bold text-slate-200">Đóng</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Realtime Web Application Script -->
+  <script>
+    const { createApp, ref, computed, onMounted } = Vue;
+
+    createApp({
+      setup() {
+        const activeTab = ref('staff');
+        const isOnline = ref(false);
+        const onlineDevices = ref(1);
+        const dailyRevenue = ref(1850000);
+
+        // Pricing Configuration
+        const NORMAL_RATE = 60000;
+        const PEAK_RATE = 90000;
+        const PEAK_HOUR = 17;
+
+        // Default initial courts
+        const courts = ref([
+          {
+            id: 1,
+            name: 'SÂN 1',
+            status: 'AVAILABLE',
+            session: null,
+            reservation: null,
+            fixedSchedule: null
+          },
+          {
+            id: 2,
+            name: 'SÂN 2',
+            status: 'PLAYING',
+            session: {
+              customerName: 'Anh Hoàng (0903.123.456)',
+              checkInTime: new Date(Date.now() - 78 * 60 * 1000).toISOString(),
+              elapsedSeconds: 78 * 60,
+              normalMinutes: 45,
+              peakMinutes: 33,
+              normalFee: 45000,
+              peakFee: 49500,
+              calculatedCourtFee: 94500,
+              services: [
+                { id: 1, name: 'Revive chanh muối', price: 15000, qty: 2 },
+                { id: 3, name: 'Quả cầu Hải Yến', price: 25000, qty: 1 }
+              ]
+            },
+            reservation: null,
+            fixedSchedule: null
+          },
+          {
+            id: 3,
+            name: 'SÂN 3',
+            status: 'RESERVED',
+            session: null,
+            reservation: {
+              customerName: 'Chị Mai',
+              phone: '0912.888.999',
+              startTime: '17:30',
+              endTime: '19:30',
+              deposit: 50000,
+              refCode: 'DATSAN3021'
+            },
+            fixedSchedule: null
+          },
+          {
+            id: 4,
+            name: 'SÂN 4',
+            status: 'FIXED',
+            session: null,
+            reservation: null,
+            fixedSchedule: {
+              groupName: 'CLB Cầu Lông Phong Trào',
+              repName: 'Anh Hùng',
+              phone: '0988.777.666',
+              days: 'Thứ 2 - 4 - 6',
+              startTime: '18:00',
+              endTime: '20:00',
+              paid: true
+            }
+          }
+        ]);
+
+        const products = ref([
+          { id: 1, name: 'Revive chanh muối', unit: 'Chai', price: 15000, stock: 32, minAlert: 5 },
+          { id: 2, name: 'Nước suối Aquafina', unit: 'Chai', price: 10000, stock: 45, minAlert: 10 },
+          { id: 3, name: 'Quả cầu Hải Yến đỏ', unit: 'Quả', price: 25000, stock: 24, minAlert: 6 },
+          { id: 4, name: 'Quấn cán vợt Yonex', unit: 'Cái', price: 20000, stock: 15, minAlert: 3 },
+          { id: 5, name: 'Nước tăng lực Redbull', unit: 'Lon', price: 18000, stock: 20, minAlert: 5 },
+          { id: 6, name: 'Thuê vợt tập Pro', unit: 'Cây/ca', price: 30000, stock: 8, minAlert: 2 }
+        ]);
+
+        const monthlyContracts = ref([
+          {
+            id: 1,
+            courtName: 'SÂN 4',
+            days: 'Thứ 2 - 4 - 6',
+            groupName: 'CLB Cầu Lông Phong Trào',
+            repName: 'Anh Hùng',
+            phone: '0988.777.666',
+            time: '18:00 - 20:00',
+            totalSessions: 13,
+            totalFund: 2340000,
+            paid: true
+          },
+          {
+            id: 2,
+            courtName: 'SÂN 1',
+            days: 'Thứ 3 - 5 - 7',
+            groupName: 'Nhóm Thầy Cô Giáo',
+            repName: 'Cô Lan',
+            phone: '0909.111.222',
+            time: '17:00 - 19:00',
+            totalSessions: 12,
+            totalFund: 2160000,
+            paid: false
+          }
+        ]);
+
+        const customerBooking = ref({
+          date: new Date().toISOString().split('T')[0],
+          courtId: 1,
+          startTime: '18:00',
+          endTime: '20:00',
+          name: '',
+          phone: ''
+        });
+
+        const modals = ref({
+          startPlay: { open: false, court: null, customerName: '', phone: '' },
+          addService: { open: false, court: null },
+          switchCourt: { open: false, court: null },
+          checkout: { open: false, court: null, totalBill: 0 },
+          onlineQR: { open: false, refCode: '', courtId: 1 },
+          shareQr: { open: false }
+        });
+
+        const shareUrl = ref(window.location.origin + '?tab=customer');
+        const shareUrlQr = computed(() => {
+          return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl.value)}`;
+        });
+
+        const playChimeSound = () => {
+          try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.6);
+          } catch(e) {}
+        };
+
+        // Socket.IO Realtime Connection
+        let socket = null;
+        try {
+          if (typeof io !== 'undefined') {
+            socket = io();
+
+            socket.on('connect', () => {
+              isOnline.value = true;
+            });
+
+            socket.on('disconnect', () => {
+              isOnline.value = false;
+            });
+
+            socket.on('online_devices_count', (count) => {
+              onlineDevices.value = count;
+            });
+
+            socket.on('state_sync', (state) => {
+              courts.value = state.courts;
+              products.value = state.products;
+              monthlyContracts.value = state.monthlyContracts;
+              dailyRevenue.value = state.dailyRevenue;
+            });
+
+            socket.on('timer_tick', (updatedCourts) => {
+              courts.value = updatedCourts;
+            });
+
+            socket.on('payment_alert', (info) => {
+              playChimeSound();
+              alert(`🔔 ${info.title}\n${info.message}`);
+            });
+
+            socket.on('court_reopened', (info) => {
+              alert(`🟢 ${info.message}`);
+            });
+          }
+        } catch (e) {
+          console.warn('Chạy ở chế độ local offline');
+        }
+
+        // Local ticker if offline
+        setInterval(() => {
+          if (!isOnline.value) {
+            courts.value.forEach(court => {
+              if (court.status === 'PLAYING' && court.session) {
+                court.session.elapsedSeconds++;
+                const checkIn = new Date(court.session.checkInTime);
+                const now = new Date();
+                let normalMins = 0;
+                let peakMins = 0;
+                let cur = new Date(checkIn);
+
+                while (cur < now) {
+                  if (cur.getHours() >= PEAK_HOUR) {
+                    peakMins++;
+                  } else {
+                    normalMins++;
+                  }
+                  cur.setMinutes(cur.getMinutes() + 1);
+                }
+
+                court.session.normalMinutes = normalMins;
+                court.session.peakMinutes = peakMins;
+                court.session.normalFee = Math.round((normalMins / 60) * NORMAL_RATE);
+                court.session.peakFee = Math.round((peakMins / 60) * PEAK_RATE);
+                court.session.calculatedCourtFee = court.session.normalFee + court.session.peakFee;
+              }
+            });
+          }
+        }, 1000);
+
+        const formatCurrency = (val) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val || 0);
+
+        const formatTimer = (seconds) => {
+          if (!seconds) return '00:00:00';
+          const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+          const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+          const s = (seconds % 60).toString().padStart(2, '0');
+          return `${h}:${m}:${s}`;
+        };
+
+        const formatTime = (dateStr) => {
+          if (!dateStr) return '--:--';
+          const d = new Date(dateStr);
+          return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+        };
+
+        const getStatusLabel = (st) => {
+          switch (st) {
+            case 'AVAILABLE': return 'Sân Trống';
+            case 'PLAYING': return 'Đang Chơi';
+            case 'RESERVED': return 'Đã Đặt';
+            case 'FIXED': return 'Cố Định Tháng';
+            default: return st;
+          }
+        };
+
+        const calculateServiceTotal = (items) => {
+          if (!items) return 0;
+          return items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        };
+
+        const availableCourtsForSwitch = computed(() => courts.value.filter(c => c.status === 'AVAILABLE'));
+
+        const openStartPlayModal = (court) => {
+          modals.value.startPlay.court = court;
+          modals.value.startPlay.customerName = '';
+          modals.value.startPlay.phone = '';
+          modals.value.startPlay.open = true;
+        };
+
+        const confirmStartPlay = () => {
+          const court = modals.value.startPlay.court;
+          if (socket && isOnline.value) {
+            socket.emit('court_start_play', {
+              courtId: court.id,
+              customerName: modals.value.startPlay.customerName,
+              phone: modals.value.startPlay.phone
+            });
+          } else {
+            court.status = 'PLAYING';
+            court.session = {
+              customerName: modals.value.startPlay.customerName || 'Khách vãng lai',
+              phone: modals.value.startPlay.phone || '',
+              checkInTime: new Date().toISOString(),
+              elapsedSeconds: 0,
+              normalMinutes: 0,
+              peakMinutes: 0,
+              normalFee: 0,
+              peakFee: 0,
+              calculatedCourtFee: 0,
+              services: []
+            };
+          }
+          modals.value.startPlay.open = false;
+        };
+
+        const openAddServiceModal = (court) => {
+          modals.value.addService.court = court;
+          modals.value.addService.open = true;
+        };
+
+        const addServiceItemToCourt = (product) => {
+          if (product.stock <= 0) {
+            alert('Mặt hàng này đã hết trong kho!');
+            return;
+          }
+          const court = modals.value.addService.court;
+          if (socket && isOnline.value) {
+            socket.emit('court_add_service', {
+              courtId: court.id,
+              productId: product.id
+            });
+          } else {
+            if (!court.session.services) court.session.services = [];
+            const existing = court.session.services.find(s => s.id === product.id);
+            if (existing) {
+              existing.qty++;
+            } else {
+              court.session.services.push({
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                qty: 1
+              });
+            }
+            product.stock--;
+          }
+        };
+
+        const openSwitchCourtModal = (court) => {
+          modals.value.switchCourt.court = court;
+          modals.value.switchCourt.open = true;
+        };
+
+        const confirmSwitchCourt = (targetCourtId) => {
+          const sourceCourt = modals.value.switchCourt.court;
+          if (socket && isOnline.value) {
+            socket.emit('court_switch', {
+              sourceCourtId: sourceCourt.id,
+              targetCourtId: targetCourtId
+            });
+          } else {
+            const target = courts.value.find(c => c.id === targetCourtId);
+            target.status = 'PLAYING';
+            target.session = sourceCourt.session;
+            sourceCourt.status = 'AVAILABLE';
+            sourceCourt.session = null;
+          }
+          modals.value.switchCourt.open = false;
+        };
+
+        const triggerCheckout = (court) => {
+          const serviceTotal = calculateServiceTotal(court.session.services);
+          const total = (court.session.calculatedCourtFee || 0) + serviceTotal;
+          modals.value.checkout.court = court;
+          modals.value.checkout.totalBill = total;
+          modals.value.checkout.open = true;
+        };
+
+        const finishCheckout = (court) => {
+          if (socket && isOnline.value) {
+            socket.emit('court_checkout', { courtId: court.id });
+          } else {
+            dailyRevenue.value += modals.value.checkout.totalBill;
+            court.status = 'AVAILABLE';
+            court.session = null;
+            court.reservation = null;
+          }
+          modals.value.checkout.open = false;
+        };
+
+        const printReceipt = () => {
+          window.print();
+        };
+
+        const checkInReservation = (court) => {
+          if (socket && isOnline.value) {
+            socket.emit('court_checkin_reserved', { courtId: court.id });
+          } else {
+            court.status = 'PLAYING';
+            court.session = {
+              customerName: court.reservation ? court.reservation.customerName : 'Khách đặt trước',
+              phone: court.reservation ? court.reservation.phone : '',
+              checkInTime: new Date().toISOString(),
+              elapsedSeconds: 0,
+              normalMinutes: 0,
+              peakMinutes: 0,
+              normalFee: 0,
+              peakFee: 0,
+              calculatedCourtFee: 0,
+              services: []
+            };
+            court.reservation = null;
+          }
+        };
+
+        const cancelSingleSession = (court) => {
+          if (confirm('Khách quen báo nghỉ buổi hôm nay? Hệ thống sẽ mở lại Sân Trống 🟢 để vợt khách online!')) {
+            if (socket && isOnline.value) {
+              socket.emit('court_cancel_single_session', { courtId: court.id });
+            } else {
+              court.status = 'AVAILABLE';
+              alert('Đã mở lại sân trống thành công!');
+            }
+          }
+        };
+
+        const cancelSingleSessionFromContract = (contract) => {
+          const target = courts.value.find(c => c.name === contract.courtName);
+          if (target) {
+            cancelSingleSession(target);
+          }
+        };
+
+        const toggleContractPayment = (contract) => {
+          if (socket && isOnline.value) {
+            socket.emit('contract_toggle_paid', { contractId: contract.id });
+          } else {
+            contract.paid = !contract.paid;
+          }
+        };
+
+        const submitOnlineBooking = () => {
+          if (!customerBooking.value.name || !customerBooking.value.phone) {
+            alert('Vui lòng nhập Họ tên và Số điện thoại!');
+            return;
+          }
+          const refCode = 'DS' + customerBooking.value.courtId + '-' + Math.floor(1000 + Math.random() * 9000);
+          modals.value.onlineQR.refCode = refCode;
+          modals.value.onlineQR.courtId = customerBooking.value.courtId;
+          modals.value.onlineQR.open = true;
+        };
+
+        const simulateWebhookSuccess = () => {
+          if (socket && isOnline.value) {
+            socket.emit('online_booking', {
+              courtId: customerBooking.value.courtId,
+              name: customerBooking.value.name,
+              phone: customerBooking.value.phone,
+              startTime: customerBooking.value.startTime,
+              endTime: customerBooking.value.endTime,
+              refCode: modals.value.onlineQR.refCode
+            });
+          } else {
+            const court = courts.value.find(c => c.id === customerBooking.value.courtId);
+            court.status = 'RESERVED';
+            court.reservation = {
+              customerName: customerBooking.value.name,
+              phone: customerBooking.value.phone,
+              startTime: customerBooking.value.startTime,
+              endTime: customerBooking.value.endTime,
+              deposit: 50000,
+              refCode: modals.value.onlineQR.refCode
+            };
+            activeTab.value = 'staff';
+          }
+          modals.value.onlineQR.open = false;
+        };
+
+        const generateVietQRUrl = (amount, memo) => {
+          const bankId = 'MB';
+          const accountNo = '0988776655';
+          return `https://img.vietqr.io/image/${bankId}-${accountNo}-compact.png?amount=${amount}&addInfo=${encodeURIComponent(memo)}&accountName=SAN%20CAU%20LONG%20THANG%20PRO`;
+        };
+
+        const adjustStock = (product, amount) => {
+          if (socket && isOnline.value) {
+            socket.emit('inventory_adjust', {
+              productId: product.id,
+              amount: amount
+            });
+          } else {
+            product.stock = Math.max(0, product.stock + amount);
+          }
+        };
+
+        const openShareQrModal = () => {
+          modals.value.shareQr.open = true;
+        };
+
+        onMounted(() => {
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('tab') === 'customer') {
+            activeTab.value = 'customer';
+          }
+
+          lucide.createIcons();
+          setInterval(() => {
+            lucide.createIcons();
+          }, 1500);
+        });
+
+        return {
+          activeTab,
+          isOnline,
+          onlineDevices,
+          dailyRevenue,
+          courts,
+          products,
+          monthlyContracts,
+          customerBooking,
+          modals,
+          shareUrl,
+          shareUrlQr,
+          formatCurrency,
+          formatTimer,
+          formatTime,
+          getStatusLabel,
+          calculateServiceTotal,
+          availableCourtsForSwitch,
+          openStartPlayModal,
+          confirmStartPlay,
+          openAddServiceModal,
+          addServiceItemToCourt,
+          openSwitchCourtModal,
+          confirmSwitchCourt,
+          triggerCheckout,
+          finishCheckout,
+          printReceipt,
+          checkInReservation,
+          cancelSingleSession,
+          cancelSingleSessionFromContract,
+          toggleContractPayment,
+          submitOnlineBooking,
+          simulateWebhookSuccess,
+          generateVietQRUrl,
+          adjustStock,
+          openShareQrModal
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

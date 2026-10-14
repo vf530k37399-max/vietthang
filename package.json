@@ -1,0 +1,23 @@
+{
+  "name": "badminton-court-management",
+  "version": "1.0.0",
+  "description": "Hệ thống Quản lý Sân Cầu Lông Sân 1 - Sân 4 chạy nền Web Thời Gian Thực (Real-time Web)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  },
+  "keywords": [
+    "badminton",
+    "pos",
+    "realtime",
+    "vietqr"
+  ],
+  "author": "Viet Thang Pro",
+  "license": "MIT"
+}
