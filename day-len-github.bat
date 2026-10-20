@@ -15,6 +15,7 @@ echo [1/4] Dong bo giao dien cac thu muc...
 if exist index.html (
     copy /y index.html public\index.html >nul
 )
+copy /y "%~f0" "%USERPROFILE%\Desktop\DAY-LEN-GITHUB.bat" >nul 2>&1
 
 echo [2/4] Kiem tra cac thay doi moi nhat...
 git add -A
