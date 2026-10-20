@@ -1052,12 +1052,12 @@
                 <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
               </div>
               <div class="text-xl sm:text-2xl font-black text-white mt-1">
-                {{ formatCurrency(accountingSummary.totalCourtFee) }}
+                {{ formatCurrency(accountingSummary?.totalCourtFee || 0) }}
               </div>
             </div>
             <div class="pt-3 mt-2 border-t border-slate-800 text-[11px] text-slate-400 flex justify-between">
               <span>Số lượt trả sân:</span>
-              <strong class="text-slate-200">{{ accountingSummary.courtCount }} lượt</strong>
+              <strong class="text-slate-200">{{ accountingSummary?.courtCount || 0 }} lượt</strong>
             </div>
           </div>
 
@@ -1069,12 +1069,12 @@
                 <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
               </div>
               <div class="text-xl sm:text-2xl font-black text-amber-400 mt-1">
-                +{{ formatCurrency(accountingSummary.totalShopProfit) }}
+                +{{ formatCurrency(accountingSummary?.totalShopProfit || 0) }}
               </div>
             </div>
             <div class="pt-3 mt-2 border-t border-slate-800 text-[11px] text-slate-400 flex justify-between">
-              <span>Bán ra: {{ formatCurrency(accountingSummary.totalShopRevenue) }}</span>
-              <span>Vốn: {{ formatCurrency(accountingSummary.totalShopCost) }}</span>
+              <span>Bán ra: {{ formatCurrency(accountingSummary?.totalShopRevenue || 0) }}</span>
+              <span>Vốn: {{ formatCurrency(accountingSummary?.totalShopCost || 0) }}</span>
             </div>
           </div>
 
@@ -1086,12 +1086,12 @@
                 <span class="w-2 h-2 rounded-full bg-rose-400"></span>
               </div>
               <div class="text-xl sm:text-2xl font-black text-rose-400 mt-1">
-                -{{ formatCurrency(accountingSummary.totalMaintenanceExpense) }}
+                -{{ formatCurrency(accountingSummary?.totalMaintenanceExpense || 0) }}
               </div>
             </div>
             <div class="pt-3 mt-2 border-t border-slate-800 text-[11px] text-slate-400 flex justify-between">
               <span>Số phiếu chi:</span>
-              <strong class="text-rose-300">{{ accountingSummary.expenseCount }} khoản chi</strong>
+              <strong class="text-rose-300">{{ accountingSummary?.expenseCount || 0 }} khoản chi</strong>
             </div>
           </div>
 
@@ -1103,7 +1103,7 @@
                 <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
               </div>
               <div class="text-xl sm:text-2xl font-black text-emerald-400 mt-1">
-                {{ formatCurrency(accountingSummary.netProfit) }}
+                {{ formatCurrency(accountingSummary?.netProfit || 0) }}
               </div>
             </div>
             <div class="pt-3 mt-2 border-t border-slate-800 text-[10px] text-slate-400 truncate">
@@ -1120,7 +1120,7 @@
             </div>
             <div>
               <span class="text-xs text-slate-400 block font-semibold">Tiền Mặt Thu Tại Quầy:</span>
-              <strong class="text-base sm:text-lg font-black text-white font-mono">{{ formatCurrency(accountingSummary.totalCash) }}</strong>
+              <strong class="text-base sm:text-lg font-black text-white font-mono">{{ formatCurrency(accountingSummary?.totalCash || 0) }}</strong>
             </div>
           </div>
 
@@ -1130,7 +1130,7 @@
             </div>
             <div>
               <span class="text-xs text-slate-400 block font-semibold">Chuyển Khoản VietQR (Ngân Hàng):</span>
-              <strong class="text-base sm:text-lg font-black text-cyan-400 font-mono">{{ formatCurrency(accountingSummary.totalVietQR) }}</strong>
+              <strong class="text-base sm:text-lg font-black text-cyan-400 font-mono">{{ formatCurrency(accountingSummary?.totalVietQR || 0) }}</strong>
             </div>
           </div>
 
@@ -1152,11 +1152,11 @@
             <div class="flex justify-between items-center flex-wrap gap-2">
               <h3 class="text-base font-black text-white flex items-center gap-2">
                 <i data-lucide="receipt" class="w-4 h-4 text-emerald-400"></i>
-                Nhật Ký Các Lượt Trả Sân & Thu Tiền ({{ filteredAccountingRecords.length }} lượt)
+                Nhật Ký Các Lượt Trả Sân & Thu Tiền ({{ (filteredAccountingRecords || []).length }} lượt)
               </h3>
             </div>
 
-            <div v-if="filteredAccountingRecords.length === 0" class="text-center py-8 text-xs text-slate-500">
+            <div v-if="!filteredAccountingRecords || filteredAccountingRecords.length === 0" class="text-center py-8 text-xs text-slate-500">
               Chưa có lượt thanh toán nào trong khung thời gian này.
             </div>
 
@@ -1167,29 +1167,29 @@
                 class="bg-slate-950 p-3.5 sm:p-4 rounded-2xl border border-slate-800/90 flex flex-wrap items-center justify-between gap-3 text-xs">
                 <div class="flex items-center gap-3">
                   <span class="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center font-black text-amber-400 text-xs">
-                    {{ rec.courtName ? rec.courtName.replace('SÂN ', 'S') : 'S' }}
+                    {{ String(rec?.courtName || 'S').replace('SÂN ', 'S') }}
                   </span>
                   <div>
                     <div class="flex items-center gap-2">
-                      <strong class="text-white text-sm">{{ rec.courtName }}</strong>
-                      <span class="text-slate-400">&bull; {{ rec.customerName || 'Vãng lai' }}</span>
+                      <strong class="text-white text-sm">{{ rec?.courtName || 'Sân' }}</strong>
+                      <span class="text-slate-400">&bull; {{ rec?.customerName || 'Vãng lai' }}</span>
                       <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                        :class="rec.shift === 'MORNING' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'">
-                        {{ rec.shift === 'MORNING' ? '☀️ Ca Sáng' : '🌙 Ca Chiều/Tối' }}
+                        :class="rec?.shift === 'MORNING' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'">
+                        {{ rec?.shift === 'MORNING' ? '☀️ Ca Sáng' : '🌙 Ca Chiều/Tối' }}
                       </span>
                     </div>
                     <p class="text-[11px] text-slate-400 mt-0.5">
-                      Giờ ra: <span class="font-mono text-slate-300">{{ formatTime(rec.timestamp) }}</span> &bull; 
-                      Thu ngân: <span class="text-slate-300">{{ rec.staffName }}</span> &bull;
-                      Hình thức: <strong :class="rec.paymentMethod === 'VIETQR' ? 'text-cyan-400' : 'text-emerald-400'">{{ rec.paymentMethod === 'VIETQR' ? 'VietQR' : 'Tiền mặt' }}</strong>
+                      Giờ ra: <span class="font-mono text-slate-300">{{ formatTime(rec?.timestamp) }}</span> &bull; 
+                      Thu ngân: <span class="text-slate-300">{{ rec?.staffName || 'Nhân viên' }}</span> &bull;
+                      Hình thức: <strong :class="rec?.paymentMethod === 'VIETQR' ? 'text-cyan-400' : 'text-emerald-400'">{{ rec?.paymentMethod === 'VIETQR' ? 'VietQR' : 'Tiền mặt' }}</strong>
                     </p>
                   </div>
                 </div>
 
                 <div class="text-right flex items-center gap-4">
                   <div>
-                    <span class="text-slate-400 block text-[11px]">Sân: {{ formatCurrency(rec.courtFee) }} + Nước: {{ formatCurrency(rec.servicesRevenue) }}</span>
-                    <strong class="text-sm sm:text-base font-black text-emerald-400 font-mono">{{ formatCurrency(rec.totalBill) }}</strong>
+                    <span class="text-slate-400 block text-[11px]">Sân: {{ formatCurrency(rec?.courtFee || 0) }} + Nước: {{ formatCurrency(rec?.servicesRevenue || 0) }}</span>
+                    <strong class="text-sm sm:text-base font-black text-emerald-400 font-mono">{{ formatCurrency(rec?.totalBill || 0) }}</strong>
                   </div>
                 </div>
               </div>
@@ -1224,7 +1224,7 @@
                     <td class="py-3 px-3 font-mono text-slate-400">{{ formatCurrency(item.cost) }}</td>
                     <td class="py-3 px-3 text-right font-mono font-black text-amber-400">+{{ formatCurrency(item.profit) }}</td>
                   </tr>
-                  <tr v-if="shopProfitReport.length === 0">
+                  <tr v-if="!shopProfitReport || shopProfitReport.length === 0">
                     <td colspan="5" class="py-6 text-center text-slate-500">Chưa bán mặt hàng nào trong thời gian này</td>
                   </tr>
                 </tbody>
@@ -1250,7 +1250,7 @@
               </button>
             </div>
 
-            <div v-if="filteredExpenses.length === 0" class="text-center py-8 text-xs text-slate-500">
+            <div v-if="!filteredExpenses || filteredExpenses.length === 0" class="text-center py-8 text-xs text-slate-500">
               Không có khoản chi phí bảo trì nào trong thời gian này.
             </div>
 
@@ -1265,16 +1265,16 @@
                   </div>
                   <div>
                     <div class="flex items-center gap-2">
-                      <strong class="text-white text-sm">{{ exp.category }}</strong>
-                      <span class="text-slate-500 text-[11px]">&bull; {{ formatTime(exp.timestamp) }}</span>
+                      <strong class="text-white text-sm">{{ exp?.category || 'Chi phí' }}</strong>
+                      <span class="text-slate-500 text-[11px]">&bull; {{ formatTime(exp?.timestamp) }}</span>
                     </div>
-                    <p class="text-slate-400 text-xs mt-0.5">{{ exp.note || 'Không có ghi chú' }}</p>
-                    <span class="text-[10px] text-slate-500">Người chi: {{ exp.staffName }}</span>
+                    <p class="text-slate-400 text-xs mt-0.5">{{ exp?.note || 'Không có ghi chú' }}</p>
+                    <span class="text-[10px] text-slate-500">Người chi: {{ exp?.staffName || 'Nhân viên' }}</span>
                   </div>
                 </div>
 
                 <div class="flex items-center gap-3">
-                  <span class="font-mono font-black text-sm text-rose-400">-{{ formatCurrency(exp.amount) }}</span>
+                  <span class="font-mono font-black text-sm text-rose-400">-{{ formatCurrency(exp?.amount || 0) }}</span>
                   <button @click="deleteExpense(exp)" class="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-400" title="Xóa">
                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                   </button>
@@ -2255,205 +2255,250 @@
         });
 
         // Sample Accounting & Expense Data
-        const sampleAccountingRecords = [
-          {
-            id: 1713401000000,
-            courtId: 1,
-            courtName: 'SÂN 1',
-            customerName: 'Anh Tuấn',
-            checkInTime: new Date(new Date().setHours(8, 0, 0, 0)).toISOString(),
-            checkOutTime: new Date(new Date().setHours(9, 30, 0, 0)).toISOString(),
-            timestamp: new Date(new Date().setHours(9, 30, 0, 0)).toISOString(),
-            courtFee: 120000,
-            servicesRevenue: 30000,
-            servicesCost: 13000,
-            servicesProfit: 17000,
-            services: [
-              { id: 2, name: 'Nước suối Aquafina', qty: 2, price: 10000, costPrice: 4000 },
-              { id: 1, name: 'Revive chanh muối', qty: 1, price: 15000, costPrice: 9000 }
-            ],
-            totalBill: 150000,
-            paymentMethod: 'CASH',
-            shift: 'MORNING',
-            staffName: 'Nhân Viên Ca Sáng'
-          },
-          {
-            id: 1713404600000,
-            courtId: 2,
-            courtName: 'SÂN 2',
-            customerName: 'CLB Cầu Lông Trẻ',
-            checkInTime: new Date(new Date().setHours(9, 0, 0, 0)).toISOString(),
-            checkOutTime: new Date(new Date().setHours(11, 0, 0, 0)).toISOString(),
-            timestamp: new Date(new Date().setHours(11, 0, 0, 0)).toISOString(),
-            courtFee: 160000,
-            servicesRevenue: 50000,
-            servicesCost: 36000,
-            servicesProfit: 14000,
-            services: [
-              { id: 3, name: 'Quả cầu Hải Yến đỏ', qty: 2, price: 25000, costPrice: 18000 }
-            ],
-            totalBill: 210000,
-            paymentMethod: 'VIETQR',
-            shift: 'MORNING',
-            staffName: 'Nhân Viên Ca Sáng'
-          },
-          {
-            id: 1713406400000,
-            courtId: 3,
-            courtName: 'SÂN 3',
-            customerName: 'Chị Mai',
-            checkInTime: new Date(new Date().setHours(9, 30, 0, 0)).toISOString(),
-            checkOutTime: new Date(new Date().setHours(11, 30, 0, 0)).toISOString(),
-            timestamp: new Date(new Date().setHours(11, 30, 0, 0)).toISOString(),
-            courtFee: 160000,
-            servicesRevenue: 36000,
-            servicesCost: 22000,
-            servicesProfit: 14000,
-            services: [
-              { id: 6, name: 'Nước tăng lực Redbull', qty: 2, price: 18000, costPrice: 11000 }
-            ],
-            totalBill: 196000,
-            paymentMethod: 'CASH',
-            shift: 'MORNING',
-            staffName: 'Nhân Viên Ca Sáng'
-          }
-        ];
+        // Dynamic Sample Accounting & Expense Data
+        const getInitialAccountingRecords = () => {
+          const now = new Date();
+          const y = now.getFullYear();
+          const m = now.getMonth();
+          const d = now.getDate();
+          return [
+            {
+              id: 1713401000001,
+              courtId: 1,
+              courtName: 'SÂN 1',
+              customerName: 'Anh Tuấn',
+              checkInTime: new Date(y, m, d, 8, 0, 0).toISOString(),
+              checkOutTime: new Date(y, m, d, 9, 30, 0).toISOString(),
+              timestamp: new Date(y, m, d, 9, 30, 0).toISOString(),
+              courtFee: 120000,
+              servicesRevenue: 30000,
+              servicesCost: 13000,
+              servicesProfit: 17000,
+              services: [
+                { id: 2, name: 'Nước suối Aquafina', qty: 2, price: 10000, costPrice: 4000 },
+                { id: 1, name: 'Revive chanh muối', qty: 1, price: 15000, costPrice: 9000 }
+              ],
+              totalBill: 150000,
+              paymentMethod: 'CASH',
+              shift: 'MORNING',
+              staffName: 'Nhân Viên Ca Sáng'
+            },
+            {
+              id: 1713404600002,
+              courtId: 2,
+              courtName: 'SÂN 2',
+              customerName: 'CLB Cầu Lông Trẻ',
+              checkInTime: new Date(y, m, d, 9, 0, 0).toISOString(),
+              checkOutTime: new Date(y, m, d, 11, 0, 0).toISOString(),
+              timestamp: new Date(y, m, d, 11, 0, 0).toISOString(),
+              courtFee: 160000,
+              servicesRevenue: 50000,
+              servicesCost: 36000,
+              servicesProfit: 14000,
+              services: [
+                { id: 3, name: 'Quả cầu Hải Yến đỏ', qty: 2, price: 25000, costPrice: 18000 }
+              ],
+              totalBill: 210000,
+              paymentMethod: 'VIETQR',
+              shift: 'MORNING',
+              staffName: 'Nhân Viên Ca Sáng'
+            },
+            {
+              id: 1713406400003,
+              courtId: 3,
+              courtName: 'SÂN 3',
+              customerName: 'Chị Mai',
+              checkInTime: new Date(y, m, d, 9, 30, 0).toISOString(),
+              checkOutTime: new Date(y, m, d, 11, 30, 0).toISOString(),
+              timestamp: new Date(y, m, d, 11, 30, 0).toISOString(),
+              courtFee: 160000,
+              servicesRevenue: 36000,
+              servicesCost: 22000,
+              servicesProfit: 14000,
+              services: [
+                { id: 6, name: 'Nước tăng lực Redbull', qty: 2, price: 18000, costPrice: 11000 }
+              ],
+              totalBill: 196000,
+              paymentMethod: 'CASH',
+              shift: 'MORNING',
+              staffName: 'Nhân Viên Ca Sáng'
+            }
+          ];
+        };
 
-        const sampleMaintenanceExpenses = [
-          {
-            id: 1,
-            category: 'Sửa chữa điện & Đèn LED',
-            amount: 150000,
-            note: 'Thay 1 bóng đèn LED 150W sân 3 bị chớp',
-            shift: 'MORNING',
-            staffName: 'Nhân Viên Ca Sáng',
-            timestamp: new Date(new Date().setHours(8, 30, 0, 0)).toISOString()
-          },
-          {
-            id: 2,
-            category: 'Vệ sinh & Dụng cụ lau sân',
-            amount: 70000,
-            note: 'Mua nước lau sàn Sunlight & giẻ lau mồ hôi sân',
-            shift: 'MORNING',
-            staffName: 'Nhân Viên Ca Sáng',
-            timestamp: new Date(new Date().setHours(10, 15, 0, 0)).toISOString()
-          }
-        ];
+        const getInitialMaintenanceExpenses = () => {
+          const now = new Date();
+          const y = now.getFullYear();
+          const m = now.getMonth();
+          const d = now.getDate();
+          return [
+            {
+              id: 1,
+              category: 'Sửa chữa điện & Đèn LED',
+              amount: 150000,
+              note: 'Thay 1 bóng đèn LED 150W sân 3 bị chớp',
+              shift: 'MORNING',
+              staffName: 'Nhân Viên Ca Sáng',
+              timestamp: new Date(y, m, d, 8, 30, 0).toISOString()
+            },
+            {
+              id: 2,
+              category: 'Vệ sinh & Dụng cụ lau sân',
+              amount: 70000,
+              note: 'Mua nước lau sàn Sunlight & giẻ lau mồ hôi sân',
+              shift: 'MORNING',
+              staffName: 'Nhân Viên Ca Sáng',
+              timestamp: new Date(y, m, d, 10, 15, 0).toISOString()
+            }
+          ];
+        };
 
-        const accountingRecords = ref(sampleAccountingRecords);
-        const maintenanceExpenses = ref(sampleMaintenanceExpenses);
+        const accountingRecords = ref(getInitialAccountingRecords());
+        const maintenanceExpenses = ref(getInitialMaintenanceExpenses());
         const accountingFilter = ref('TODAY');
 
         const filteredAccountingRecords = computed(() => {
-          const now = new Date();
-          const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-          const sevenDaysAgo = startOfToday - 7 * 24 * 60 * 60 * 1000;
+          try {
+            const now = new Date();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            const sevenDaysAgo = startOfToday - 7 * 24 * 60 * 60 * 1000;
 
-          return accountingRecords.value.filter(rec => {
-            const recTime = new Date(rec.timestamp).getTime();
-            if (accountingFilter.value === 'ALL') return true;
-            if (accountingFilter.value === 'WEEK') return recTime >= sevenDaysAgo;
-            
-            const isToday = recTime >= startOfToday;
-            if (!isToday) return false;
-            
-            if (accountingFilter.value === 'TODAY') return true;
-            if (accountingFilter.value === 'MORNING') return rec.shift === 'MORNING';
-            if (accountingFilter.value === 'AFTERNOON') return rec.shift === 'AFTERNOON';
-            return true;
-          }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            const list = Array.isArray(accountingRecords.value) ? accountingRecords.value : [];
+            return list.filter(rec => {
+              if (!rec) return false;
+              const recTime = rec.timestamp ? new Date(rec.timestamp).getTime() : 0;
+              if (accountingFilter.value === 'ALL') return true;
+              if (accountingFilter.value === 'WEEK') return recTime >= sevenDaysAgo;
+              
+              const isToday = recTime >= startOfToday;
+              if (!isToday) return false;
+              
+              if (accountingFilter.value === 'TODAY') return true;
+              if (accountingFilter.value === 'MORNING') return rec.shift === 'MORNING';
+              if (accountingFilter.value === 'AFTERNOON') return rec.shift === 'AFTERNOON';
+              return true;
+            }).sort((a, b) => {
+              const timeA = a?.timestamp ? new Date(a.timestamp).getTime() : 0;
+              const timeB = b?.timestamp ? new Date(b.timestamp).getTime() : 0;
+              return timeB - timeA;
+            });
+          } catch(err) {
+            console.error('Lỗi filter accounting records:', err);
+            return [];
+          }
         });
 
         const filteredExpenses = computed(() => {
-          const now = new Date();
-          const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-          const sevenDaysAgo = startOfToday - 7 * 24 * 60 * 60 * 1000;
+          try {
+            const now = new Date();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            const sevenDaysAgo = startOfToday - 7 * 24 * 60 * 60 * 1000;
 
-          return maintenanceExpenses.value.filter(exp => {
-            const expTime = new Date(exp.timestamp).getTime();
-            if (accountingFilter.value === 'ALL') return true;
-            if (accountingFilter.value === 'WEEK') return expTime >= sevenDaysAgo;
-            
-            const isToday = expTime >= startOfToday;
-            if (!isToday) return false;
+            const list = Array.isArray(maintenanceExpenses.value) ? maintenanceExpenses.value : [];
+            return list.filter(exp => {
+              if (!exp) return false;
+              const expTime = exp.timestamp ? new Date(exp.timestamp).getTime() : 0;
+              if (accountingFilter.value === 'ALL') return true;
+              if (accountingFilter.value === 'WEEK') return expTime >= sevenDaysAgo;
+              
+              const isToday = expTime >= startOfToday;
+              if (!isToday) return false;
 
-            if (accountingFilter.value === 'TODAY') return true;
-            if (accountingFilter.value === 'MORNING') return exp.shift === 'MORNING';
-            if (accountingFilter.value === 'AFTERNOON') return exp.shift === 'AFTERNOON';
-            return true;
-          }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+              if (accountingFilter.value === 'TODAY') return true;
+              if (accountingFilter.value === 'MORNING') return exp.shift === 'MORNING';
+              if (accountingFilter.value === 'AFTERNOON') return exp.shift === 'AFTERNOON';
+              return true;
+            }).sort((a, b) => {
+              const timeA = a?.timestamp ? new Date(a.timestamp).getTime() : 0;
+              const timeB = b?.timestamp ? new Date(b.timestamp).getTime() : 0;
+              return timeB - timeA;
+            });
+          } catch(err) {
+            console.error('Lỗi filter expenses:', err);
+            return [];
+          }
         });
 
         const accountingSummary = computed(() => {
-          let totalCourtFee = 0;
-          let courtCount = 0;
-          let totalShopRevenue = 0;
-          let totalShopCost = 0;
-          let totalCash = 0;
-          let totalVietQR = 0;
-
-          filteredAccountingRecords.value.forEach(rec => {
-            courtCount++;
-            totalCourtFee += (rec.courtFee || 0);
-            totalShopRevenue += (rec.servicesRevenue || 0);
-            totalShopCost += (rec.servicesCost || 0);
-            if (rec.paymentMethod === 'VIETQR') {
-              totalVietQR += (rec.totalBill || 0);
-            } else {
-              totalCash += (rec.totalBill || 0);
-            }
-          });
-
-          const totalShopProfit = totalShopRevenue - totalShopCost;
-
-          let totalMaintenanceExpense = 0;
-          let expenseCount = 0;
-          filteredExpenses.value.forEach(exp => {
-            expenseCount++;
-            totalMaintenanceExpense += (exp.amount || 0);
-          });
-
-          const netProfit = totalCourtFee + totalShopProfit - totalMaintenanceExpense;
-
-          return {
-            totalCourtFee,
-            courtCount,
-            totalShopRevenue,
-            totalShopCost,
-            totalShopProfit,
-            totalCash,
-            totalVietQR,
-            totalMaintenanceExpense,
-            expenseCount,
-            netProfit
+          const res = {
+            totalCourtFee: 0,
+            courtCount: 0,
+            totalShopRevenue: 0,
+            totalShopCost: 0,
+            totalShopProfit: 0,
+            totalCash: 0,
+            totalVietQR: 0,
+            totalMaintenanceExpense: 0,
+            expenseCount: 0,
+            netProfit: 0
           };
+
+          try {
+            const records = Array.isArray(filteredAccountingRecords.value) ? filteredAccountingRecords.value : [];
+            records.forEach(rec => {
+              if (!rec) return;
+              res.courtCount++;
+              res.totalCourtFee += (Number(rec.courtFee) || 0);
+              res.totalShopRevenue += (Number(rec.servicesRevenue) || 0);
+              res.totalShopCost += (Number(rec.servicesCost) || 0);
+              const bill = Number(rec.totalBill) || ((Number(rec.courtFee) || 0) + (Number(rec.servicesRevenue) || 0));
+              if (rec.paymentMethod === 'VIETQR') {
+                res.totalVietQR += bill;
+              } else {
+                res.totalCash += bill;
+              }
+            });
+
+            res.totalShopProfit = res.totalShopRevenue - res.totalShopCost;
+
+            const expenses = Array.isArray(filteredExpenses.value) ? filteredExpenses.value : [];
+            expenses.forEach(exp => {
+              if (!exp) return;
+              res.expenseCount++;
+              res.totalMaintenanceExpense += (Number(exp.amount) || 0);
+            });
+
+            res.netProfit = res.totalCourtFee + res.totalShopProfit - res.totalMaintenanceExpense;
+          } catch(err) {
+            console.error('Lỗi tính accountingSummary:', err);
+          }
+
+          return res;
         });
 
         const shopProfitReport = computed(() => {
           const map = {};
-          filteredAccountingRecords.value.forEach(rec => {
-            if (rec.services && Array.isArray(rec.services)) {
-              rec.services.forEach(item => {
-                if (!map[item.name]) {
-                  map[item.name] = {
-                    name: item.name,
-                    qtySold: 0,
-                    revenue: 0,
-                    cost: 0,
-                    profit: 0
-                  };
-                }
-                const itemQty = item.qty || 1;
-                const itemRev = itemQty * (item.price || 0);
-                const itemCost = itemQty * (item.costPrice !== undefined ? item.costPrice : Math.round((item.price || 0) * 0.6));
-                map[item.name].qtySold += itemQty;
-                map[item.name].revenue += itemRev;
-                map[item.name].cost += itemCost;
-                map[item.name].profit += (itemRev - itemCost);
-              });
-            }
-          });
-          return Object.values(map).sort((a, b) => b.profit - a.profit);
+          try {
+            const records = Array.isArray(filteredAccountingRecords.value) ? filteredAccountingRecords.value : [];
+            records.forEach(rec => {
+              if (rec && rec.services && Array.isArray(rec.services)) {
+                rec.services.forEach(item => {
+                  if (!item || !item.name) return;
+                  if (!map[item.name]) {
+                    map[item.name] = {
+                      name: item.name,
+                      qtySold: 0,
+                      revenue: 0,
+                      cost: 0,
+                      profit: 0
+                    };
+                  }
+                  const itemQty = Number(item.qty) || 1;
+                  const itemPrice = Number(item.price) || 0;
+                  const itemCostPrice = item.costPrice !== undefined ? Number(item.costPrice) : Math.round(itemPrice * 0.6);
+                  const itemRev = itemQty * itemPrice;
+                  const itemCost = itemQty * itemCostPrice;
+                  map[item.name].qtySold += itemQty;
+                  map[item.name].revenue += itemRev;
+                  map[item.name].cost += itemCost;
+                  map[item.name].profit += (itemRev - itemCost);
+                });
+              }
+            });
+          } catch(err) {
+            console.error('Lỗi tính shopProfitReport:', err);
+          }
+          return Object.values(map).sort((a, b) => (b.profit || 0) - (a.profit || 0));
         });
 
         const shareUrl = ref(window.location.origin + window.location.pathname + '?tab=customer');
@@ -2511,12 +2556,34 @@
 
             const savedRecords = localStorage.getItem('badminton_accountingRecords');
             if (savedRecords) {
-              accountingRecords.value = JSON.parse(savedRecords);
+              try {
+                const parsed = JSON.parse(savedRecords);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                  accountingRecords.value = parsed;
+                } else {
+                  accountingRecords.value = getInitialAccountingRecords();
+                }
+              } catch(e) {
+                accountingRecords.value = getInitialAccountingRecords();
+              }
+            } else {
+              accountingRecords.value = getInitialAccountingRecords();
             }
 
             const savedExpenses = localStorage.getItem('badminton_maintenanceExpenses');
             if (savedExpenses) {
-              maintenanceExpenses.value = JSON.parse(savedExpenses);
+              try {
+                const parsed = JSON.parse(savedExpenses);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                  maintenanceExpenses.value = parsed;
+                } else {
+                  maintenanceExpenses.value = getInitialMaintenanceExpenses();
+                }
+              } catch(e) {
+                maintenanceExpenses.value = getInitialMaintenanceExpenses();
+              }
+            } else {
+              maintenanceExpenses.value = getInitialMaintenanceExpenses();
             }
           } catch(e) {}
         };
@@ -2582,7 +2649,13 @@
         }, 10000);
 
         // Formatting Helpers
-        const formatCurrency = (val) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val || 0);
+        const formatCurrency = (val) => {
+          try {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(val) || 0);
+          } catch(e) {
+            return (Number(val) || 0).toLocaleString('vi-VN') + ' đ';
+          }
+        };
 
         const formatTimer = (seconds) => {
           if (!seconds) return '00:00:00';
@@ -2594,8 +2667,13 @@
 
         const formatTime = (dateStr) => {
           if (!dateStr) return '--:--';
-          const d = new Date(dateStr);
-          return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+          try {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return '--:--';
+            return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+          } catch(e) {
+            return '--:--';
+          }
         };
 
         const getStatusLabel = (st) => {
@@ -2895,15 +2973,19 @@
           const now = new Date();
           const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
-          const shiftRecords = accountingRecords.value.filter(r => {
-            const t = new Date(r.timestamp).getTime();
+          const allRecs = Array.isArray(accountingRecords.value) ? accountingRecords.value : [];
+          const shiftRecords = allRecs.filter(r => {
+            if (!r) return false;
+            const t = r.timestamp ? new Date(r.timestamp).getTime() : 0;
             if (t < startOfToday) return false;
             if (targetShift === 'ALL') return true;
             return r.shift === targetShift;
           });
 
-          const shiftExpenses = maintenanceExpenses.value.filter(e => {
-            const t = new Date(e.timestamp).getTime();
+          const allExps = Array.isArray(maintenanceExpenses.value) ? maintenanceExpenses.value : [];
+          const shiftExpenses = allExps.filter(e => {
+            if (!e) return false;
+            const t = e.timestamp ? new Date(e.timestamp).getTime() : 0;
             if (t < startOfToday) return false;
             if (targetShift === 'ALL') return true;
             return e.shift === targetShift;
@@ -2918,19 +3000,20 @@
 
           shiftRecords.forEach(r => {
             courtCount++;
-            courtFee += (r.courtFee || 0);
-            shopRevenue += (r.servicesRevenue || 0);
-            shopCost += (r.servicesCost || 0);
+            courtFee += (Number(r.courtFee) || 0);
+            shopRevenue += (Number(r.servicesRevenue) || 0);
+            shopCost += (Number(r.servicesCost) || 0);
+            const bill = Number(r.totalBill) || ((Number(r.courtFee) || 0) + (Number(r.servicesRevenue) || 0));
             if (r.paymentMethod === 'VIETQR') {
-              vietqr += (r.totalBill || 0);
+              vietqr += bill;
             } else {
-              cash += (r.totalBill || 0);
+              cash += bill;
             }
           });
 
           let maintenance = 0;
           shiftExpenses.forEach(e => {
-            maintenance += (e.amount || 0);
+            maintenance += (Number(e.amount) || 0);
           });
 
           const shopProfit = shopRevenue - shopCost;
@@ -3207,9 +3290,9 @@
             activeTab.value = 'customer';
           }
 
-          lucide.createIcons();
+          try { if (window.lucide) lucide.createIcons(); } catch(e) {}
           setInterval(() => {
-            lucide.createIcons();
+            try { if (window.lucide) lucide.createIcons(); } catch(e) {}
           }, 1500);
         });
 
