@@ -1,4 +1,4 @@
-﻿@echo off
+@echo off
 chcp 65001 >nul
 title DONG BO DU LIEU LEN GITHUB - QUAN LY SAN CAU LONG
 color 0A
@@ -17,10 +17,10 @@ if exist index.html (
 )
 
 echo [2/4] Kiem tra cac thay doi moi nhat...
-git add .
+git add -A
 
 echo [3/4] Ghi nhan thay doi...
-git commit -m Cap nhat tu dong %date% %time% >nul 2>&1
+git commit -m "Cap nhat tinh nang ke toan, ca sang va tai khoan chu san"
 
 echo [4/4] Dang day du lieu len mang GitHub...
 echo (Neu co cua so nho hien len hoi dang nhap, hay bam 'Sign in with your browser')

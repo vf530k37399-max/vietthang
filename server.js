@@ -27,9 +27,12 @@ const DATA_FILE = path.join(__dirname, 'data.json');
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
-// Phục vụ thêm file index.html gốc nếu có
+// Ưu tiên phục vụ file index.html gốc
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Cấu hình bảng giá sân
 const PRICING_CONFIG = {

@@ -1,4 +1,4 @@
-﻿@echo off
+@echo off
 chcp 65001 >nul
 title TIEN TRINH TU DONG DONG BO GITHUB (CHAY NGAM)
 color 0B
@@ -23,8 +23,8 @@ if not %STATUS%==" (
  if exist index.html (
  copy /y index.html public\index.html >nul
  )
- git add .
- git commit -m Tu dong cap nhat %date% %time% >nul 2>&1
+ git add -A
+ git commit -m "Tu dong cap nhat tinh nang ke toan va tai khoan chu san" >nul 2>&1
  git push origin main >nul 2>&1
  echo Da day len GitHub luc %time%!
 ) else (

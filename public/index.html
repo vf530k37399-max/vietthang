@@ -2,7 +2,10 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#020617">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Hệ Thống Quản Lý Sân Cầu Lông (Sân 1 - Sân 4) - Pro</title>
   
   <!-- Tailwind CSS CDN -->
@@ -19,12 +22,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
     [v-cloak] { display: none; }
+    .safe-bottom { padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); }
+    /* Touch optimization */
+    button, a { touch-action: manipulation; }
     @media print {
       body * { visibility: hidden; }
-      #printable-receipt, #printable-receipt * { visibility: visible; }
-      #printable-receipt { position: absolute; left: 0; top: 0; width: 80mm; margin: 0; padding: 10px; }
+      #printable-receipt, #printable-receipt *, #printable-shift-receipt, #printable-shift-receipt * { visibility: visible; }
+      #printable-receipt, #printable-shift-receipt { position: absolute; left: 0; top: 0; width: 80mm; margin: 0; padding: 10px; }
     }
   </style>
 </head>
@@ -32,52 +38,72 @@
   <div id="app" v-cloak class="min-h-screen flex flex-col">
     
     <!-- Top Realtime Connectivity Status Banner -->
-    <div class="px-4 py-1.5 text-xs font-semibold flex items-center justify-between border-b"
+    <div class="px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs font-semibold flex items-center justify-between border-b"
       :class="isOnline ? 'bg-emerald-950/80 border-emerald-800/60 text-emerald-300' : 'bg-slate-900 border-slate-800 text-slate-400'">
-      <div class="max-w-7xl mx-auto w-full flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full" :class="isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-emerald-400'"></span>
-          <span>HỆ THỐNG QUẢN LÝ SÂN CẦU LÔNG CLOUD PRO &bull; TỰ ĐỘNG LƯU TRỮ VĨNH VIỄN</span>
+      <div class="max-w-7xl mx-auto w-full flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 truncate">
+          <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" :class="isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-emerald-400'"></span>
+          <span class="truncate">HỆ THỐNG QUẢN LÝ SÂN CẦU LÔNG CLOUD &bull; ĐIỆN THOẠI & MÁY TÍNH</span>
         </div>
-        <div class="hidden sm:flex items-center gap-3 text-[11px] opacity-90">
-          <span>Sân 1 - Sân 4</span>
-          <span>&bull;</span>
-          <span>Đơn giá & Sản phẩm động</span>
+        <div class="flex items-center gap-2 text-[11px] flex-shrink-0">
+          <span v-if="isOwner" class="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/50 font-black flex items-center gap-1 shadow-sm">
+            👑 CHỦ SÂN (admin) &bull; TOÀN QUYỀN
+          </span>
+          <button v-else @click="quickLogin('admin')" class="px-2.5 py-1 rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black flex items-center gap-1 shadow-md shadow-amber-500/20 transition active:scale-95 animate-pulse">
+            👑 BẤM VÀO CHỦ SÂN (admin)
+          </button>
         </div>
       </div>
     </div>
 
     <!-- Main Navigation Header -->
-    <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-40 px-4 py-3 shadow-lg">
-      <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center space-x-3">
-          <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/25">
-            <i data-lucide="trophy" class="w-6 h-6 text-slate-950 font-black"></i>
+    <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-40 px-3 sm:px-4 py-2.5 sm:py-3 shadow-lg">
+      <div class="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-3">
+        <!-- Logo & Title -->
+        <div class="flex items-center space-x-2.5 sm:space-x-3 truncate">
+          <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/25 flex-shrink-0">
+            <i data-lucide="trophy" class="w-5 h-5 sm:w-6 sm:h-6 text-slate-950 font-black"></i>
           </div>
-          <div>
-            <h1 class="text-lg font-black tracking-tight text-white flex items-center gap-2">
-              {{ clubInfo.name || 'SÂN CẦU LÔNG THẮNG PRO' }}
-              <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Sân 1 - 4</span>
+          <div class="truncate">
+            <h1 class="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-1.5 truncate">
+              <span class="truncate">{{ clubInfo.name || 'SÂN CẦU LÔNG THẮNG PRO' }}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex-shrink-0">4 Sân</span>
             </h1>
-            <p class="text-xs text-slate-400 flex items-center gap-1.5">
-              <span>Điều hành trực quan</span>
-              <span>&bull;</span>
-              <span class="text-emerald-400 font-bold">Doanh thu ngày: {{ formatCurrency(dailyRevenue) }}</span>
+            <p class="text-[11px] sm:text-xs text-slate-400 flex items-center gap-1.5 truncate">
+              <span v-if="hasPermission('canViewRevenue')" class="text-emerald-400 font-bold truncate">
+                Doanh thu: {{ formatCurrency(dailyRevenue) }}
+              </span>
+              <span v-else class="text-slate-500 font-bold">
+                🔒 Doanh thu: ******
+              </span>
             </p>
           </div>
         </div>
 
-        <!-- Navigation Tabs -->
-        <div class="flex items-center gap-2">
+        <!-- Header Actions & Tabs (Desktop) -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+          
+          <!-- User / Account Button -->
+          <button 
+            @click="openAuthModal" 
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition shadow-sm"
+            :class="isOwner ? 'bg-amber-500/15 hover:bg-amber-500/25 border-amber-500/40 text-amber-300' : 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-300'">
+            <i :data-lucide="isOwner ? 'crown' : 'user'" class="w-4 h-4" :class="isOwner ? 'text-amber-400' : 'text-slate-400'"></i>
+            <span class="hidden sm:inline">{{ isOwner ? '👑 Chủ Sân (admin)' : (currentUser?.name || 'Tài khoản') }}</span>
+            <span class="sm:hidden text-[11px] font-bold">{{ isOwner ? '👑 Chủ Sân' : 'Đổi TK' }}</span>
+          </button>
+
+          <!-- QR Đặt Sân Button (Desktop) -->
           <button 
             @click="openShareQrModal" 
             title="Tạo mã QR cho khách quét đặt sân bằng điện thoại"
-            class="hidden lg:flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-amber-400 transition">
+            class="hidden xl:flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-amber-400 transition">
             <i data-lucide="qr-code" class="w-4 h-4"></i>
             <span>QR Đặt Sân</span>
           </button>
 
-          <div class="flex bg-slate-950 p-1 rounded-2xl border border-slate-800 flex-wrap gap-1">
+          <!-- Desktop Navigation Tabs -->
+          <div class="hidden md:flex bg-slate-950 p-1 rounded-2xl border border-slate-800 flex-wrap gap-1">
             <button 
               @click="activeTab = 'staff'" 
               :class="activeTab === 'staff' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'"
@@ -93,6 +119,7 @@
               <span>Khách Đặt Sân</span>
             </button>
             <button 
+              v-if="hasPermission('canManageInventory')"
               @click="activeTab = 'inventory'" 
               :class="activeTab === 'inventory' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'"
               class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition">
@@ -100,6 +127,7 @@
               <span>Shop & Kho Hàng</span>
             </button>
             <button 
+              v-if="hasPermission('canManageMonthly')"
               @click="activeTab = 'monthly'" 
               :class="activeTab === 'monthly' ? 'bg-purple-600 text-white shadow-md' : 'text-slate-400 hover:text-white'"
               class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition">
@@ -107,19 +135,91 @@
               <span>Khách Quen</span>
             </button>
             <button 
+              v-if="hasPermission('canManagePricing')"
               @click="activeTab = 'settings'" 
               :class="activeTab === 'settings' ? 'bg-cyan-600 text-white shadow-md' : 'text-slate-400 hover:text-white'"
               class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition">
               <i data-lucide="settings" class="w-4 h-4"></i>
               <span>Cài Đặt Bảng Giá</span>
             </button>
+            <button 
+              v-if="hasPermission('canViewRevenue')"
+              @click="activeTab = 'accounting'" 
+              :class="activeTab === 'accounting' ? 'bg-amber-500 text-slate-950 font-black shadow-md' : 'text-slate-400 hover:text-white'"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+              <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+              <span>Kế Toán & Thu Chi</span>
+            </button>
+            <button 
+              v-if="isOwner"
+              @click="activeTab = 'staff_mgmt'" 
+              :class="activeTab === 'staff_mgmt' ? 'bg-rose-600 text-white shadow-md' : 'text-slate-400 hover:text-white'"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+              <i data-lucide="shield-check" class="w-4 h-4"></i>
+              <span>QL Nhân Viên</span>
+            </button>
           </div>
         </div>
       </div>
     </header>
 
-    <!-- Main Content Body -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 space-y-6">
+    <!-- Mobile Bottom Navigation Bar (Dành riêng cho màn hình điện thoại di động) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-1 py-1 safe-bottom flex items-center justify-around shadow-2xl">
+      <button 
+        @click="activeTab = 'staff'" 
+        :class="activeTab === 'staff' ? 'text-emerald-400 font-black' : 'text-slate-400'"
+        class="flex flex-col items-center justify-center py-1 px-1.5 rounded-xl transition">
+        <i data-lucide="layout-grid" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px]">Sơ Đồ</span>
+      </button>
+
+      <button 
+        v-if="hasPermission('canViewRevenue')"
+        @click="activeTab = 'accounting'" 
+        :class="activeTab === 'accounting' ? 'text-amber-400 font-black' : 'text-slate-400'"
+        class="flex flex-col items-center justify-center py-1 px-1.5 rounded-xl transition">
+        <i data-lucide="bar-chart-3" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px]">Kế Toán</span>
+      </button>
+
+      <button 
+        v-if="hasPermission('canManageInventory')"
+        @click="activeTab = 'inventory'" 
+        :class="activeTab === 'inventory' ? 'text-indigo-400 font-black' : 'text-slate-400'"
+        class="flex flex-col items-center justify-center py-1 px-1.5 rounded-xl transition">
+        <i data-lucide="shopping-bag" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px]">Shop Kho</span>
+      </button>
+
+      <button 
+        @click="activeTab = 'customer'" 
+        :class="activeTab === 'customer' ? 'text-amber-400 font-black' : 'text-slate-400'"
+        class="flex flex-col items-center justify-center py-1 px-1.5 rounded-xl transition">
+        <i data-lucide="smartphone" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px]">Khách Đặt</span>
+      </button>
+
+      <button 
+        v-if="hasPermission('canManagePricing')"
+        @click="activeTab = 'settings'" 
+        :class="activeTab === 'settings' ? 'text-cyan-400 font-black' : 'text-slate-400'"
+        class="flex flex-col items-center justify-center py-1 px-1.5 rounded-xl transition">
+        <i data-lucide="settings" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px]">Bảng Giá</span>
+      </button>
+
+      <button 
+        v-if="isOwner"
+        @click="activeTab = 'staff_mgmt'" 
+        :class="activeTab === 'staff_mgmt' ? 'text-rose-400 font-black' : 'text-slate-400'"
+        class="flex flex-col items-center justify-center py-1 px-1.5 rounded-xl transition">
+        <i data-lucide="shield-check" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px]">Nhân Viên</span>
+      </button>
+    </nav>
+
+    <!-- Main Content Body (Được cộng thêm khoảng trống dưới pb-24 để không bị thanh Bottom Bar che) -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 space-y-6 pb-24 md:pb-8">
       
       <!-- ================= 1. TAB: NHÂN VIÊN SÂN (LƯỚI 2x2 TRỰC QUAN) ================= -->
       <div v-if="activeTab === 'staff'" class="space-y-5">
@@ -308,17 +408,22 @@
 
             <!-- Card Actions -->
             <div class="mt-5 pt-4 border-t border-slate-800">
-              <div v-if="court.status === 'AVAILABLE'" class="grid grid-cols-2 gap-3">
+              <div v-if="court.status === 'AVAILABLE'" class="grid grid-cols-2 gap-2 sm:gap-3">
                 <button 
+                  v-if="hasPermission('canManageCourts')"
                   @click="openStartPlayModal(court)" 
-                  class="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-black text-sm shadow-lg shadow-emerald-600/30 transition">
-                  <i data-lucide="play" class="w-4 h-4 fill-white"></i>
+                  class="flex items-center justify-center gap-2 py-3 px-3 sm:px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-600/30 transition">
+                  <i data-lucide="play" class="w-4 h-4 fill-white flex-shrink-0"></i>
                   <span>Vào Chơi Ngay</span>
                 </button>
+                <div v-else class="flex items-center justify-center py-3 px-2 rounded-2xl bg-slate-950 border border-slate-800 text-slate-500 text-[11px] text-center">
+                  🔒 Cần quyền vận hành
+                </div>
+
                 <button 
                   @click="activeTab = 'customer'; customerBooking.courtId = court.id" 
-                  class="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition">
-                  <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+                  class="flex items-center justify-center gap-1.5 py-3 px-3 sm:px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold text-xs transition">
+                  <i data-lucide="calendar-plus" class="w-4 h-4 flex-shrink-0"></i>
                   <span>Tạo Đơn Đặt</span>
                 </button>
               </div>
@@ -326,48 +431,75 @@
               <div v-if="court.status === 'PLAYING'" class="space-y-2">
                 <div class="grid grid-cols-2 gap-2">
                   <button 
+                    v-if="hasPermission('canManageCourts')"
                     @click="openAddServiceModal(court)" 
-                    class="flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-300 font-bold text-xs transition">
-                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    class="flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-300 font-bold text-xs active:scale-95 transition">
+                    <i data-lucide="plus-circle" class="w-4 h-4 flex-shrink-0"></i>
                     <span>Thêm Nước / Cầu</span>
                   </button>
+                  <div v-else class="py-2.5 px-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-500 text-[10px] text-center">
+                    🔒 Khóa thêm dịch vụ
+                  </div>
+
                   <button 
+                    v-if="hasPermission('canManageCourts')"
                     @click="openSwitchCourtModal(court)" 
-                    class="flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition">
-                    <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
+                    class="flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs active:scale-95 transition">
+                    <i data-lucide="arrow-left-right" class="w-4 h-4 flex-shrink-0"></i>
                     <span>Đổi Sân (1 Chạm)</span>
                   </button>
+                  <div v-else class="py-2.5 px-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-500 text-[10px] text-center">
+                    🔒 Khóa đổi sân
+                  </div>
                 </div>
+
                 <button 
+                  v-if="hasPermission('canCheckout')"
                   @click="triggerCheckout(court)" 
-                  class="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 active:scale-98 text-white font-black text-sm shadow-xl shadow-rose-600/30 transition">
-                  <i data-lucide="receipt" class="w-5 h-5"></i>
+                  class="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 active:scale-98 text-white font-black text-xs sm:text-sm shadow-xl shadow-rose-600/30 transition">
+                  <i data-lucide="receipt" class="w-5 h-5 flex-shrink-0"></i>
                   <span>CHECK-OUT & IN HÓA ĐƠN</span>
                 </button>
+                <div v-else class="text-center py-2.5 px-3 rounded-2xl bg-slate-950 border border-slate-800/80 text-xs text-slate-500 font-medium">
+                  🔒 Quyền thu ngân bị khóa (Chỉ Chủ sân hoặc Thu ngân)
+                </div>
               </div>
 
               <div v-if="court.status === 'RESERVED'" class="grid grid-cols-1 gap-2">
                 <button 
+                  v-if="hasPermission('canManageCourts')"
                   @click="checkInReservation(court)" 
-                  class="flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm shadow-lg shadow-amber-500/30 transition">
-                  <i data-lucide="check" class="w-5 h-5 font-black"></i>
+                  class="flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-sm shadow-lg shadow-amber-500/30 transition">
+                  <i data-lucide="check" class="w-5 h-5 font-black flex-shrink-0"></i>
                   <span>BẤM CHECK-IN (VÀO SÂN)</span>
                 </button>
+                <div v-else class="text-center py-2.5 text-xs text-slate-500 bg-slate-950 rounded-xl border border-slate-800">
+                  🔒 Cần quyền vận hành để check-in
+                </div>
               </div>
 
               <div v-if="court.status === 'FIXED'" class="grid grid-cols-2 gap-2">
                 <button 
+                  v-if="hasPermission('canManageCourts')"
                   @click="openStartPlayModal(court)" 
-                  class="flex items-center justify-center gap-1.5 py-3 px-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition">
-                  <i data-lucide="play" class="w-4 h-4 fill-white"></i>
+                  class="flex items-center justify-center gap-1.5 py-3 px-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs active:scale-95 transition">
+                  <i data-lucide="play" class="w-4 h-4 fill-white flex-shrink-0"></i>
                   <span>Vào Chơi</span>
                 </button>
+                <div v-else class="py-3 px-2 rounded-xl bg-slate-950 text-slate-500 text-[10px] text-center border border-slate-800">
+                  🔒 Khóa
+                </div>
+
                 <button 
+                  v-if="hasPermission('canManageMonthly')"
                   @click="cancelSingleSession(court)" 
-                  class="flex items-center justify-center gap-1.5 py-3 px-2 rounded-xl bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/40 text-amber-300 font-bold text-xs transition">
-                  <i data-lucide="unlock" class="w-4 h-4"></i>
+                  class="flex items-center justify-center gap-1.5 py-3 px-2 rounded-xl bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/40 text-amber-300 font-bold text-xs active:scale-95 transition">
+                  <i data-lucide="unlock" class="w-4 h-4 flex-shrink-0"></i>
                   <span>Hủy Buổi Lẻ</span>
                 </button>
+                <div v-else class="py-3 px-2 rounded-xl bg-slate-950 text-slate-500 text-[10px] text-center border border-slate-800">
+                  🔒 Khóa
+                </div>
               </div>
             </div>
 
@@ -680,6 +812,481 @@
 
       </div>
 
+      <!-- ================= 6. TAB: QUẢN LÝ NHÂN VIÊN & PHÂN QUYỀN (CHỈ CHỦ SÂN) ================= -->
+      <div v-if="activeTab === 'staff_mgmt'" class="space-y-6 max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-rose-500/15 via-rose-500/5 to-transparent p-4 sm:p-5 rounded-3xl border border-rose-500/30 flex justify-between items-center flex-wrap gap-3">
+          <div>
+            <h2 class="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+              <i data-lucide="shield-check" class="w-6 h-6 text-rose-400 flex-shrink-0"></i>
+              QUẢN LÝ NHÂN VIÊN & CẤP QUYỀN
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Chủ sân toàn quyền tạo tài khoản nhân viên, phân quyền hạn cụ thể và quản lý bảo mật</p>
+          </div>
+          <button @click="openAddStaffModal" class="px-4 py-2.5 bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-black text-xs rounded-xl shadow-lg shadow-rose-600/25 flex items-center gap-1.5 transition">
+            <i data-lucide="user-plus" class="w-4 h-4"></i>
+            <span>+ THÊM NHÂN VIÊN MỚI</span>
+          </button>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-3 gap-2 sm:gap-3">
+          <div class="bg-slate-900 rounded-2xl p-3 sm:p-4 border border-slate-800 text-center">
+            <span class="text-[10px] sm:text-[11px] text-slate-400 font-bold block uppercase">Chủ Sân</span>
+            <span class="text-lg sm:text-xl font-black text-amber-400">1 (Toàn quyền)</span>
+          </div>
+          <div class="bg-slate-900 rounded-2xl p-3 sm:p-4 border border-slate-800 text-center">
+            <span class="text-[10px] sm:text-[11px] text-slate-400 font-bold block uppercase">Tổng Nhân Viên</span>
+            <span class="text-lg sm:text-xl font-black text-white">{{ staffAccounts.length }}</span>
+          </div>
+          <div class="bg-slate-900 rounded-2xl p-3 sm:p-4 border border-slate-800 text-center">
+            <span class="text-[10px] sm:text-[11px] text-slate-400 font-bold block uppercase">Đang Làm Việc</span>
+            <span class="text-lg sm:text-xl font-black text-emerald-400">{{ staffAccounts.filter(s => s.status === 'ACTIVE').length }}</span>
+          </div>
+        </div>
+
+        <!-- Owner Account Card -->
+        <div class="bg-slate-900 rounded-3xl p-4 sm:p-5 border border-amber-500/30 shadow-xl space-y-3">
+          <div class="flex justify-between items-start flex-wrap gap-2">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-xl flex-shrink-0">
+                👑
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="font-black text-white text-base">Tài Khoản Chủ Sân</h3>
+                  <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-black uppercase">Toàn Quyền</span>
+                </div>
+                <p class="text-xs text-slate-400">Tên đăng nhập: <strong class="text-slate-200 font-mono">{{ ownerAccount.username }}</strong></p>
+              </div>
+            </div>
+            <button @click="openChangePasswordModal(ownerAccount)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+              <i data-lucide="key" class="w-3.5 h-3.5 text-amber-400"></i>
+              <span>Đổi Mật Khẩu Chủ Sân</span>
+            </button>
+          </div>
+          <p class="text-xs text-slate-400 bg-slate-950 p-3 rounded-xl border border-slate-800">
+            * Tài khoản Chủ Sân có quyền truy cập tất cả tính năng, bao gồm doanh thu, cài đặt bảng giá, sửa kho và quản lý nhân viên.
+          </p>
+        </div>
+
+        <!-- Staff List Cards -->
+        <div class="space-y-4">
+          <h3 class="text-base font-black text-white flex items-center gap-2">
+            <i data-lucide="users" class="w-4 h-4 text-rose-400"></i>
+            Danh Sách Tài Khoản Nhân Viên
+          </h3>
+
+          <div v-if="staffAccounts.length === 0" class="text-center py-10 bg-slate-900/60 rounded-3xl border border-slate-800 space-y-2">
+            <div class="w-12 h-12 mx-auto rounded-full bg-slate-800 flex items-center justify-center text-slate-500">
+              <i data-lucide="user-x" class="w-6 h-6"></i>
+            </div>
+            <p class="text-sm font-bold text-slate-400">Chưa có tài khoản nhân viên nào</p>
+            <p class="text-xs text-slate-500">Bấm nút "+ Thêm Nhân Viên Mới" ở trên để tạo tài khoản và cấp quyền cho nhân viên của bạn.</p>
+          </div>
+
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div 
+              v-for="staff in staffAccounts" 
+              :key="staff.id"
+              class="bg-slate-900 rounded-3xl p-4 sm:p-5 border border-slate-800 flex flex-col justify-between space-y-4 shadow-xl hover:border-slate-700 transition">
+              <div>
+                <div class="flex justify-between items-start gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold flex-shrink-0">
+                      <i data-lucide="user" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                      <h4 class="font-black text-white text-base">{{ staff.name }}</h4>
+                      <p class="text-xs text-slate-400 font-mono">TK: <strong class="text-cyan-400">{{ staff.username }}</strong> &bull; SĐT: {{ staff.phone || 'Chưa có' }}</p>
+                    </div>
+                  </div>
+                  <span 
+                    :class="staff.status === 'ACTIVE' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' : 'bg-rose-500/20 text-rose-400 border-rose-500/40'"
+                    class="px-2.5 py-0.5 rounded-full border text-[10px] font-black uppercase flex-shrink-0">
+                    {{ staff.status === 'ACTIVE' ? '🟢 Hoạt động' : '🔴 Đã khóa' }}
+                  </span>
+                </div>
+
+                <!-- Permissions Badges List -->
+                <div class="mt-3 pt-3 border-t border-slate-800/80 space-y-2">
+                  <span class="text-[11px] text-slate-400 font-bold block">Quyền hạn được cấp:</span>
+                  <div class="flex flex-wrap gap-1.5">
+                    <span 
+                      v-if="staff.permissions.canManageCourts" 
+                      class="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">
+                      ✓ Vận hành sân
+                    </span>
+                    <span 
+                      v-if="staff.permissions.canCheckout" 
+                      class="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">
+                      ✓ Check-out thu tiền
+                    </span>
+                    <span 
+                      v-if="staff.permissions.canViewRevenue" 
+                      class="px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-bold">
+                      ✓ Xem doanh thu
+                    </span>
+                    <span 
+                      v-if="staff.permissions.canManageInventory" 
+                      class="px-2 py-0.5 rounded-md bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold">
+                      ✓ Quản lý shop
+                    </span>
+                    <span 
+                      v-if="staff.permissions.canManagePricing" 
+                      class="px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold">
+                      ✓ Sửa bảng giá
+                    </span>
+                    <span 
+                      v-if="staff.permissions.canManageMonthly" 
+                      class="px-2 py-0.5 rounded-md bg-purple-500/15 text-purple-300 border border-purple-500/30 text-[10px] font-bold">
+                      ✓ Khách quen tháng
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="pt-3 border-t border-slate-800 flex items-center justify-between gap-1.5 flex-wrap">
+                <button 
+                  @click="openEditStaffModal(staff)" 
+                  class="flex-1 min-w-[80px] py-2 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-xs font-bold text-slate-200 transition text-center">
+                  Sửa Quyền
+                </button>
+                <button 
+                  @click="toggleStaffStatus(staff)" 
+                  :class="staff.status === 'ACTIVE' ? 'bg-amber-600/20 text-amber-300 border-amber-500/30 hover:bg-amber-600/30' : 'bg-emerald-600/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-600/30'"
+                  class="flex-1 min-w-[80px] py-2 px-2.5 rounded-xl border text-xs font-bold transition text-center active:scale-95">
+                  {{ staff.status === 'ACTIVE' ? 'Tạm Khóa' : 'Mở Khóa' }}
+                </button>
+                <button 
+                  @click="openChangePasswordModal(staff)" 
+                  class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 active:scale-95" 
+                  title="Đổi mật khẩu">
+                  <i data-lucide="key" class="w-4 h-4"></i>
+                </button>
+                <button 
+                  @click="deleteStaff(staff)" 
+                  class="p-2 rounded-xl bg-slate-800 hover:bg-rose-900/50 text-slate-400 hover:text-rose-400 active:scale-95" 
+                  title="Xóa tài khoản">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 7. TAB: KẾ TOÁN THU CHI, TỔNG KẾT CA & LỢI NHUẬN ================= -->
+      <div v-if="activeTab === 'accounting'" class="space-y-6 max-w-5xl mx-auto">
+        
+        <!-- Header Banner -->
+        <div class="bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent p-4 sm:p-5 rounded-3xl border border-amber-500/30 flex justify-between items-center flex-wrap gap-3">
+          <div>
+            <h2 class="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+              <i data-lucide="bar-chart-3" class="w-6 h-6 text-amber-400 flex-shrink-0"></i>
+              KẾ TOÁN DOANH THU & BÁO CÁO LỢI NHUẬN
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Tổng kết tiền sân theo ca sáng / tối, tính lãi bán hàng shop và theo dõi chi phí sửa chữa bảo trì</p>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <button 
+              @click="openShiftSummaryModal('MORNING')" 
+              class="px-3.5 py-2.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-amber-500/20 flex items-center gap-1.5 transition">
+              <i data-lucide="sun" class="w-4 h-4"></i>
+              <span>TỔNG KẾT CA SÁNG</span>
+            </button>
+            <button 
+              @click="openAddExpenseModal" 
+              class="px-3.5 py-2.5 bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-black text-xs rounded-xl shadow-lg shadow-rose-600/20 flex items-center gap-1.5 transition">
+              <i data-lucide="wrench" class="w-4 h-4"></i>
+              <span>+ CHI PHÍ BẢO TRÌ</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Pills Bar -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+          <span class="text-slate-400 font-bold mr-1 flex-shrink-0">Bộ Lọc:</span>
+          <button 
+            @click="accountingFilter = 'TODAY'" 
+            :class="accountingFilter === 'TODAY' ? 'bg-amber-500 text-slate-950 font-black' : 'bg-slate-900 text-slate-300 border border-slate-800'"
+            class="px-3 py-1.5 rounded-xl transition flex-shrink-0">
+            Hôm Nay
+          </button>
+          <button 
+            @click="accountingFilter = 'MORNING'" 
+            :class="accountingFilter === 'MORNING' ? 'bg-amber-500 text-slate-950 font-black' : 'bg-slate-900 text-slate-300 border border-slate-800'"
+            class="px-3 py-1.5 rounded-xl transition flex-shrink-0 flex items-center gap-1">
+            <span>☀️ Ca Sáng (06h - 12h)</span>
+          </button>
+          <button 
+            @click="accountingFilter = 'AFTERNOON'" 
+            :class="accountingFilter === 'AFTERNOON' ? 'bg-amber-500 text-slate-950 font-black' : 'bg-slate-900 text-slate-300 border border-slate-800'"
+            class="px-3 py-1.5 rounded-xl transition flex-shrink-0 flex items-center gap-1">
+            <span>🌙 Ca Chiều/Tối (12h - 24h)</span>
+          </button>
+          <button 
+            @click="accountingFilter = 'WEEK'" 
+            :class="accountingFilter === 'WEEK' ? 'bg-amber-500 text-slate-950 font-black' : 'bg-slate-900 text-slate-300 border border-slate-800'"
+            class="px-3 py-1.5 rounded-xl transition flex-shrink-0">
+            7 Ngày Gần Nhất
+          </button>
+          <button 
+            @click="accountingFilter = 'ALL'" 
+            :class="accountingFilter === 'ALL' ? 'bg-amber-500 text-slate-950 font-black' : 'bg-slate-900 text-slate-300 border border-slate-800'"
+            class="px-3 py-1.5 rounded-xl transition flex-shrink-0">
+            Tất Cả
+          </button>
+        </div>
+
+        <!-- 4 Key Financial KPI Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <!-- 1. Tiền Sân Thu Được -->
+          <div class="bg-slate-900 rounded-3xl p-4 sm:p-5 border border-emerald-500/30 shadow-xl flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between text-xs text-emerald-400 font-bold mb-1">
+                <span>1. Tiền Sân Thu Được</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              </div>
+              <div class="text-xl sm:text-2xl font-black text-white mt-1">
+                {{ formatCurrency(accountingSummary.totalCourtFee) }}
+              </div>
+            </div>
+            <div class="pt-3 mt-2 border-t border-slate-800 text-[11px] text-slate-400 flex justify-between">
+              <span>Số lượt trả sân:</span>
+              <strong class="text-slate-200">{{ accountingSummary.courtCount }} lượt</strong>
+            </div>
+          </div>
+
+          <!-- 2. Lãi Bán Shop & Nước -->
+          <div class="bg-slate-900 rounded-3xl p-4 sm:p-5 border border-indigo-500/30 shadow-xl flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between text-xs text-indigo-400 font-bold mb-1">
+                <span>2. Lợi Nhuận Shop</span>
+                <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+              </div>
+              <div class="text-xl sm:text-2xl font-black text-amber-400 mt-1">
+                +{{ formatCurrency(accountingSummary.totalShopProfit) }}
+              </div>
+            </div>
+            <div class="pt-3 mt-2 border-t border-slate-800 text-[11px] text-slate-400 flex justify-between">
+              <span>Bán ra: {{ formatCurrency(accountingSummary.totalShopRevenue) }}</span>
+              <span>Vốn: {{ formatCurrency(accountingSummary.totalShopCost) }}</span>
+            </div>
+          </div>
+
+          <!-- 3. Chi Phí Bảo Trì & Sửa Chữa -->
+          <div class="bg-slate-900 rounded-3xl p-4 sm:p-5 border border-rose-500/30 shadow-xl flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between text-xs text-rose-400 font-bold mb-1">
+                <span>3. Chi Phí Bảo Trì</span>
+                <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+              </div>
+              <div class="text-xl sm:text-2xl font-black text-rose-400 mt-1">
+                -{{ formatCurrency(accountingSummary.totalMaintenanceExpense) }}
+              </div>
+            </div>
+            <div class="pt-3 mt-2 border-t border-slate-800 text-[11px] text-slate-400 flex justify-between">
+              <span>Số phiếu chi:</span>
+              <strong class="text-rose-300">{{ accountingSummary.expenseCount }} khoản chi</strong>
+            </div>
+          </div>
+
+          <!-- 4. Lợi Nhuận Ròng (Thực Tế Bỏ Túi) -->
+          <div class="bg-gradient-to-br from-amber-500/20 via-slate-900 to-slate-900 rounded-3xl p-4 sm:p-5 border border-amber-500/50 shadow-2xl flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between text-xs text-amber-400 font-black uppercase mb-1">
+                <span>🏆 LÃI THỰC TẾ (BỎ TÚI)</span>
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+              </div>
+              <div class="text-xl sm:text-2xl font-black text-emerald-400 mt-1">
+                {{ formatCurrency(accountingSummary.netProfit) }}
+              </div>
+            </div>
+            <div class="pt-3 mt-2 border-t border-slate-800 text-[10px] text-slate-400 truncate">
+              = Tiền Sân + Lãi Shop - Chi Phí Bảo Trì
+            </div>
+          </div>
+        </div>
+
+        <!-- Tiền Mặt Trong Két vs Chuyển Khoản VietQR -->
+        <div class="bg-slate-900 rounded-3xl p-4 sm:p-5 border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+              💵
+            </div>
+            <div>
+              <span class="text-xs text-slate-400 block font-semibold">Tiền Mặt Thu Tại Quầy:</span>
+              <strong class="text-base sm:text-lg font-black text-white font-mono">{{ formatCurrency(accountingSummary.totalCash) }}</strong>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
+              🏦
+            </div>
+            <div>
+              <span class="text-xs text-slate-400 block font-semibold">Chuyển Khoản VietQR (Ngân Hàng):</span>
+              <strong class="text-base sm:text-lg font-black text-cyan-400 font-mono">{{ formatCurrency(accountingSummary.totalVietQR) }}</strong>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button 
+              @click="openShiftSummaryModal(accountingFilter === 'MORNING' ? 'MORNING' : 'ALL')"
+              class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-xl text-xs font-bold border border-slate-700 flex items-center gap-1.5 transition">
+              <i data-lucide="printer" class="w-4 h-4"></i>
+              <span>In Phiếu Bàn Giao Ca</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3 Detailed Sub-Sections -->
+        <div class="space-y-6">
+
+          <!-- Section 1: Sổ Nhật Ký Thanh Toán Tiền Sân & Đồ Uống -->
+          <div class="bg-slate-900 rounded-3xl p-4 sm:p-6 border border-slate-800 shadow-xl space-y-4">
+            <div class="flex justify-between items-center flex-wrap gap-2">
+              <h3 class="text-base font-black text-white flex items-center gap-2">
+                <i data-lucide="receipt" class="w-4 h-4 text-emerald-400"></i>
+                Nhật Ký Các Lượt Trả Sân & Thu Tiền ({{ filteredAccountingRecords.length }} lượt)
+              </h3>
+            </div>
+
+            <div v-if="filteredAccountingRecords.length === 0" class="text-center py-8 text-xs text-slate-500">
+              Chưa có lượt thanh toán nào trong khung thời gian này.
+            </div>
+
+            <div v-else class="space-y-2.5">
+              <div 
+                v-for="rec in filteredAccountingRecords" 
+                :key="rec.id"
+                class="bg-slate-950 p-3.5 sm:p-4 rounded-2xl border border-slate-800/90 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div class="flex items-center gap-3">
+                  <span class="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center font-black text-amber-400 text-xs">
+                    {{ rec.courtName ? rec.courtName.replace('SÂN ', 'S') : 'S' }}
+                  </span>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <strong class="text-white text-sm">{{ rec.courtName }}</strong>
+                      <span class="text-slate-400">&bull; {{ rec.customerName || 'Vãng lai' }}</span>
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                        :class="rec.shift === 'MORNING' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'">
+                        {{ rec.shift === 'MORNING' ? '☀️ Ca Sáng' : '🌙 Ca Chiều/Tối' }}
+                      </span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-0.5">
+                      Giờ ra: <span class="font-mono text-slate-300">{{ formatTime(rec.timestamp) }}</span> &bull; 
+                      Thu ngân: <span class="text-slate-300">{{ rec.staffName }}</span> &bull;
+                      Hình thức: <strong :class="rec.paymentMethod === 'VIETQR' ? 'text-cyan-400' : 'text-emerald-400'">{{ rec.paymentMethod === 'VIETQR' ? 'VietQR' : 'Tiền mặt' }}</strong>
+                    </p>
+                  </div>
+                </div>
+
+                <div class="text-right flex items-center gap-4">
+                  <div>
+                    <span class="text-slate-400 block text-[11px]">Sân: {{ formatCurrency(rec.courtFee) }} + Nước: {{ formatCurrency(rec.servicesRevenue) }}</span>
+                    <strong class="text-sm sm:text-base font-black text-emerald-400 font-mono">{{ formatCurrency(rec.totalBill) }}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Bảng Chi Tiết Lợi Nhuận Bán Hàng Của Shop -->
+          <div class="bg-slate-900 rounded-3xl p-4 sm:p-6 border border-slate-800 shadow-xl space-y-4">
+            <div class="flex justify-between items-center">
+              <h3 class="text-base font-black text-white flex items-center gap-2">
+                <i data-lucide="shopping-bag" class="w-4 h-4 text-indigo-400"></i>
+                Chi Tiết Lợi Nhuận Bán Hàng Của Shop (Đồ Uống, Cầu, Phụ Kiện)
+              </h3>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 bg-slate-950/60">
+                  <tr>
+                    <th class="py-3 px-3">Tên Mặt Hàng</th>
+                    <th class="py-3 px-3 text-center">Đã Bán</th>
+                    <th class="py-3 px-3">Doanh Thu</th>
+                    <th class="py-3 px-3">Tiền Vốn (COGS)</th>
+                    <th class="py-3 px-3 text-right">Lợi Nhuận Thu Về</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/80">
+                  <tr v-for="item in shopProfitReport" :key="item.name" class="hover:bg-slate-800/30 transition">
+                    <td class="py-3 px-3 font-bold text-white">{{ item.name }}</td>
+                    <td class="py-3 px-3 text-center font-mono font-bold text-slate-300">{{ item.qtySold }}</td>
+                    <td class="py-3 px-3 font-mono text-slate-300">{{ formatCurrency(item.revenue) }}</td>
+                    <td class="py-3 px-3 font-mono text-slate-400">{{ formatCurrency(item.cost) }}</td>
+                    <td class="py-3 px-3 text-right font-mono font-black text-amber-400">+{{ formatCurrency(item.profit) }}</td>
+                  </tr>
+                  <tr v-if="shopProfitReport.length === 0">
+                    <td colspan="5" class="py-6 text-center text-slate-500">Chưa bán mặt hàng nào trong thời gian này</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Section 3: Sổ Ghi Chép Chi Phí Sửa Chữa & Bảo Trì Thiết Bị -->
+          <div class="bg-slate-900 rounded-3xl p-4 sm:p-6 border border-slate-800 shadow-xl space-y-4">
+            <div class="flex justify-between items-center flex-wrap gap-2">
+              <div>
+                <h3 class="text-base font-black text-white flex items-center gap-2">
+                  <i data-lucide="wrench" class="w-4 h-4 text-rose-400"></i>
+                  Sổ Chi Tiêu Sửa Chữa & Bảo Trì Trang Thiết Bị
+                </h3>
+                <p class="text-xs text-slate-400 mt-0.5">Bóng đèn LED, lưới, cột, quạt, vệ sinh, vật tư sửa chữa...</p>
+              </div>
+              <button 
+                @click="openAddExpenseModal" 
+                class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 active:scale-95 text-white rounded-xl text-xs font-bold transition flex items-center gap-1">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <span>Thêm Khoản Chi</span>
+              </button>
+            </div>
+
+            <div v-if="filteredExpenses.length === 0" class="text-center py-8 text-xs text-slate-500">
+              Không có khoản chi phí bảo trì nào trong thời gian này.
+            </div>
+
+            <div v-else class="space-y-2">
+              <div 
+                v-for="exp in filteredExpenses" 
+                :key="exp.id"
+                class="bg-slate-950 p-3.5 rounded-2xl border border-slate-800/80 flex items-center justify-between gap-3 text-xs">
+                <div class="flex items-start gap-3">
+                  <div class="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold flex-shrink-0 mt-0.5">
+                    🔧
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <strong class="text-white text-sm">{{ exp.category }}</strong>
+                      <span class="text-slate-500 text-[11px]">&bull; {{ formatTime(exp.timestamp) }}</span>
+                    </div>
+                    <p class="text-slate-400 text-xs mt-0.5">{{ exp.note || 'Không có ghi chú' }}</p>
+                    <span class="text-[10px] text-slate-500">Người chi: {{ exp.staffName }}</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <span class="font-mono font-black text-sm text-rose-400">-{{ formatCurrency(exp.amount) }}</span>
+                  <button @click="deleteExpense(exp)" class="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-400" title="Xóa">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
     </main>
 
     <!-- ================= MODALS & POPUPS ================= -->
@@ -919,14 +1526,41 @@
               <span>TỔNG CỘNG:</span>
               <span class="text-emerald-700">{{ formatCurrency(modals.checkout.totalBill) }}</span>
             </div>
+            <div class="flex justify-between text-[11px] font-normal text-slate-700 pt-1 border-t border-dashed border-slate-300">
+              <span>Hình thức thanh toán:</span>
+              <strong :class="modals.checkout.paymentMethod === 'VIETQR' ? 'text-cyan-800' : 'text-emerald-800'">
+                {{ modals.checkout.paymentMethod === 'VIETQR' ? '📱 Chuyển Khoản (VietQR)' : '💵 Tiền Mặt' }}
+              </strong>
+            </div>
           </div>
 
           <!-- QR VietQR -->
-          <div class="text-center pt-3 border-t border-dashed border-slate-400">
+          <div v-show="modals.checkout.paymentMethod === 'VIETQR'" class="text-center pt-3 border-t border-dashed border-slate-400">
             <div class="w-32 h-32 mx-auto bg-slate-100 rounded-lg p-2 border border-slate-300 flex items-center justify-center">
               <img :src="generateVietQRUrl(modals.checkout.totalBill, 'THANHTOAN ' + modals.checkout.court?.name)" alt="VietQR" class="w-full h-full object-contain">
             </div>
-            <p class="text-[10px] text-slate-500 mt-1">Quét mã VietQR chuyển khoản thanh toán</p>
+            <p class="text-[10px] text-slate-500 mt-1 font-bold">Khách quét mã VietQR để chuyển tiền trực tiếp</p>
+          </div>
+        </div>
+
+        <!-- Chọn phương thức thanh toán -->
+        <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-1.5">
+          <label class="text-[11px] font-bold text-slate-400 block uppercase">Hình thức khách thanh toán:</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button 
+              type="button"
+              @click="modals.checkout.paymentMethod = 'CASH'"
+              :class="modals.checkout.paymentMethod === 'CASH' ? 'bg-emerald-600 text-white font-black border-emerald-400 ring-2 ring-emerald-500/50' : 'bg-slate-800 text-slate-400 border-slate-700'"
+              class="py-2.5 px-3 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 transition">
+              <span>💵 Tiền Mặt</span>
+            </button>
+            <button 
+              type="button"
+              @click="modals.checkout.paymentMethod = 'VIETQR'"
+              :class="modals.checkout.paymentMethod === 'VIETQR' ? 'bg-cyan-600 text-white font-black border-cyan-400 ring-2 ring-cyan-500/50' : 'bg-slate-800 text-slate-400 border-slate-700'"
+              class="py-2.5 px-3 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 transition">
+              <span>📱 VietQR Chuyển Khoản</span>
+            </button>
           </div>
         </div>
 
@@ -980,6 +1614,399 @@
         </div>
 
         <button @click="modals.shareQr.open = false" class="w-full py-2.5 bg-slate-800 rounded-xl text-xs font-bold text-slate-200">Đóng</button>
+      </div>
+    </div>
+
+    <!-- Modal 7: Đăng Nhập / Quản Lý Phiên Làm Việc -->
+    <div v-if="modals.auth.open" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 w-full sm:max-w-md max-h-[90vh] overflow-y-auto space-y-4 shadow-2xl">
+        <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto sm:hidden"></div>
+        <div class="flex justify-between items-center">
+          <h3 class="text-lg font-black text-white flex items-center gap-2">
+            <i data-lucide="shield-check" class="w-5 h-5 text-amber-400"></i>
+            Tài Khoản Đang Đăng Nhập
+          </h3>
+          <button @click="modals.auth.open = false" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+        </div>
+
+        <!-- Current User Banner -->
+        <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-lg"
+                :class="isOwner ? 'bg-amber-500/20 text-amber-400' : 'bg-cyan-500/20 text-cyan-400'">
+                {{ isOwner ? '👑' : '👤' }}
+              </div>
+              <div>
+                <h4 class="font-black text-white text-sm">{{ currentUser?.name }}</h4>
+                <p class="text-xs text-slate-400 font-mono">Tài khoản: {{ currentUser?.username }}</p>
+              </div>
+            </div>
+            <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase"
+              :class="isOwner ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'">
+              {{ isOwner ? 'CHỦ SÂN' : 'NHÂN VIÊN' }}
+            </span>
+          </div>
+          <div v-if="!isOwner" class="pt-2 border-t border-slate-800 text-[11px] text-slate-400 space-y-1">
+            <span class="font-bold block text-slate-300">Quyền của bạn:</span>
+            <div class="flex flex-wrap gap-1">
+              <span v-if="currentUser?.permissions?.canManageCourts" class="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[10px]">Vận hành sân</span>
+              <span v-if="currentUser?.permissions?.canCheckout" class="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[10px]">Check-out</span>
+              <span v-if="currentUser?.permissions?.canViewRevenue" class="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 text-[10px]">Xem doanh thu</span>
+              <span v-if="currentUser?.permissions?.canManageInventory" class="px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 text-[10px]">Kho shop</span>
+              <span v-if="currentUser?.permissions?.canManagePricing" class="px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 text-[10px]">Bảng giá</span>
+              <span v-if="currentUser?.permissions?.canManageMonthly" class="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 text-[10px]">Khách tháng</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hướng dẫn tài khoản đăng nhập rõ ràng cho người dùng -->
+        <div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3.5 text-xs space-y-2.5">
+          <div class="font-black text-amber-400 flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <i data-lucide="key" class="w-4 h-4"></i>
+              TÀI KHOẢN HỆ THỐNG SÂN:
+            </span>
+          </div>
+
+          <!-- Chủ Sân card -->
+          <div class="bg-slate-950 p-3 rounded-xl border border-amber-500/50 flex items-center justify-between gap-2 shadow-md">
+            <div>
+              <div class="font-black text-amber-400 text-xs flex items-center gap-1">
+                <span>👑 CHỦ SÂN (TOÀN QUYỀN)</span>
+              </div>
+              <p class="text-[11px] text-slate-300 mt-1">
+                Tài khoản: <strong class="text-white font-mono bg-slate-800 px-1.5 py-0.5 rounded">admin</strong> &bull;
+                Mật khẩu: <strong class="text-white font-mono bg-slate-800 px-1.5 py-0.5 rounded">123456</strong>
+              </p>
+            </div>
+            <button @click="quickLogin('admin')" class="px-3 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-md transition active:scale-95 flex-shrink-0">
+              Vào Chủ Sân
+            </button>
+          </div>
+
+          <!-- Nhân Viên card -->
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between gap-2">
+            <div>
+              <div class="font-black text-cyan-400 text-xs flex items-center gap-1">
+                <span>👤 NHÂN VIÊN CA SÁNG</span>
+              </div>
+              <p class="text-[11px] text-slate-300 mt-1">
+                Tài khoản: <strong class="text-white font-mono bg-slate-800 px-1.5 py-0.5 rounded">nhanvien1</strong> &bull;
+                Mật khẩu: <strong class="text-white font-mono bg-slate-800 px-1.5 py-0.5 rounded">123</strong>
+              </p>
+            </div>
+            <button @click="quickLogin('nhanvien1')" class="px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs rounded-xl shadow-md transition active:scale-95 flex-shrink-0">
+              Vào Nhân Viên
+            </button>
+          </div>
+        </div>
+
+        <!-- Switch / Login Form -->
+        <div class="pt-2 border-t border-slate-800/80 space-y-3">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Hoặc Nhập Tên Đăng Nhập & Mật Khẩu Khác</h4>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1">Tên đăng nhập</label>
+            <input type="text" v-model="modals.auth.username" placeholder="admin hoặc tên nhân viên" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1">Mật khẩu</label>
+            <input type="password" v-model="modals.auth.password" placeholder="Mật khẩu" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-amber-500">
+          </div>
+
+          <div v-if="modals.auth.error" class="p-2.5 bg-rose-500/15 border border-rose-500/30 rounded-xl text-rose-400 text-xs font-bold text-center">
+            {{ modals.auth.error }}
+          </div>
+
+          <button @click="handleLoginSubmit" class="w-full py-3 bg-amber-500 hover:bg-amber-400 active:scale-98 text-slate-950 font-black text-sm rounded-xl shadow-lg shadow-amber-500/25 transition">
+            ĐĂNG NHẬP NGAY
+          </button>
+        </div>
+
+        <!-- Quick Switch List for easy testing/switching -->
+        <div class="pt-2 border-t border-slate-800 text-xs space-y-2">
+          <span class="text-slate-400 font-bold block text-[11px]">Chuyển nhanh tài khoản:</span>
+          <div class="flex flex-wrap gap-1.5">
+            <button @click="quickLogin('admin')" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-[11px]">
+              👑 Chủ Sân (admin)
+            </button>
+            <button v-for="staff in staffAccounts" :key="staff.id" @click="quickLogin(staff.username)" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold text-[11px]">
+              👤 {{ staff.name }}
+            </button>
+          </div>
+        </div>
+
+        <button @click="handleLogout" class="w-full py-2.5 bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-400 font-bold text-xs rounded-xl transition">
+          Đăng Xuất Khỏi Thiết Bị Này
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal 8: Thêm / Sửa Nhân Viên & Cấp Quyền (Chủ Sân) -->
+    <div v-if="modals.staffForm.open" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 w-full sm:max-w-lg max-h-[92vh] overflow-y-auto space-y-4 shadow-2xl">
+        <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto sm:hidden"></div>
+        <div class="flex justify-between items-center">
+          <h3 class="text-lg font-black text-white flex items-center gap-2">
+            <i data-lucide="shield" class="w-5 h-5 text-rose-400"></i>
+            {{ modals.staffForm.isEdit ? 'Chỉnh Sửa Quyền Nhân Viên' : 'Tạo Tài Khoản Nhân Viên Mới' }}
+          </h3>
+          <button @click="modals.staffForm.open = false" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="block font-bold uppercase text-slate-400 mb-1">Họ và tên nhân viên *</label>
+            <input type="text" v-model="modals.staffForm.data.name" placeholder="Ví dụ: Nguyễn Văn Hùng" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-rose-500">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold uppercase text-slate-400 mb-1">Tên đăng nhập *</label>
+              <input type="text" v-model="modals.staffForm.data.username" :disabled="modals.staffForm.isEdit" placeholder="nhanvien1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-mono focus:border-rose-500 disabled:opacity-50">
+            </div>
+            <div>
+              <label class="block font-bold uppercase text-slate-400 mb-1">Mật khẩu ban đầu *</label>
+              <input type="password" v-model="modals.staffForm.data.password" placeholder="Nhập mật khẩu" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:border-rose-500">
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold uppercase text-slate-400 mb-1">Số điện thoại nhân viên</label>
+            <input type="tel" v-model="modals.staffForm.data.phone" placeholder="0988xxxxxx" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-rose-500">
+          </div>
+
+          <!-- Permissions Checkboxes -->
+          <div class="pt-3 border-t border-slate-800 space-y-2">
+            <span class="block font-black text-rose-400 uppercase text-xs">Tùy Chọn Cấp Quyền Hạn Chi Tiết:</span>
+            
+            <div class="space-y-2 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
+              <label class="flex items-start gap-2.5 cursor-pointer">
+                <input type="checkbox" v-model="modals.staffForm.data.permissions.canManageCourts" class="w-4 h-4 rounded text-rose-500 mt-0.5">
+                <div>
+                  <strong class="text-white block">1. Vận hành sân</strong>
+                  <span class="text-[11px] text-slate-400">Cho phép bấm vào chơi, đổi sân, gọi đồ uống/cầu cho khách.</span>
+                </div>
+              </label>
+
+              <label class="flex items-start gap-2.5 cursor-pointer pt-2 border-t border-slate-800/80">
+                <input type="checkbox" v-model="modals.staffForm.data.permissions.canCheckout" class="w-4 h-4 rounded text-rose-500 mt-0.5">
+                <div>
+                  <strong class="text-white block">2. Check-out & Thu tiền</strong>
+                  <span class="text-[11px] text-slate-400">Cho phép kết thúc trận đấu, tính tiền và in bill thanh toán K80.</span>
+                </div>
+              </label>
+
+              <label class="flex items-start gap-2.5 cursor-pointer pt-2 border-t border-slate-800/80">
+                <input type="checkbox" v-model="modals.staffForm.data.permissions.canViewRevenue" class="w-4 h-4 rounded text-rose-500 mt-0.5">
+                <div>
+                  <strong class="text-white block">3. Xem doanh thu ngày</strong>
+                  <span class="text-[11px] text-slate-400">Nếu bỏ tick, nhân viên sẽ thấy doanh thu hiển thị dạng '******' để bảo mật.</span>
+                </div>
+              </label>
+
+              <label class="flex items-start gap-2.5 cursor-pointer pt-2 border-t border-slate-800/80">
+                <input type="checkbox" v-model="modals.staffForm.data.permissions.canManageInventory" class="w-4 h-4 rounded text-rose-500 mt-0.5">
+                <div>
+                  <strong class="text-white block">4. Quản lý Shop & Kho hàng</strong>
+                  <span class="text-[11px] text-slate-400">Thêm sản phẩm mới, sửa giá bán, sửa giá vốn và nhập kho.</span>
+                </div>
+              </label>
+
+              <label class="flex items-start gap-2.5 cursor-pointer pt-2 border-t border-slate-800/80">
+                <input type="checkbox" v-model="modals.staffForm.data.permissions.canManagePricing" class="w-4 h-4 rounded text-rose-500 mt-0.5">
+                <div>
+                  <strong class="text-white block">5. Sửa Bảng Giá Sân & Cài Đặt Ngân Hàng</strong>
+                  <span class="text-[11px] text-slate-400">Thay đổi đơn giá theo các khung giờ và đổi số tài khoản nhận tiền VietQR.</span>
+                </div>
+              </label>
+
+              <label class="flex items-start gap-2.5 cursor-pointer pt-2 border-t border-slate-800/80">
+                <input type="checkbox" v-model="modals.staffForm.data.permissions.canManageMonthly" class="w-4 h-4 rounded text-rose-500 mt-0.5">
+                <div>
+                  <strong class="text-white block">6. Quản lý Khách Cố Định Tháng</strong>
+                  <span class="text-[11px] text-slate-400">Xem hợp đồng tháng và đánh dấu đã nộp quỹ.</span>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button @click="modals.staffForm.open = false" class="flex-1 py-3 bg-slate-800 rounded-xl text-xs font-bold text-slate-300">Hủy</button>
+          <button @click="saveStaffForm" class="flex-1 py-3 bg-rose-600 hover:bg-rose-500 rounded-xl text-xs font-black text-white active:scale-98">
+            {{ modals.staffForm.isEdit ? 'LƯU THAY ĐỔI' : 'TẠO TÀI KHOẢN' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 9: Đổi Mật Khẩu Tài Khoản -->
+    <div v-if="modals.changePassword.open" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 w-full sm:max-w-sm space-y-4 shadow-2xl">
+        <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto sm:hidden"></div>
+        <div class="flex justify-between items-center">
+          <h3 class="text-lg font-black text-white">Đổi Mật Khẩu: {{ modals.changePassword.targetAccount?.name }}</h3>
+          <button @click="modals.changePassword.open = false" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="block font-bold text-slate-400 mb-1">Mật khẩu mới *</label>
+            <input type="password" v-model="modals.changePassword.newPassword" placeholder="Nhập mật khẩu mới" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-400 mb-1">Xác nhận mật khẩu mới *</label>
+            <input type="password" v-model="modals.changePassword.confirmPassword" placeholder="Nhập lại mật khẩu mới" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-amber-500">
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button @click="modals.changePassword.open = false" class="flex-1 py-3 bg-slate-800 rounded-xl text-xs font-bold text-slate-300">Hủy</button>
+          <button @click="submitChangePassword" class="flex-1 py-3 bg-amber-500 hover:bg-amber-400 active:scale-98 text-slate-950 font-black text-xs rounded-xl transition">
+            XÁC NHẬN ĐỔI
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 10: Thêm Phiếu Chi Sửa Chữa & Bảo Trì -->
+    <div v-if="modals.expenseForm.open" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 w-full sm:max-w-md max-h-[90vh] overflow-y-auto space-y-4 shadow-2xl">
+        <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto sm:hidden"></div>
+        <div class="flex justify-between items-center">
+          <h3 class="text-lg font-black text-white flex items-center gap-2">
+            <i data-lucide="wrench" class="w-5 h-5 text-rose-400"></i>
+            Thêm Phiếu Chi Sửa Chữa / Bảo Trì
+          </h3>
+          <button @click="modals.expenseForm.open = false" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="block font-bold uppercase text-slate-400 mb-1">Hạng mục chi *</label>
+            <select v-model="modals.expenseForm.data.category" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:border-rose-500">
+              <option value="Sửa chữa điện & Đèn LED">Sửa chữa điện & Đèn LED sân</option>
+              <option value="Thay lưới & Cột sân">Thay lưới, sửa cột & Thảm sân</option>
+              <option value="Bảo dưỡng quạt & Máy lạnh">Bảo dưỡng quạt & Máy lạnh</option>
+              <option value="Vệ sinh & Dụng cụ lau sân">Vệ sinh & Dụng cụ lau sân</option>
+              <option value="Tiền điện & Nước sân">Tiền điện, nước, internet</option>
+              <option value="Chi phí khác">Chi phí khác</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold uppercase text-slate-400 mb-1">Số tiền chi (đ) *</label>
+            <input type="number" v-model.number="modals.expenseForm.data.amount" step="10000" placeholder="Ví dụ: 150000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-base font-black text-rose-400 focus:border-rose-500">
+          </div>
+
+          <div>
+            <label class="block font-bold uppercase text-slate-400 mb-1">Nội dung / Lý do chi</label>
+            <textarea v-model="modals.expenseForm.data.note" rows="2" placeholder="Ví dụ: Thay 2 bóng đèn LED 150W sân 3..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white focus:border-rose-500"></textarea>
+          </div>
+
+          <div>
+            <label class="block font-bold uppercase text-slate-400 mb-1">Ca ghi nhận</label>
+            <select v-model="modals.expenseForm.data.shift" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+              <option value="MORNING">☀️ Ca Sáng (06:00 - 12:00)</option>
+              <option value="AFTERNOON">🌙 Ca Chiều/Tối (12:00 - 24:00)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button @click="modals.expenseForm.open = false" class="flex-1 py-3 bg-slate-800 rounded-xl text-xs font-bold text-slate-300">Hủy</button>
+          <button @click="saveExpenseForm" class="flex-1 py-3 bg-rose-600 hover:bg-rose-500 active:scale-98 rounded-xl text-xs font-black text-white">
+            LƯU PHIẾU CHI
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 11: Tổng Kết & Bàn Giao Ca (K80 Printable) -->
+    <div v-if="modals.shiftSummary.open" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 w-full sm:max-w-md max-h-[92vh] overflow-y-auto space-y-4 shadow-2xl">
+        <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto sm:hidden"></div>
+        <div class="flex justify-between items-center">
+          <h3 class="text-lg font-black text-white flex items-center gap-2">
+            <i data-lucide="sun" class="w-5 h-5 text-amber-400"></i>
+            {{ modals.shiftSummary.shift === 'MORNING' ? 'Tổng Kết & Bàn Giao Ca Sáng' : 'Tổng Kết Ca Làm Việc' }}
+          </h3>
+          <button @click="modals.shiftSummary.open = false" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+        </div>
+
+        <div id="printable-shift-receipt" class="bg-white text-slate-900 p-4 sm:p-5 rounded-2xl font-mono text-xs shadow-inner space-y-3">
+          <div class="text-center pb-2 border-b border-dashed border-slate-400">
+            <h2 class="text-sm font-black uppercase">{{ clubInfo.name || 'SÂN CẦU LÔNG THẮNG PRO' }}</h2>
+            <p class="text-[10px] text-slate-600">PHIẾU TỔNG KẾT & BÀN GIAO CA LÀM VIỆC</p>
+            <p class="text-xs font-bold text-amber-800 mt-1">
+              {{ modals.shiftSummary.shift === 'MORNING' ? '☀️ CA SÁNG (06:00 - 12:00)' : 'TOÀN BỘ CA TRONG NGÀY' }}
+            </p>
+            <p class="text-[10px] text-slate-500">Ngày in: {{ new Date().toLocaleDateString('vi-VN') }} - {{ new Date().toLocaleTimeString('vi-VN') }}</p>
+          </div>
+
+          <div class="space-y-1.5 text-[11px]">
+            <div class="flex justify-between font-bold">
+              <span>Người bàn giao:</span>
+              <span>{{ currentUser?.name }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Số lượt sân đã thanh toán:</span>
+              <strong>{{ modals.shiftSummary.data.courtCount }} lượt</strong>
+            </div>
+            <div class="flex justify-between">
+              <span>Tổng tiền giờ sân:</span>
+              <strong class="text-emerald-700">{{ formatCurrency(modals.shiftSummary.data.courtFee) }}</strong>
+            </div>
+            <div class="flex justify-between">
+              <span>Doanh thu bán đồ uống/cầu:</span>
+              <strong>{{ formatCurrency(modals.shiftSummary.data.shopRevenue) }}</strong>
+            </div>
+            <div class="flex justify-between text-slate-500 text-[10px]">
+              <span>(Giá vốn nước nhập kho: {{ formatCurrency(modals.shiftSummary.data.shopCost) }} &bull; Lãi: +{{ formatCurrency(modals.shiftSummary.data.shopProfit) }})</span>
+            </div>
+          </div>
+
+          <!-- Chi tiết tiền mặt vs chuyển khoản -->
+          <div class="pt-2 border-t-2 border-dashed border-slate-300 space-y-1 text-xs">
+            <div class="flex justify-between font-bold text-slate-900">
+              <span>1. TIỀN MẶT TRONG KÉT:</span>
+              <span class="text-emerald-700 text-sm font-black">{{ formatCurrency(modals.shiftSummary.data.cash) }}</span>
+            </div>
+            <div class="flex justify-between font-bold text-slate-900">
+              <span>2. TIỀN VIETQR (NGÂN HÀNG):</span>
+              <span class="text-cyan-700 text-sm font-black">{{ formatCurrency(modals.shiftSummary.data.vietqr) }}</span>
+            </div>
+            <div class="flex justify-between font-bold text-rose-700" v-if="modals.shiftSummary.data.maintenance > 0">
+              <span>3. ĐÃ CHI BẢO TRÌ CA NÀY:</span>
+              <span>-{{ formatCurrency(modals.shiftSummary.data.maintenance) }}</span>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t-2 border-slate-900 flex justify-between text-sm font-black text-slate-950">
+            <span>TỔNG THU THỰC TẾ:</span>
+            <span class="text-base text-emerald-800">{{ formatCurrency(modals.shiftSummary.data.netTotal) }}</span>
+          </div>
+
+          <div class="pt-4 border-t border-dashed border-slate-300 grid grid-cols-2 text-center text-[10px] text-slate-600">
+            <div>
+              <p class="font-bold">Người bàn giao ca</p>
+              <p class="italic text-[9px] mt-6">(Ký & ghi rõ họ tên)</p>
+            </div>
+            <div>
+              <p class="font-bold">Người nhận ca</p>
+              <p class="italic text-[9px] mt-6">(Ký & ghi rõ họ tên)</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button @click="printShiftReceipt" class="flex-1 py-3 bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/20">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            <span>IN PHIẾU BÀN GIAO (K80)</span>
+          </button>
+          <button @click="modals.shiftSummary.open = false" class="py-3 px-4 bg-slate-800 rounded-xl text-xs font-bold text-slate-300">Đóng</button>
+        </div>
       </div>
     </div>
 
@@ -1123,15 +2150,310 @@
 
         const availableHours = ['06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'];
 
+        // Hệ Thống Tài Khoản & Phân Quyền (RBAC)
+        const defaultOwnerAccount = {
+          id: 'owner_admin',
+          username: 'admin',
+          password: '123456',
+          name: 'Chủ Sân (Toàn quyền)',
+          phone: '0988.xxx.xxx',
+          role: 'OWNER',
+          status: 'ACTIVE',
+          permissions: {
+            canManageCourts: true,
+            canCheckout: true,
+            canViewRevenue: true,
+            canManageInventory: true,
+            canManagePricing: true,
+            canManageMonthly: true
+          }
+        };
+
+        const defaultStaffAccount = {
+          id: 1718000000001,
+          username: 'nhanvien1',
+          password: '123',
+          name: 'Nhân Viên Ca Sáng',
+          phone: '0903.111.222',
+          role: 'STAFF',
+          status: 'ACTIVE',
+          permissions: {
+            canManageCourts: true,
+            canCheckout: true,
+            canViewRevenue: false,
+            canManageInventory: false,
+            canManagePricing: false,
+            canManageMonthly: true
+          }
+        };
+
+        const accounts = ref([defaultOwnerAccount, defaultStaffAccount]);
+        const currentUser = ref({ ...defaultOwnerAccount });
+        const isOwner = computed(() => currentUser.value?.role === 'OWNER');
+        const ownerAccount = computed(() => accounts.value.find(a => a.role === 'OWNER') || defaultOwnerAccount);
+        const staffAccounts = computed(() => accounts.value.filter(a => a.role === 'STAFF'));
+
+        const hasPermission = (permKey) => {
+          if (!currentUser.value) return false;
+          if (currentUser.value.role === 'OWNER') return true;
+          return !!currentUser.value.permissions?.[permKey];
+        };
+
         const modals = ref({
           startPlay: { open: false, court: null, customerName: '', phone: '' },
           addService: { open: false, court: null },
           switchCourt: { open: false, court: null },
-          checkout: { open: false, court: null, totalBill: 0 },
+          checkout: { open: false, court: null, totalBill: 0, paymentMethod: 'CASH' },
           onlineQR: { open: false, refCode: '', courtId: 1 },
           shareQr: { open: false },
           productForm: { open: false, isEdit: false, data: {} },
-          pricingForm: { open: false, isEdit: false, data: {} }
+          pricingForm: { open: false, isEdit: false, data: {} },
+          auth: { open: false, username: '', password: '', error: '' },
+          staffForm: {
+            open: false,
+            isEdit: false,
+            data: {
+              name: '',
+              username: '',
+              password: '',
+              phone: '',
+              permissions: {
+                canManageCourts: true,
+                canCheckout: true,
+                canViewRevenue: false,
+                canManageInventory: false,
+                canManagePricing: false,
+                canManageMonthly: true
+              }
+            }
+          },
+          changePassword: { open: false, targetAccount: null, newPassword: '', confirmPassword: '' },
+          expenseForm: {
+            open: false,
+            data: {
+              category: 'Sửa chữa điện & Đèn LED',
+              amount: null,
+              note: '',
+              shift: 'MORNING'
+            }
+          },
+          shiftSummary: {
+            open: false,
+            shift: 'MORNING',
+            data: {
+              courtCount: 0,
+              courtFee: 0,
+              shopRevenue: 0,
+              shopCost: 0,
+              shopProfit: 0,
+              cash: 0,
+              vietqr: 0,
+              maintenance: 0,
+              netTotal: 0
+            }
+          }
+        });
+
+        // Sample Accounting & Expense Data
+        const sampleAccountingRecords = [
+          {
+            id: 1713401000000,
+            courtId: 1,
+            courtName: 'SÂN 1',
+            customerName: 'Anh Tuấn',
+            checkInTime: new Date(new Date().setHours(8, 0, 0, 0)).toISOString(),
+            checkOutTime: new Date(new Date().setHours(9, 30, 0, 0)).toISOString(),
+            timestamp: new Date(new Date().setHours(9, 30, 0, 0)).toISOString(),
+            courtFee: 120000,
+            servicesRevenue: 30000,
+            servicesCost: 13000,
+            servicesProfit: 17000,
+            services: [
+              { id: 2, name: 'Nước suối Aquafina', qty: 2, price: 10000, costPrice: 4000 },
+              { id: 1, name: 'Revive chanh muối', qty: 1, price: 15000, costPrice: 9000 }
+            ],
+            totalBill: 150000,
+            paymentMethod: 'CASH',
+            shift: 'MORNING',
+            staffName: 'Nhân Viên Ca Sáng'
+          },
+          {
+            id: 1713404600000,
+            courtId: 2,
+            courtName: 'SÂN 2',
+            customerName: 'CLB Cầu Lông Trẻ',
+            checkInTime: new Date(new Date().setHours(9, 0, 0, 0)).toISOString(),
+            checkOutTime: new Date(new Date().setHours(11, 0, 0, 0)).toISOString(),
+            timestamp: new Date(new Date().setHours(11, 0, 0, 0)).toISOString(),
+            courtFee: 160000,
+            servicesRevenue: 50000,
+            servicesCost: 36000,
+            servicesProfit: 14000,
+            services: [
+              { id: 3, name: 'Quả cầu Hải Yến đỏ', qty: 2, price: 25000, costPrice: 18000 }
+            ],
+            totalBill: 210000,
+            paymentMethod: 'VIETQR',
+            shift: 'MORNING',
+            staffName: 'Nhân Viên Ca Sáng'
+          },
+          {
+            id: 1713406400000,
+            courtId: 3,
+            courtName: 'SÂN 3',
+            customerName: 'Chị Mai',
+            checkInTime: new Date(new Date().setHours(9, 30, 0, 0)).toISOString(),
+            checkOutTime: new Date(new Date().setHours(11, 30, 0, 0)).toISOString(),
+            timestamp: new Date(new Date().setHours(11, 30, 0, 0)).toISOString(),
+            courtFee: 160000,
+            servicesRevenue: 36000,
+            servicesCost: 22000,
+            servicesProfit: 14000,
+            services: [
+              { id: 6, name: 'Nước tăng lực Redbull', qty: 2, price: 18000, costPrice: 11000 }
+            ],
+            totalBill: 196000,
+            paymentMethod: 'CASH',
+            shift: 'MORNING',
+            staffName: 'Nhân Viên Ca Sáng'
+          }
+        ];
+
+        const sampleMaintenanceExpenses = [
+          {
+            id: 1,
+            category: 'Sửa chữa điện & Đèn LED',
+            amount: 150000,
+            note: 'Thay 1 bóng đèn LED 150W sân 3 bị chớp',
+            shift: 'MORNING',
+            staffName: 'Nhân Viên Ca Sáng',
+            timestamp: new Date(new Date().setHours(8, 30, 0, 0)).toISOString()
+          },
+          {
+            id: 2,
+            category: 'Vệ sinh & Dụng cụ lau sân',
+            amount: 70000,
+            note: 'Mua nước lau sàn Sunlight & giẻ lau mồ hôi sân',
+            shift: 'MORNING',
+            staffName: 'Nhân Viên Ca Sáng',
+            timestamp: new Date(new Date().setHours(10, 15, 0, 0)).toISOString()
+          }
+        ];
+
+        const accountingRecords = ref(sampleAccountingRecords);
+        const maintenanceExpenses = ref(sampleMaintenanceExpenses);
+        const accountingFilter = ref('TODAY');
+
+        const filteredAccountingRecords = computed(() => {
+          const now = new Date();
+          const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+          const sevenDaysAgo = startOfToday - 7 * 24 * 60 * 60 * 1000;
+
+          return accountingRecords.value.filter(rec => {
+            const recTime = new Date(rec.timestamp).getTime();
+            if (accountingFilter.value === 'ALL') return true;
+            if (accountingFilter.value === 'WEEK') return recTime >= sevenDaysAgo;
+            
+            const isToday = recTime >= startOfToday;
+            if (!isToday) return false;
+            
+            if (accountingFilter.value === 'TODAY') return true;
+            if (accountingFilter.value === 'MORNING') return rec.shift === 'MORNING';
+            if (accountingFilter.value === 'AFTERNOON') return rec.shift === 'AFTERNOON';
+            return true;
+          }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        });
+
+        const filteredExpenses = computed(() => {
+          const now = new Date();
+          const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+          const sevenDaysAgo = startOfToday - 7 * 24 * 60 * 60 * 1000;
+
+          return maintenanceExpenses.value.filter(exp => {
+            const expTime = new Date(exp.timestamp).getTime();
+            if (accountingFilter.value === 'ALL') return true;
+            if (accountingFilter.value === 'WEEK') return expTime >= sevenDaysAgo;
+            
+            const isToday = expTime >= startOfToday;
+            if (!isToday) return false;
+
+            if (accountingFilter.value === 'TODAY') return true;
+            if (accountingFilter.value === 'MORNING') return exp.shift === 'MORNING';
+            if (accountingFilter.value === 'AFTERNOON') return exp.shift === 'AFTERNOON';
+            return true;
+          }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        });
+
+        const accountingSummary = computed(() => {
+          let totalCourtFee = 0;
+          let courtCount = 0;
+          let totalShopRevenue = 0;
+          let totalShopCost = 0;
+          let totalCash = 0;
+          let totalVietQR = 0;
+
+          filteredAccountingRecords.value.forEach(rec => {
+            courtCount++;
+            totalCourtFee += (rec.courtFee || 0);
+            totalShopRevenue += (rec.servicesRevenue || 0);
+            totalShopCost += (rec.servicesCost || 0);
+            if (rec.paymentMethod === 'VIETQR') {
+              totalVietQR += (rec.totalBill || 0);
+            } else {
+              totalCash += (rec.totalBill || 0);
+            }
+          });
+
+          const totalShopProfit = totalShopRevenue - totalShopCost;
+
+          let totalMaintenanceExpense = 0;
+          let expenseCount = 0;
+          filteredExpenses.value.forEach(exp => {
+            expenseCount++;
+            totalMaintenanceExpense += (exp.amount || 0);
+          });
+
+          const netProfit = totalCourtFee + totalShopProfit - totalMaintenanceExpense;
+
+          return {
+            totalCourtFee,
+            courtCount,
+            totalShopRevenue,
+            totalShopCost,
+            totalShopProfit,
+            totalCash,
+            totalVietQR,
+            totalMaintenanceExpense,
+            expenseCount,
+            netProfit
+          };
+        });
+
+        const shopProfitReport = computed(() => {
+          const map = {};
+          filteredAccountingRecords.value.forEach(rec => {
+            if (rec.services && Array.isArray(rec.services)) {
+              rec.services.forEach(item => {
+                if (!map[item.name]) {
+                  map[item.name] = {
+                    name: item.name,
+                    qtySold: 0,
+                    revenue: 0,
+                    cost: 0,
+                    profit: 0
+                  };
+                }
+                const itemQty = item.qty || 1;
+                const itemRev = itemQty * (item.price || 0);
+                const itemCost = itemQty * (item.costPrice !== undefined ? item.costPrice : Math.round((item.price || 0) * 0.6));
+                map[item.name].qtySold += itemQty;
+                map[item.name].revenue += itemRev;
+                map[item.name].cost += itemCost;
+                map[item.name].profit += (itemRev - itemCost);
+              });
+            }
+          });
+          return Object.values(map).sort((a, b) => b.profit - a.profit);
         });
 
         const shareUrl = ref(window.location.origin + window.location.pathname + '?tab=customer');
@@ -1148,6 +2470,10 @@
             localStorage.setItem('badminton_courts', JSON.stringify(courts.value));
             localStorage.setItem('badminton_monthlyContracts', JSON.stringify(monthlyContracts.value));
             localStorage.setItem('badminton_dailyRevenue', dailyRevenue.value.toString());
+            localStorage.setItem('badminton_accounts', JSON.stringify(accounts.value));
+            localStorage.setItem('badminton_currentUser', JSON.stringify(currentUser.value));
+            localStorage.setItem('badminton_accountingRecords', JSON.stringify(accountingRecords.value));
+            localStorage.setItem('badminton_maintenanceExpenses', JSON.stringify(maintenanceExpenses.value));
           } catch(e) {}
         };
 
@@ -1170,6 +2496,28 @@
 
             const savedRev = localStorage.getItem('badminton_dailyRevenue');
             if (savedRev) dailyRevenue.value = parseInt(savedRev) || 0;
+
+            const savedAccounts = localStorage.getItem('badminton_accounts');
+            if (savedAccounts) {
+              accounts.value = JSON.parse(savedAccounts);
+            }
+
+            const savedUser = localStorage.getItem('badminton_currentUser');
+            if (savedUser) {
+              currentUser.value = JSON.parse(savedUser);
+            } else {
+              currentUser.value = { ...ownerAccount.value };
+            }
+
+            const savedRecords = localStorage.getItem('badminton_accountingRecords');
+            if (savedRecords) {
+              accountingRecords.value = JSON.parse(savedRecords);
+            }
+
+            const savedExpenses = localStorage.getItem('badminton_maintenanceExpenses');
+            if (savedExpenses) {
+              maintenanceExpenses.value = JSON.parse(savedExpenses);
+            }
           } catch(e) {}
         };
 
@@ -1414,6 +2762,7 @@
               id: product.id,
               name: product.name,
               price: product.price,
+              costPrice: product.costPrice || 0,
               qty: 1
             });
           }
@@ -1442,16 +2791,170 @@
           const total = (court.session.calculatedCourtFee || 0) + serviceTotal;
           modals.value.checkout.court = court;
           modals.value.checkout.totalBill = total;
+          modals.value.checkout.paymentMethod = 'CASH';
           modals.value.checkout.open = true;
         };
 
         const finishCheckout = (court) => {
-          dailyRevenue.value += modals.value.checkout.totalBill;
+          const currentHour = new Date().getHours();
+          const shift = currentHour < 12 ? 'MORNING' : 'AFTERNOON';
+
+          let servicesRevenue = 0;
+          let servicesCost = 0;
+          const servicesList = (court.session?.services || []).map(s => {
+            const matchedProd = products.value.find(p => p.id === s.id || p.name === s.name);
+            const costPrice = s.costPrice !== undefined ? s.costPrice : (matchedProd?.costPrice || 0);
+            const qty = s.qty || 1;
+            const rev = qty * s.price;
+            const cost = qty * costPrice;
+            servicesRevenue += rev;
+            servicesCost += cost;
+            return {
+              id: s.id,
+              name: s.name,
+              price: s.price,
+              costPrice: costPrice,
+              qty: qty
+            };
+          });
+
+          const servicesProfit = servicesRevenue - servicesCost;
+          const courtFee = court.session?.calculatedCourtFee || 0;
+          const totalBill = modals.value.checkout.totalBill || (courtFee + servicesRevenue);
+          const paymentMethod = modals.value.checkout.paymentMethod || 'CASH';
+
+          const record = {
+            id: Date.now(),
+            courtId: court.id,
+            courtName: court.name,
+            customerName: court.session?.customerName || 'Vãng lai',
+            checkInTime: court.session?.checkInTime,
+            checkOutTime: new Date().toISOString(),
+            timestamp: new Date().toISOString(),
+            courtFee: courtFee,
+            servicesRevenue: servicesRevenue,
+            servicesCost: servicesCost,
+            servicesProfit: servicesProfit,
+            services: servicesList,
+            totalBill: totalBill,
+            paymentMethod: paymentMethod,
+            shift: shift,
+            staffName: currentUser.value?.name || 'Nhân Viên'
+          };
+
+          accountingRecords.value.unshift(record);
+          dailyRevenue.value += totalBill;
           court.status = 'AVAILABLE';
           court.session = null;
           court.reservation = null;
           saveToLocalStorage();
           modals.value.checkout.open = false;
+        };
+
+        const openAddExpenseModal = () => {
+          const currentHour = new Date().getHours();
+          modals.value.expenseForm.data = {
+            category: 'Sửa chữa điện & Đèn LED',
+            amount: null,
+            note: '',
+            shift: currentHour < 12 ? 'MORNING' : 'AFTERNOON'
+          };
+          modals.value.expenseForm.open = true;
+        };
+
+        const saveExpenseForm = () => {
+          const data = modals.value.expenseForm.data;
+          if (!data.amount || data.amount <= 0) {
+            alert('Vui lòng nhập số tiền chi phí hợp lệ!');
+            return;
+          }
+          const newExp = {
+            id: Date.now(),
+            category: data.category,
+            amount: data.amount,
+            note: data.note || '',
+            shift: data.shift || 'MORNING',
+            staffName: currentUser.value?.name || 'Chủ Sân',
+            timestamp: new Date().toISOString()
+          };
+          maintenanceExpenses.value.unshift(newExp);
+          saveToLocalStorage();
+          modals.value.expenseForm.open = false;
+          alert('✅ Đã lưu phiếu chi sửa chữa / bảo trì thiết bị!');
+        };
+
+        const deleteExpense = (exp) => {
+          if (confirm(`Bạn có chắc muốn xóa khoản chi "${exp.category}" (${formatCurrency(exp.amount)})?`)) {
+            maintenanceExpenses.value = maintenanceExpenses.value.filter(e => e.id !== exp.id);
+            saveToLocalStorage();
+          }
+        };
+
+        const openShiftSummaryModal = (shiftType = 'MORNING') => {
+          const targetShift = shiftType;
+          const now = new Date();
+          const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+          const shiftRecords = accountingRecords.value.filter(r => {
+            const t = new Date(r.timestamp).getTime();
+            if (t < startOfToday) return false;
+            if (targetShift === 'ALL') return true;
+            return r.shift === targetShift;
+          });
+
+          const shiftExpenses = maintenanceExpenses.value.filter(e => {
+            const t = new Date(e.timestamp).getTime();
+            if (t < startOfToday) return false;
+            if (targetShift === 'ALL') return true;
+            return e.shift === targetShift;
+          });
+
+          let courtCount = 0;
+          let courtFee = 0;
+          let shopRevenue = 0;
+          let shopCost = 0;
+          let cash = 0;
+          let vietqr = 0;
+
+          shiftRecords.forEach(r => {
+            courtCount++;
+            courtFee += (r.courtFee || 0);
+            shopRevenue += (r.servicesRevenue || 0);
+            shopCost += (r.servicesCost || 0);
+            if (r.paymentMethod === 'VIETQR') {
+              vietqr += (r.totalBill || 0);
+            } else {
+              cash += (r.totalBill || 0);
+            }
+          });
+
+          let maintenance = 0;
+          shiftExpenses.forEach(e => {
+            maintenance += (e.amount || 0);
+          });
+
+          const shopProfit = shopRevenue - shopCost;
+          const netTotal = courtFee + shopRevenue - maintenance;
+
+          modals.value.shiftSummary = {
+            open: true,
+            shift: targetShift,
+            data: {
+              courtCount,
+              courtFee,
+              shopRevenue,
+              shopCost,
+              shopProfit,
+              cash,
+              vietqr,
+              maintenance,
+              netTotal
+            }
+          };
+        };
+
+        const printShiftReceipt = () => {
+          window.print();
         };
 
         const printReceipt = () => {
@@ -1528,6 +3031,174 @@
           modals.value.shareQr.open = true;
         };
 
+        // ================= AUTHENTICATION & STAFF MANAGEMENT HANDLERS =================
+        const openAuthModal = () => {
+          modals.value.auth.username = '';
+          modals.value.auth.password = '';
+          modals.value.auth.error = '';
+          modals.value.auth.open = true;
+        };
+
+        const handleLoginSubmit = () => {
+          const u = (modals.value.auth.username || '').trim();
+          const p = modals.value.auth.password || '';
+          if (!u || !p) {
+            modals.value.auth.error = 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!';
+            return;
+          }
+          const matched = accounts.value.find(a => a.username.toLowerCase() === u.toLowerCase() && a.password === p);
+          if (!matched) {
+            modals.value.auth.error = 'Tên đăng nhập hoặc mật khẩu không chính xác!';
+            return;
+          }
+          if (matched.status === 'LOCKED') {
+            modals.value.auth.error = 'Tài khoản này hiện đang bị khóa! Vui lòng liên hệ Chủ Sân.';
+            return;
+          }
+          currentUser.value = { ...matched };
+          saveToLocalStorage();
+          modals.value.auth.open = false;
+          activeTab.value = 'staff';
+        };
+
+        const quickLogin = (username) => {
+          const matched = accounts.value.find(a => a.username === username);
+          if (matched) {
+            if (matched.status === 'LOCKED') {
+              alert('Tài khoản này đang bị khóa!');
+              return;
+            }
+            currentUser.value = { ...matched };
+            saveToLocalStorage();
+            modals.value.auth.open = false;
+            activeTab.value = 'staff';
+          }
+        };
+
+        const handleLogout = () => {
+          currentUser.value = { ...defaultOwnerAccount };
+          saveToLocalStorage();
+          openAuthModal();
+        };
+
+        const openAddStaffModal = () => {
+          modals.value.staffForm.isEdit = false;
+          modals.value.staffForm.data = {
+            id: Date.now(),
+            name: '',
+            username: '',
+            password: '123',
+            phone: '',
+            role: 'STAFF',
+            status: 'ACTIVE',
+            permissions: {
+              canManageCourts: true,
+              canCheckout: true,
+              canViewRevenue: false,
+              canManageInventory: false,
+              canManagePricing: false,
+              canManageMonthly: true
+            }
+          };
+          modals.value.staffForm.open = true;
+        };
+
+        const openEditStaffModal = (staff) => {
+          modals.value.staffForm.isEdit = true;
+          modals.value.staffForm.data = {
+            ...staff,
+            permissions: { ...staff.permissions }
+          };
+          modals.value.staffForm.open = true;
+        };
+
+        const saveStaffForm = () => {
+          const d = modals.value.staffForm.data;
+          if (!d.name || !d.username || !d.password) {
+            alert('Vui lòng điền Họ tên, Tên đăng nhập và Mật khẩu!');
+            return;
+          }
+          if (!modals.value.staffForm.isEdit) {
+            // Check unique username
+            const exist = accounts.value.some(a => a.username.toLowerCase() === d.username.trim().toLowerCase());
+            if (exist) {
+              alert(`Tên đăng nhập "${d.username}" đã tồn tại. Vui lòng chọn tên khác!`);
+              return;
+            }
+            accounts.value.push({
+              id: Date.now(),
+              name: d.name.trim(),
+              username: d.username.trim(),
+              password: d.password,
+              phone: d.phone ? d.phone.trim() : '',
+              role: 'STAFF',
+              status: 'ACTIVE',
+              permissions: { ...d.permissions }
+            });
+          } else {
+            const idx = accounts.value.findIndex(a => a.id === d.id);
+            if (idx !== -1) {
+              accounts.value[idx].name = d.name.trim();
+              accounts.value[idx].password = d.password;
+              accounts.value[idx].phone = d.phone ? d.phone.trim() : '';
+              accounts.value[idx].permissions = { ...d.permissions };
+              // If currently logged in as this staff, update session
+              if (currentUser.value?.id === d.id) {
+                currentUser.value = { ...accounts.value[idx] };
+              }
+            }
+          }
+          saveToLocalStorage();
+          modals.value.staffForm.open = false;
+        };
+
+        const toggleStaffStatus = (staff) => {
+          staff.status = staff.status === 'ACTIVE' ? 'LOCKED' : 'ACTIVE';
+          if (currentUser.value?.id === staff.id && staff.status === 'LOCKED') {
+            currentUser.value = { ...defaultOwnerAccount };
+          }
+          saveToLocalStorage();
+        };
+
+        const deleteStaff = (staff) => {
+          if (confirm(`Bạn có chắc chắn muốn xóa tài khoản nhân viên "${staff.name}"?`)) {
+            accounts.value = accounts.value.filter(a => a.id !== staff.id);
+            if (currentUser.value?.id === staff.id) {
+              currentUser.value = { ...defaultOwnerAccount };
+            }
+            saveToLocalStorage();
+          }
+        };
+
+        const openChangePasswordModal = (targetAccount) => {
+          modals.value.changePassword.targetAccount = targetAccount;
+          modals.value.changePassword.newPassword = '';
+          modals.value.changePassword.confirmPassword = '';
+          modals.value.changePassword.open = true;
+        };
+
+        const submitChangePassword = () => {
+          const cp = modals.value.changePassword;
+          if (!cp.newPassword) {
+            alert('Vui lòng nhập mật khẩu mới!');
+            return;
+          }
+          if (cp.newPassword !== cp.confirmPassword) {
+            alert('Mật khẩu xác nhận không khớp! Vui lòng nhập lại.');
+            return;
+          }
+          const target = accounts.value.find(a => a.id === cp.targetAccount.id);
+          if (target) {
+            target.password = cp.newPassword;
+            if (currentUser.value?.id === target.id) {
+              currentUser.value.password = cp.newPassword;
+            }
+            saveToLocalStorage();
+            alert(`✅ Đã đổi mật khẩu cho tài khoản "${target.name}" thành công!`);
+            cp.open = false;
+          }
+        };
+
         onMounted(() => {
           loadFromLocalStorage();
 
@@ -1557,6 +3228,23 @@
           modals,
           shareUrl,
           shareUrlQr,
+          accounts,
+          currentUser,
+          isOwner,
+          ownerAccount,
+          staffAccounts,
+          hasPermission,
+          openAuthModal,
+          handleLoginSubmit,
+          quickLogin,
+          handleLogout,
+          openAddStaffModal,
+          openEditStaffModal,
+          saveStaffForm,
+          toggleStaffStatus,
+          deleteStaff,
+          openChangePasswordModal,
+          submitChangePassword,
           formatCurrency,
           formatTimer,
           formatTime,
@@ -1589,7 +3277,19 @@
           submitOnlineBooking,
           simulateWebhookSuccess,
           generateVietQRUrl,
-          openShareQrModal
+          openShareQrModal,
+          accountingFilter,
+          accountingRecords,
+          filteredAccountingRecords,
+          maintenanceExpenses,
+          filteredExpenses,
+          accountingSummary,
+          shopProfitReport,
+          openAddExpenseModal,
+          saveExpenseForm,
+          deleteExpense,
+          openShiftSummaryModal,
+          printShiftReceipt
         };
       }
     }).mount('#app');
