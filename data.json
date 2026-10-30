@@ -1,5 +1,14 @@
 {
-  "dailyRevenue": 1850000,
+  "branch": {
+    "id": "b0000000-0000-0000-0000-000000000001",
+    "code": "THANG_PRO_01",
+    "name": "SÂN CẦU LÔNG THẮNG PRO - CƠ SỞ 1",
+    "address": "45 Đường Cầu Lông, TP. Thủ Đức, TP. Hồ Chí Minh",
+    "phone": "0988.777.666",
+    "bankAccountNo": "0988776655",
+    "bankName": "MB",
+    "bankAccountHolder": "VIET THANG PRO"
+  },
   "courts": [
     {
       "id": 1,
@@ -74,6 +83,78 @@
         "endTime": "20:00",
         "paid": true
       }
+    },
+    {
+      "id": 5,
+      "courtNumber": 5,
+      "name": "SÂN 5 (Khu Mới)",
+      "courtType": "INDOOR",
+      "floorMaterial": "PVC_MAT",
+      "lightingQuality": "LED_PRO_500LUX",
+      "description": "Sân thảm tiêu chuẩn BWF mới thi công",
+      "status": "RESERVED",
+      "session": null,
+      "reservation": {
+        "customerName": "Khách Đặt Hợp Lệ 1",
+        "phone": "0901.111.222",
+        "startTime": "18:00",
+        "endTime": "20:00",
+        "deposit": 50000,
+        "refCode": "BK-1793374183822"
+      }
+    },
+    {
+      "id": 6,
+      "courtNumber": 6,
+      "name": "SÂN 6 (VIP)",
+      "courtType": "INDOOR",
+      "floorMaterial": "WOODEN",
+      "lightingQuality": "LED_PRO_500LUX",
+      "description": "",
+      "status": "RESERVED",
+      "session": null,
+      "reservation": {
+        "customerName": "Khách Test Idempotent",
+        "phone": "0909.999.000",
+        "startTime": "06:00",
+        "endTime": "08:00",
+        "deposit": 50000,
+        "refCode": "BK-1793374183916"
+      }
+    }
+  ],
+  "pricingSlots": [
+    {
+      "id": 1,
+      "name": "Khung Giờ Sáng",
+      "startTime": "06:00",
+      "endTime": "14:00",
+      "rate": 50000,
+      "isPeak": false
+    },
+    {
+      "id": 2,
+      "name": "Khung Giờ Chiều Thường",
+      "startTime": "14:00",
+      "endTime": "17:00",
+      "rate": 60000,
+      "isPeak": false
+    },
+    {
+      "id": 3,
+      "name": "Khung Giờ Vàng (Cao Điểm)",
+      "startTime": "17:00",
+      "endTime": "22:00",
+      "rate": 90000,
+      "isPeak": true
+    },
+    {
+      "id": 4,
+      "name": "Khung Giờ Đêm",
+      "startTime": "22:00",
+      "endTime": "24:00",
+      "rate": 60000,
+      "isPeak": false
     }
   ],
   "products": [
@@ -126,6 +207,163 @@
       "minAlert": 2
     }
   ],
+  "bookings": [
+    {
+      "id": "BK-1793374183916",
+      "bookingCode": "BK-1793374183916",
+      "courtId": 6,
+      "customerName": "Khách Test Idempotent",
+      "customerPhone": "0909.999.000",
+      "bookingType": "CASUAL",
+      "startTime": "2026-10-30T23:00:00.000Z",
+      "endTime": "2026-10-31T01:00:00.000Z",
+      "rateSnapshot": [
+        {
+          "name": "Khung Giờ Sáng",
+          "minutes": 120,
+          "rate": 50000,
+          "fee": 100000
+        }
+      ],
+      "totalFee": 100000,
+      "depositRequired": 50000,
+      "depositPaid": 50000,
+      "depositStatus": "PAID",
+      "status": "CONFIRMED",
+      "createdAt": "2026-10-30T15:29:43.916Z"
+    },
+    {
+      "id": "BK-1793374183906",
+      "bookingCode": "BK-1793374183906",
+      "courtId": 5,
+      "customerName": "Khách Liền Kề 4",
+      "customerPhone": "0904.777.888",
+      "bookingType": "CASUAL",
+      "startTime": "2026-10-31T13:00:00.000Z",
+      "endTime": "2026-10-31T15:00:00.000Z",
+      "rateSnapshot": [
+        {
+          "name": "Khung Giờ Vàng (Cao Điểm)",
+          "minutes": 120,
+          "rate": 90000,
+          "fee": 180000
+        }
+      ],
+      "totalFee": 180000,
+      "depositRequired": 50000,
+      "depositPaid": 50000,
+      "depositStatus": "PAID",
+      "status": "CONFIRMED",
+      "createdAt": "2026-10-30T15:29:43.906Z"
+    },
+    {
+      "id": "BK-1793374183822",
+      "bookingCode": "BK-1793374183822",
+      "courtId": 5,
+      "customerName": "Khách Đặt Hợp Lệ 1",
+      "customerPhone": "0901.111.222",
+      "bookingType": "CASUAL",
+      "startTime": "2026-10-31T11:00:00.000Z",
+      "endTime": "2026-10-31T13:00:00.000Z",
+      "rateSnapshot": [
+        {
+          "name": "Khung Giờ Vàng (Cao Điểm)",
+          "minutes": 120,
+          "rate": 90000,
+          "fee": 180000
+        }
+      ],
+      "totalFee": 180000,
+      "depositRequired": 50000,
+      "depositPaid": 50000,
+      "depositStatus": "PAID",
+      "status": "CONFIRMED",
+      "createdAt": "2026-10-30T15:29:43.822Z"
+    }
+  ],
+  "bookingSlots": [
+    {
+      "id": "SLOT-1793374183916",
+      "bookingId": "BK-1793374183916",
+      "courtId": 6,
+      "startTime": "2026-10-30T23:00:00.000Z",
+      "endTime": "2026-10-31T01:00:00.000Z",
+      "hourlyRateSnapshot": 50000,
+      "slotFee": 100000,
+      "status": "BOOKED"
+    },
+    {
+      "id": "SLOT-1793374183906",
+      "bookingId": "BK-1793374183906",
+      "courtId": 5,
+      "startTime": "2026-10-31T13:00:00.000Z",
+      "endTime": "2026-10-31T15:00:00.000Z",
+      "hourlyRateSnapshot": 90000,
+      "slotFee": 180000,
+      "status": "BOOKED"
+    },
+    {
+      "id": "SLOT-1793374183822",
+      "bookingId": "BK-1793374183822",
+      "courtId": 5,
+      "startTime": "2026-10-31T11:00:00.000Z",
+      "endTime": "2026-10-31T13:00:00.000Z",
+      "hourlyRateSnapshot": 90000,
+      "slotFee": 180000,
+      "status": "BOOKED"
+    }
+  ],
+  "invoices": [],
+  "expenses": [],
+  "shiftHandovers": [],
+  "auditLogs": [
+    {
+      "id": 1793374183917,
+      "action": "CREATE_BOOKING",
+      "entityType": "court_bookings",
+      "entityId": "BK-1793374183916",
+      "oldData": null,
+      "newData": "{\"id\":\"BK-1793374183916\",\"bookingCode\":\"BK-1793374183916\",\"courtId\":6,\"customerName\":\"Khách Test Idempotent\",\"customerPhone\":\"0909.999.000\",\"bookingType\":\"CASUAL\",\"startTime\":\"2026-10-30T23:00:00.000Z\",\"endTime\":\"2026-10-31T01:00:00.000Z\",\"rateSnapshot\":[{\"name\":\"Khung Giờ Sáng\",\"minutes\":120,\"rate\":50000,\"fee\":100000}],\"totalFee\":100000,\"depositRequired\":50000,\"depositPaid\":50000,\"depositStatus\":\"PAID\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-30T15:29:43.916Z\"}",
+      "timestamp": "2026-10-30T15:29:43.917Z"
+    },
+    {
+      "id": 1793374183906,
+      "action": "CREATE_BOOKING",
+      "entityType": "court_bookings",
+      "entityId": "BK-1793374183906",
+      "oldData": null,
+      "newData": "{\"id\":\"BK-1793374183906\",\"bookingCode\":\"BK-1793374183906\",\"courtId\":5,\"customerName\":\"Khách Liền Kề 4\",\"customerPhone\":\"0904.777.888\",\"bookingType\":\"CASUAL\",\"startTime\":\"2026-10-31T13:00:00.000Z\",\"endTime\":\"2026-10-31T15:00:00.000Z\",\"rateSnapshot\":[{\"name\":\"Khung Giờ Vàng (Cao Điểm)\",\"minutes\":120,\"rate\":90000,\"fee\":180000}],\"totalFee\":180000,\"depositRequired\":50000,\"depositPaid\":50000,\"depositStatus\":\"PAID\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-30T15:29:43.906Z\"}",
+      "timestamp": "2026-10-30T15:29:43.906Z"
+    },
+    {
+      "id": 1793374183905,
+      "action": "CREATE_BOOKING",
+      "entityType": "court_bookings",
+      "entityId": "BK-1793374183822",
+      "oldData": null,
+      "newData": "{\"id\":\"BK-1793374183822\",\"bookingCode\":\"BK-1793374183822\",\"courtId\":5,\"customerName\":\"Khách Đặt Hợp Lệ 1\",\"customerPhone\":\"0901.111.222\",\"bookingType\":\"CASUAL\",\"startTime\":\"2026-10-31T11:00:00.000Z\",\"endTime\":\"2026-10-31T13:00:00.000Z\",\"rateSnapshot\":[{\"name\":\"Khung Giờ Vàng (Cao Điểm)\",\"minutes\":120,\"rate\":90000,\"fee\":180000}],\"totalFee\":180000,\"depositRequired\":50000,\"depositPaid\":50000,\"depositStatus\":\"PAID\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-30T15:29:43.822Z\"}",
+      "timestamp": "2026-10-30T15:29:43.905Z"
+    },
+    {
+      "id": 1793374183821,
+      "action": "CREATE_COURT",
+      "entityType": "courts",
+      "entityId": "6",
+      "oldData": null,
+      "newData": "{\"id\":6,\"courtNumber\":6,\"name\":\"SÂN 6 (VIP)\",\"courtType\":\"INDOOR\",\"floorMaterial\":\"WOODEN\",\"lightingQuality\":\"LED_PRO_500LUX\",\"description\":\"\",\"status\":\"AVAILABLE\",\"session\":null,\"reservation\":null}",
+      "timestamp": "2026-10-30T15:29:43.821Z"
+    },
+    {
+      "id": 1793374183820,
+      "action": "CREATE_COURT",
+      "entityType": "courts",
+      "entityId": "5",
+      "oldData": null,
+      "newData": "{\"id\":5,\"courtNumber\":5,\"name\":\"SÂN 5 (Khu Mới)\",\"courtType\":\"INDOOR\",\"floorMaterial\":\"PVC_MAT\",\"lightingQuality\":\"LED_PRO_500LUX\",\"description\":\"Sân thảm tiêu chuẩn BWF mới thi công\",\"status\":\"AVAILABLE\",\"session\":null,\"reservation\":null}",
+      "timestamp": "2026-10-30T15:29:43.820Z"
+    }
+  ],
+  "dailyRevenue": 1850000,
   "monthlyContracts": [
     {
       "id": 1,
@@ -150,6 +388,36 @@
       "totalSessions": 12,
       "totalFund": 2160000,
       "paid": false
+    }
+  ],
+  "idempotencyKeys": [
+    {
+      "key": "REQ-IDEM-1793374183916",
+      "responseBody": {
+        "id": "BK-1793374183916",
+        "bookingCode": "BK-1793374183916",
+        "courtId": 6,
+        "customerName": "Khách Test Idempotent",
+        "customerPhone": "0909.999.000",
+        "bookingType": "CASUAL",
+        "startTime": "2026-10-30T23:00:00.000Z",
+        "endTime": "2026-10-31T01:00:00.000Z",
+        "rateSnapshot": [
+          {
+            "name": "Khung Giờ Sáng",
+            "minutes": 120,
+            "rate": 50000,
+            "fee": 100000
+          }
+        ],
+        "totalFee": 100000,
+        "depositRequired": 50000,
+        "depositPaid": 50000,
+        "depositStatus": "PAID",
+        "status": "CONFIRMED",
+        "createdAt": "2026-10-30T15:29:43.916Z"
+      },
+      "createdAt": "2026-10-30T15:29:43.917Z"
     }
   ]
 }

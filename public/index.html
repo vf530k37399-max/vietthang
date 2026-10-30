@@ -67,7 +67,7 @@
           <div class="truncate">
             <h1 class="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-1.5 truncate">
               <span class="truncate">{{ clubInfo.name || 'SÂN CẦU LÔNG THẮNG PRO' }}</span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex-shrink-0">4 Sân</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex-shrink-0">{{ courts.length }} Sân</span>
             </h1>
             <p class="text-[11px] sm:text-xs text-slate-400 flex items-center gap-1.5 truncate">
               <span v-if="hasPermission('canViewRevenue')" class="text-emerald-400 font-bold truncate">
@@ -252,7 +252,29 @@
           </div>
         </div>
 
-        <!-- 2x2 Grid View for Court 1 - 4 -->
+        <!-- Header Thanh Quản Lý Sân & Thêm Sân Động -->
+        <div class="flex items-center justify-between flex-wrap gap-3 bg-slate-900/60 p-3 sm:p-4 rounded-2xl border border-slate-800">
+          <div class="flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-sm">
+              {{ courts.length }}
+            </span>
+            <div>
+              <h3 class="text-sm font-black text-white">SƠ ĐỒ SÂN TRỰC QUAN ({{ courts.length }} SÂN)</h3>
+              <p class="text-[11px] text-slate-400">Đồng bộ trạng thái thời gian thực &bull; Tự động tính tiền đa khung giờ vàng</p>
+            </div>
+          </div>
+
+          <div v-if="isOwner" class="flex items-center gap-2 flex-wrap">
+            <button 
+              @click="openAddCourtModal" 
+              class="px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 active:scale-95 text-white font-black text-xs rounded-xl shadow-lg shadow-emerald-600/25 flex items-center gap-1.5 transition">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              <span>+ THÊM SÂN MỚI (SÂN {{ courts.length + 1 }})</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dynamic Responsive Grid for All Courts (Sân 1 -> Sân N) -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div 
             v-for="court in courts" 
@@ -262,21 +284,34 @@
               court.status === 'AVAILABLE' ? 'bg-slate-900/80 border-emerald-500/40 hover:border-emerald-500 shadow-emerald-500/5' : '',
               court.status === 'PLAYING' ? 'bg-slate-900/95 border-rose-500/70 shadow-rose-500/10 ring-1 ring-rose-500/30' : '',
               court.status === 'RESERVED' ? 'bg-slate-900/90 border-amber-500/60 shadow-amber-500/10' : '',
-              court.status === 'FIXED' ? 'bg-slate-900/90 border-purple-500/60 shadow-purple-500/10' : ''
+              court.status === 'FIXED' ? 'bg-slate-900/90 border-purple-500/60 shadow-purple-500/10' : '',
+              court.status === 'MAINTENANCE' ? 'bg-slate-900/90 border-amber-500/40 opacity-75' : ''
             ]">
             
             <!-- Card Header -->
             <div>
               <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-3">
-                  <span class="text-3xl font-black text-white tracking-tight">{{ court.name }}</span>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-3xl font-black text-white tracking-tight">{{ court.name }}</span>
+                      <button v-if="isOwner" @click="openEditCourtModal(court)" class="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-800" title="Chỉnh sửa sân">
+                        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                      </button>
+                    </div>
+                    <div class="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5">
+                      <span class="px-1.5 py-0.5 rounded bg-slate-800/80">{{ court.floorMaterial === 'PVC_MAT' ? 'Thảm BWF' : (court.floorMaterial || 'Thảm PVC') }}</span>
+                      <span class="px-1.5 py-0.5 rounded bg-slate-800/80">{{ court.lightingQuality || 'LED 400 Lux' }}</span>
+                    </div>
+                  </div>
                   <span 
                     :class="[
                       'text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider',
                       court.status === 'AVAILABLE' ? 'bg-emerald-500 text-slate-950' : '',
                       court.status === 'PLAYING' ? 'bg-rose-500 text-white animate-pulse' : '',
                       court.status === 'RESERVED' ? 'bg-amber-500 text-slate-950' : '',
-                      court.status === 'FIXED' ? 'bg-purple-600 text-white' : ''
+                      court.status === 'FIXED' ? 'bg-purple-600 text-white' : '',
+                      court.status === 'MAINTENANCE' ? 'bg-amber-600/30 text-amber-300 border border-amber-500/40' : ''
                     ]">
                     {{ getStatusLabel(court.status) }}
                   </span>
@@ -287,12 +322,14 @@
                     court.status === 'AVAILABLE' ? 'bg-emerald-500/20 text-emerald-400' : '',
                     court.status === 'PLAYING' ? 'bg-rose-500/20 text-rose-400' : '',
                     court.status === 'RESERVED' ? 'bg-amber-500/20 text-amber-400' : '',
-                    court.status === 'FIXED' ? 'bg-purple-500/20 text-purple-400' : ''
+                    court.status === 'FIXED' ? 'bg-purple-500/20 text-purple-400' : '',
+                    court.status === 'MAINTENANCE' ? 'bg-amber-500/20 text-amber-400' : ''
                   ]">
                   <i v-if="court.status === 'AVAILABLE'" data-lucide="check-circle" class="w-6 h-6"></i>
                   <i v-if="court.status === 'PLAYING'" data-lucide="activity" class="w-6 h-6 animate-spin"></i>
                   <i v-if="court.status === 'RESERVED'" data-lucide="clock" class="w-6 h-6"></i>
                   <i v-if="court.status === 'FIXED'" data-lucide="calendar-check" class="w-6 h-6"></i>
+                  <i v-if="court.status === 'MAINTENANCE'" data-lucide="wrench" class="w-6 h-6"></i>
                 </div>
               </div>
 
@@ -408,24 +445,42 @@
 
             <!-- Card Actions -->
             <div class="mt-5 pt-4 border-t border-slate-800">
-              <div v-if="court.status === 'AVAILABLE'" class="grid grid-cols-2 gap-2 sm:gap-3">
-                <button 
-                  v-if="hasPermission('canManageCourts')"
-                  @click="openStartPlayModal(court)" 
-                  class="flex items-center justify-center gap-2 py-3 px-3 sm:px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-600/30 transition">
-                  <i data-lucide="play" class="w-4 h-4 fill-white flex-shrink-0"></i>
-                  <span>Vào Chơi Ngay</span>
-                </button>
-                <div v-else class="flex items-center justify-center py-3 px-2 rounded-2xl bg-slate-950 border border-slate-800 text-slate-500 text-[11px] text-center">
-                  🔒 Cần quyền vận hành
+              <div v-if="court.status === 'AVAILABLE'" class="space-y-2">
+                <div class="grid grid-cols-2 gap-2 sm:gap-3">
+                  <button 
+                    v-if="hasPermission('canManageCourts')"
+                    @click="openStartPlayModal(court)" 
+                    class="flex items-center justify-center gap-2 py-3 px-3 sm:px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-600/30 transition">
+                    <i data-lucide="play" class="w-4 h-4 fill-white flex-shrink-0"></i>
+                    <span>Vào Chơi Ngay</span>
+                  </button>
+                  <div v-else class="flex items-center justify-center py-3 px-2 rounded-2xl bg-slate-950 border border-slate-800 text-slate-500 text-[11px] text-center">
+                    🔒 Cần quyền vận hành
+                  </div>
+
+                  <button 
+                    @click="activeTab = 'customer'; customerBooking.courtId = court.id" 
+                    class="flex items-center justify-center gap-1.5 py-3 px-3 sm:px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold text-xs transition">
+                    <i data-lucide="calendar-plus" class="w-4 h-4 flex-shrink-0"></i>
+                    <span>Tạo Đơn Đặt</span>
+                  </button>
                 </div>
 
-                <button 
-                  @click="activeTab = 'customer'; customerBooking.courtId = court.id" 
-                  class="flex items-center justify-center gap-1.5 py-3 px-3 sm:px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold text-xs transition">
-                  <i data-lucide="calendar-plus" class="w-4 h-4 flex-shrink-0"></i>
-                  <span>Tạo Đơn Đặt</span>
-                </button>
+                <div v-if="isOwner" class="flex items-center justify-end gap-2 pt-1 border-t border-slate-800/60">
+                  <button 
+                    @click="toggleCourtMaintenance(court)"
+                    class="text-[11px] text-amber-400 hover:text-amber-300 font-semibold px-2 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20 transition flex items-center gap-1">
+                    <i data-lucide="wrench" class="w-3.5 h-3.5"></i>
+                    <span>Đưa Vào Bảo Trì</span>
+                  </button>
+                  <button 
+                    v-if="courts.length > 1"
+                    @click="deleteCourt(court)"
+                    class="text-[11px] text-rose-400 hover:text-rose-300 font-semibold px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 transition flex items-center gap-1">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    <span>Xóa Sân</span>
+                  </button>
+                </div>
               </div>
 
               <div v-if="court.status === 'PLAYING'" class="space-y-2">
@@ -501,6 +556,19 @@
                   🔒 Khóa
                 </div>
               </div>
+
+              <div v-if="court.status === 'MAINTENANCE'" class="space-y-2">
+                <button 
+                  v-if="isOwner"
+                  @click="toggleCourtMaintenance(court)" 
+                  class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 font-black text-xs text-white transition active:scale-95 flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20">
+                  <i data-lucide="check-circle" class="w-4 h-4"></i>
+                  <span>HOÀN THÀNH BẢO TRÌ (MỞ SÂN LẠI)</span>
+                </button>
+                <div v-else class="text-center py-2.5 text-xs text-amber-400 bg-slate-950 rounded-xl border border-amber-500/30">
+                  🔧 Sân đang tạm ngưng đón khách để bảo trì
+                </div>
+              </div>
             </div>
 
           </div>
@@ -513,7 +581,7 @@
         <div class="bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent p-5 rounded-3xl border border-amber-500/30">
           <h2 class="text-xl font-black text-white flex items-center gap-2">
             <i data-lucide="smartphone" class="w-6 h-6 text-amber-400"></i>
-            ĐẶT LỊCH SÂN TRỰC TUYẾN 24/7 (SÂN 1 - 4)
+            ĐẶT LỊCH SÂN TRỰC TUYẾN 24/7 (SÂN 1 - {{ courts.length }})
           </h2>
           <p class="text-xs text-slate-400 mt-1">Đồng bộ trực tuyến với nhân viên quầy. Quét mã VietQR nhận cọc tự động giữ chỗ trong 2 giây!</p>
         </div>
@@ -525,8 +593,8 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">2. Chọn Số Sân</label>
-            <div class="grid grid-cols-4 gap-2">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">2. Chọn Số Sân (Tổng số {{ courts.length }} sân)</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <button 
                 v-for="c in courts" 
                 :key="c.id" 
@@ -1290,6 +1358,57 @@
     </main>
 
     <!-- ================= MODALS & POPUPS ================= -->
+
+    <!-- Modal: Thêm / Sửa Sân Cầu Lông (Mở Rộng Động Sân 1 -> Sân N) -->
+    <div v-if="modals.courtForm.open" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl">
+        <div class="flex justify-between items-center">
+          <h3 class="text-lg font-black text-white flex items-center gap-2">
+            <i data-lucide="layers" class="w-5 h-5 text-emerald-400"></i>
+            {{ modals.courtForm.isEdit ? 'Chỉnh Sửa Sân Cầu Lông' : 'Thêm Sân Cầu Lông Mới' }}
+          </h3>
+          <button @click="modals.courtForm.open = false" class="text-slate-400 hover:text-white text-xl">&times;</button>
+        </div>
+
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1">Tên Sân *</label>
+            <input type="text" v-model="modals.courtForm.data.name" placeholder="Ví dụ: SÂN 5, SÂN VIP 1..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Chất Liệu Mặt Sàn</label>
+              <select v-model="modals.courtForm.data.floorMaterial" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+                <option value="PVC_MAT">Thảm PVC chuẩn BWF</option>
+                <option value="WOOD">Sàn Gỗ Thi Đấu</option>
+                <option value="SILICON_PU">Silicon PU Đa Năng</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Hệ Thống Chiếu Sáng</label>
+              <select v-model="modals.courtForm.data.lightingQuality" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+                <option value="LED 400 Lux">LED 400 Lux Chống Chói</option>
+                <option value="LED 500 Lux">LED 500 Lux Chuẩn Thi Đấu</option>
+                <option value="LED 300 Lux">LED 300 Lux Phong Trào</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1">Mô Tả / Vị Trí Trong Sân</label>
+            <input type="text" v-model="modals.courtForm.data.description" placeholder="Ví dụ: Dãy bên phải, gần cửa số 2..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button @click="modals.courtForm.open = false" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-slate-300 transition">Hủy</button>
+          <button @click="saveCourtForm" class="flex-1 py-3 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 rounded-xl text-xs font-black text-white shadow-lg shadow-emerald-600/30 transition">
+            {{ modals.courtForm.isEdit ? 'LƯU THAY ĐỔI' : 'TẠO SÂN MỚI' }}
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Modal: Thêm / Sửa Sản Phẩm Shop -->
     <div v-if="modals.productForm.open" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -2200,6 +2319,7 @@
         };
 
         const modals = ref({
+          courtForm: { open: false, isEdit: false, data: {} },
           startPlay: { open: false, court: null, customerName: '', phone: '' },
           addService: { open: false, court: null },
           switchCourt: { open: false, court: null },
@@ -2682,6 +2802,7 @@
             case 'PLAYING': return 'Đang Chơi';
             case 'RESERVED': return 'Đã Đặt';
             case 'FIXED': return 'Cố Định Tháng';
+            case 'MAINTENANCE': return 'Bảo Trì';
             default: return st;
           }
         };
@@ -2692,6 +2813,124 @@
         };
 
         const availableCourtsForSwitch = computed(() => courts.value.filter(c => c.status === 'AVAILABLE'));
+
+        // Dynamic Court Management Operations (Sân 1 -> Sân N)
+        const openAddCourtModal = () => {
+          const nextCourtNum = courts.value.length + 1;
+          modals.value.courtForm.isEdit = false;
+          modals.value.courtForm.data = {
+            id: Date.now(),
+            courtNumber: nextCourtNum,
+            name: `SÂN ${nextCourtNum}`,
+            floorMaterial: 'PVC_MAT',
+            lightingQuality: 'LED 400 Lux',
+            description: `Sân tiêu chuẩn số ${nextCourtNum}`,
+            status: 'AVAILABLE',
+            session: null,
+            reservation: null,
+            fixedSchedule: null
+          };
+          modals.value.courtForm.open = true;
+          setTimeout(() => {
+            try { if (window.lucide) lucide.createIcons(); } catch(e) {}
+          }, 100);
+        };
+
+        const openEditCourtModal = (court) => {
+          modals.value.courtForm.isEdit = true;
+          modals.value.courtForm.data = {
+            id: court.id,
+            courtNumber: court.courtNumber || court.id,
+            name: court.name,
+            floorMaterial: court.floorMaterial || 'PVC_MAT',
+            lightingQuality: court.lightingQuality || 'LED 400 Lux',
+            description: court.description || '',
+            status: court.status || 'AVAILABLE'
+          };
+          modals.value.courtForm.open = true;
+          setTimeout(() => {
+            try { if (window.lucide) lucide.createIcons(); } catch(e) {}
+          }, 100);
+        };
+
+        const saveCourtForm = () => {
+          const d = modals.value.courtForm.data;
+          if (!d.name || !d.name.trim()) {
+            alert('Vui lòng nhập tên sân!');
+            return;
+          }
+
+          if (modals.value.courtForm.isEdit) {
+            const idx = courts.value.findIndex(c => c.id === d.id);
+            if (idx !== -1) {
+              courts.value[idx].name = d.name.trim();
+              courts.value[idx].floorMaterial = d.floorMaterial;
+              courts.value[idx].lightingQuality = d.lightingQuality;
+              courts.value[idx].description = d.description;
+            }
+          } else {
+            const newCourt = {
+              id: Date.now(),
+              courtNumber: d.courtNumber || (courts.value.length + 1),
+              name: d.name.trim(),
+              floorMaterial: d.floorMaterial || 'PVC_MAT',
+              lightingQuality: d.lightingQuality || 'LED 400 Lux',
+              description: d.description || '',
+              status: 'AVAILABLE',
+              session: null,
+              reservation: null,
+              fixedSchedule: null
+            };
+            courts.value.push(newCourt);
+
+            // Sync with backend API & Realtime Socket if available
+            try {
+              if (window.socket && window.socket.connected) {
+                window.socket.emit('court_create_dynamic', newCourt);
+              }
+            } catch(e) {}
+          }
+
+          saveToLocalStorage();
+          modals.value.courtForm.open = false;
+          setTimeout(() => {
+            try { if (window.lucide) lucide.createIcons(); } catch(e) {}
+          }, 100);
+        };
+
+        const toggleCourtMaintenance = (court) => {
+          if (court.status === 'PLAYING') {
+            alert('Sân đang có khách chơi! Vui lòng Check-out hoặc Đổi sân trước khi đưa vào bảo trì.');
+            return;
+          }
+          if (court.status === 'MAINTENANCE') {
+            court.status = 'AVAILABLE';
+          } else {
+            court.status = 'MAINTENANCE';
+          }
+          saveToLocalStorage();
+          setTimeout(() => {
+            try { if (window.lucide) lucide.createIcons(); } catch(e) {}
+          }, 100);
+        };
+
+        const deleteCourt = (court) => {
+          if (court.status === 'PLAYING') {
+            alert('Không thể xóa sân khi đang có khách chơi!');
+            return;
+          }
+          if (courts.value.length <= 1) {
+            alert('Hệ thống phải có ít nhất 1 sân!');
+            return;
+          }
+          if (confirm(`Bạn có chắc muốn xóa "${court.name}"? Dữ liệu sân này sẽ được dỡ bỏ khỏi sơ đồ.`)) {
+            courts.value = courts.value.filter(c => c.id !== court.id);
+            saveToLocalStorage();
+            setTimeout(() => {
+              try { if (window.lucide) lucide.createIcons(); } catch(e) {}
+            }, 100);
+          }
+        };
 
         // Product Form Operations
         const openAddProductModal = () => {
@@ -3334,6 +3573,11 @@
           getStatusLabel,
           calculateServiceTotal,
           availableCourtsForSwitch,
+          openAddCourtModal,
+          openEditCourtModal,
+          saveCourtForm,
+          toggleCourtMaintenance,
+          deleteCourt,
           openAddProductModal,
           openEditProductModal,
           saveProductForm,
