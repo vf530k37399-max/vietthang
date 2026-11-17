@@ -16,6 +16,8 @@
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- html2canvas for Exporting Bill & Shift Images (Zalo / Mobile Share) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -303,6 +305,10 @@
                       <span class="px-1.5 py-0.5 rounded bg-slate-800/80">{{ court.floorMaterial === 'PVC_MAT' ? 'Thảm BWF' : (court.floorMaterial || 'Thảm PVC') }}</span>
                       <span class="px-1.5 py-0.5 rounded bg-slate-800/80">{{ court.lightingQuality || 'LED 400 Lux' }}</span>
                     </div>
+                    <div class="text-[11px] font-bold text-amber-400 mt-1 flex items-center gap-1.5">
+                      <span class="text-emerald-400 font-extrabold">{{ formatCurrency(court.hourlyRate || 50000) }}/h</span>
+                      <span class="text-slate-400 text-[10px] font-normal">(Giờ vàng: {{ formatCurrency(court.peakHourlyRate || 80000) }}/h)</span>
+                    </div>
                   </div>
                   <span 
                     :class="[
@@ -513,7 +519,7 @@
                   @click="triggerCheckout(court)" 
                   class="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 active:scale-98 text-white font-black text-xs sm:text-sm shadow-xl shadow-rose-600/30 transition">
                   <i data-lucide="receipt" class="w-5 h-5 flex-shrink-0"></i>
-                  <span>CHECK-OUT & IN HÓA ĐƠN</span>
+                  <span>CHECK-OUT & XUẤT HÓA ĐƠN</span>
                 </button>
                 <div v-else class="text-center py-2.5 px-3 rounded-2xl bg-slate-950 border border-slate-800/80 text-xs text-slate-500 font-medium">
                   🔒 Quyền thu ngân bị khóa (Chỉ Chủ sân hoặc Thu ngân)
@@ -1395,6 +1401,26 @@
             </div>
           </div>
 
+          <!-- Ma trận giá riêng cho sân này -->
+          <div class="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
+            <span class="text-[11px] font-black text-amber-400 block uppercase">💰 Cấu hình đơn giá riêng của sân này:</span>
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 mb-1">Giờ thường (đ/h)</label>
+                <input type="number" step="1000" v-model.number="modals.courtForm.data.hourlyRate" placeholder="50000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-black text-emerald-400 focus:outline-none focus:border-emerald-500">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 mb-1">Giờ vàng (đ/h)</label>
+                <input type="number" step="1000" v-model.number="modals.courtForm.data.peakHourlyRate" placeholder="80000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-black text-amber-400 focus:outline-none focus:border-amber-500">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 mb-1">Thuê tháng (đ/h)</label>
+                <input type="number" step="1000" v-model.number="modals.courtForm.data.monthlyRate" placeholder="45000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-black text-purple-400 focus:outline-none focus:border-purple-500">
+              </div>
+            </div>
+            <p class="text-[10px] text-slate-500 italic">* Ví dụ: Sân 1: 50k/h, Sân 2: 60k/h, Sân 3: 40k/h, Sân 4: 80k/h</p>
+          </div>
+
           <div>
             <label class="block text-xs font-bold text-slate-400 mb-1">Mô Tả / Vị Trí Trong Sân</label>
             <input type="text" v-model="modals.courtForm.data.description" placeholder="Ví dụ: Dãy bên phải, gần cửa số 2..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
@@ -1656,7 +1682,7 @@
           <!-- QR VietQR -->
           <div v-show="modals.checkout.paymentMethod === 'VIETQR'" class="text-center pt-3 border-t border-dashed border-slate-400">
             <div class="w-32 h-32 mx-auto bg-slate-100 rounded-lg p-2 border border-slate-300 flex items-center justify-center">
-              <img :src="generateVietQRUrl(modals.checkout.totalBill, 'THANHTOAN ' + modals.checkout.court?.name)" alt="VietQR" class="w-full h-full object-contain">
+              <img :src="generateVietQRUrl(modals.checkout.totalBill, 'THANHTOAN ' + modals.checkout.court?.name)" alt="VietQR" crossorigin="anonymous" class="w-full h-full object-contain">
             </div>
             <p class="text-[10px] text-slate-500 mt-1 font-bold">Khách quét mã VietQR để chuyển tiền trực tiếp</p>
           </div>
@@ -1683,14 +1709,31 @@
           </div>
         </div>
 
-        <div class="flex gap-2">
-          <button @click="printReceipt" class="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 text-white">
-            <i data-lucide="printer" class="w-4 h-4"></i>
-            <span>In Ra Máy K80</span>
+        <!-- Xuất Ảnh Gửi Zalo (Không cần máy in) & Hoàn Tất -->
+        <div class="space-y-2">
+          <button 
+            @click="exportBillImage(modals.checkout.court)" 
+            :disabled="isExportingImage"
+            class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 active:scale-98 text-white font-black text-sm shadow-xl shadow-blue-600/30 flex items-center justify-center gap-2 transition">
+            <i data-lucide="share-2" class="w-5 h-5 flex-shrink-0"></i>
+            <span v-if="!isExportingImage">📸 XUẤT ẢNH HÓA ĐƠN GỬI ZALO</span>
+            <span v-else>Đang tạo ảnh hóa đơn...</span>
           </button>
-          <button @click="finishCheckout(modals.checkout.court)" class="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-black text-xs text-white">
-            HOÀN TẤT & TRẢ SÂN
-          </button>
+
+          <div class="grid grid-cols-2 gap-2">
+            <button 
+              @click="downloadBillImageOnly(modals.checkout.court)" 
+              class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-xs text-slate-300 flex items-center justify-center gap-1.5 transition">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>Tải Ảnh PNG</span>
+            </button>
+            <button 
+              @click="finishCheckout(modals.checkout.court)" 
+              class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 font-black text-xs text-white shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-1.5 transition">
+              <i data-lucide="check-circle" class="w-4 h-4"></i>
+              <span>TRẢ SÂN & LƯU SỔ</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -2119,12 +2162,29 @@
           </div>
         </div>
 
-        <div class="flex gap-2 pt-2">
-          <button @click="printShiftReceipt" class="flex-1 py-3 bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/20">
-            <i data-lucide="printer" class="w-4 h-4"></i>
-            <span>IN PHIẾU BÀN GIAO (K80)</span>
+        <!-- Xuất Ảnh Bàn Giao Ca Gửi Zalo (Không cần máy in) -->
+        <div class="space-y-2 pt-2">
+          <button 
+            @click="exportShiftReceiptImage(modals.shiftSummary.shift)" 
+            :disabled="isExportingImage"
+            class="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 active:scale-98 text-white rounded-2xl text-xs sm:text-sm font-black transition flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25">
+            <i data-lucide="share-2" class="w-5 h-5 flex-shrink-0"></i>
+            <span v-if="!isExportingImage">📸 XUẤT ẢNH BÀN GIAO CA GỬI ZALO</span>
+            <span v-else>Đang tạo ảnh bàn giao...</span>
           </button>
-          <button @click="modals.shiftSummary.open = false" class="py-3 px-4 bg-slate-800 rounded-xl text-xs font-bold text-slate-300">Đóng</button>
+          <div class="grid grid-cols-2 gap-2">
+            <button 
+              @click="downloadShiftReceiptOnly(modals.shiftSummary.shift)" 
+              class="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>Tải Ảnh PNG</span>
+            </button>
+            <button 
+              @click="modals.shiftSummary.open = false" 
+              class="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition">
+              Đóng
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -2159,11 +2219,17 @@
           { id: 4, name: 'Khung Giờ Đêm', startTime: '22:00', endTime: '24:00', rate: 60000, isPeak: false }
         ]);
 
-        // Default initial courts
+        // Default initial courts với mức giá riêng từng sân (Sân 1: 50k, Sân 2: 60k, Sân 3: 40k, Sân 4: 80k...)
         const courts = ref([
           {
             id: 1,
+            courtNumber: 1,
             name: 'SÂN 1',
+            hourlyRate: 50000,
+            peakHourlyRate: 80000,
+            monthlyRate: 45000,
+            floorMaterial: 'PVC_MAT',
+            lightingQuality: 'LED 400 Lux',
             status: 'AVAILABLE',
             session: null,
             reservation: null,
@@ -2171,7 +2237,13 @@
           },
           {
             id: 2,
+            courtNumber: 2,
             name: 'SÂN 2',
+            hourlyRate: 60000,
+            peakHourlyRate: 95000,
+            monthlyRate: 55000,
+            floorMaterial: 'PVC_MAT',
+            lightingQuality: 'LED 500 Lux Chuẩn BWF',
             status: 'PLAYING',
             session: {
               customerName: 'Anh Hoàng (0903.123.456)',
@@ -2189,7 +2261,13 @@
           },
           {
             id: 3,
+            courtNumber: 3,
             name: 'SÂN 3',
+            hourlyRate: 40000,
+            peakHourlyRate: 70000,
+            monthlyRate: 35000,
+            floorMaterial: 'PVC_MAT',
+            lightingQuality: 'LED 300 Lux Phong Trào',
             status: 'RESERVED',
             session: null,
             reservation: {
@@ -2204,7 +2282,13 @@
           },
           {
             id: 4,
+            courtNumber: 4,
             name: 'SÂN 4',
+            hourlyRate: 80000,
+            peakHourlyRate: 120000,
+            monthlyRate: 75000,
+            floorMaterial: 'WOOD',
+            lightingQuality: 'LED 500 Lux VIP',
             status: 'FIXED',
             session: null,
             reservation: null,
@@ -2654,7 +2738,24 @@
             if (savedProducts) products.value = JSON.parse(savedProducts);
 
             const savedCourts = localStorage.getItem('badminton_courts');
-            if (savedCourts) courts.value = JSON.parse(savedCourts);
+            if (savedCourts) {
+              const parsedCourts = JSON.parse(savedCourts);
+              const defaultRates = [
+                { rate: 50000, peak: 80000, month: 45000 },
+                { rate: 60000, peak: 95000, month: 55000 },
+                { rate: 40000, peak: 70000, month: 35000 },
+                { rate: 80000, peak: 120000, month: 75000 }
+              ];
+              courts.value = parsedCourts.map((c, i) => {
+                const def = defaultRates[i] || { rate: 50000, peak: 80000, month: 45000 };
+                return {
+                  ...c,
+                  hourlyRate: c.hourlyRate || def.rate,
+                  peakHourlyRate: c.peakHourlyRate || def.peak,
+                  monthlyRate: c.monthlyRate || def.month
+                };
+              });
+            }
 
             const savedContracts = localStorage.getItem('badminton_monthlyContracts');
             if (savedContracts) monthlyContracts.value = JSON.parse(savedContracts);
@@ -2708,11 +2809,20 @@
           } catch(e) {}
         };
 
-        // Realtime Fee Calculation Engine based on Dynamic Pricing Slots
-        const calculateDynamicCourtFee = (checkInDate, checkOutDate) => {
+        // Realtime Fee Calculation Engine based on Dynamic Pricing Slots & Per-Court Rates
+        const calculateDynamicCourtFee = (checkInDate, checkOutDate, court = null) => {
           const breakdown = {};
+          const courtBaseRate = court?.hourlyRate || null;
+          const courtPeakRate = court?.peakHourlyRate || null;
+
           pricingSlots.value.forEach(s => {
-            breakdown[s.name] = { name: s.name, minutes: 0, rate: s.rate, fee: 0 };
+            let slotRate = s.rate;
+            if (s.isPeak && courtPeakRate) {
+              slotRate = courtPeakRate;
+            } else if (!s.isPeak && courtBaseRate) {
+              slotRate = courtBaseRate;
+            }
+            breakdown[s.name] = { name: s.name, minutes: 0, rate: slotRate, fee: 0 };
           });
 
           let cur = new Date(checkInDate);
@@ -2728,8 +2838,15 @@
             }
 
             if (matchedSlot) {
+              let slotRate = matchedSlot.rate;
+              if (matchedSlot.isPeak && courtPeakRate) {
+                slotRate = courtPeakRate;
+              } else if (!matchedSlot.isPeak && courtBaseRate) {
+                slotRate = courtBaseRate;
+              }
+
               if (!breakdown[matchedSlot.name]) {
-                breakdown[matchedSlot.name] = { name: matchedSlot.name, minutes: 0, rate: matchedSlot.rate, fee: 0 };
+                breakdown[matchedSlot.name] = { name: matchedSlot.name, minutes: 0, rate: slotRate, fee: 0 };
               }
               breakdown[matchedSlot.name].minutes++;
             }
@@ -2756,7 +2873,7 @@
               court.session.elapsedSeconds++;
               const checkIn = new Date(court.session.checkInTime);
               const now = new Date();
-              const result = calculateDynamicCourtFee(checkIn, now);
+              const result = calculateDynamicCourtFee(checkIn, now, court);
               court.session.calculatedCourtFee = result.totalFee;
               court.session.slotBreakdown = result.breakdownList;
             }
@@ -2814,7 +2931,7 @@
 
         const availableCourtsForSwitch = computed(() => courts.value.filter(c => c.status === 'AVAILABLE'));
 
-        // Dynamic Court Management Operations (Sân 1 -> Sân N)
+        // Dynamic Court Management Operations (Sân 1 -> Sân N) với định giá riêng từng sân
         const openAddCourtModal = () => {
           const nextCourtNum = courts.value.length + 1;
           modals.value.courtForm.isEdit = false;
@@ -2822,6 +2939,9 @@
             id: Date.now(),
             courtNumber: nextCourtNum,
             name: `SÂN ${nextCourtNum}`,
+            hourlyRate: 50000,
+            peakHourlyRate: 80000,
+            monthlyRate: 45000,
             floorMaterial: 'PVC_MAT',
             lightingQuality: 'LED 400 Lux',
             description: `Sân tiêu chuẩn số ${nextCourtNum}`,
@@ -2842,6 +2962,9 @@
             id: court.id,
             courtNumber: court.courtNumber || court.id,
             name: court.name,
+            hourlyRate: court.hourlyRate || 50000,
+            peakHourlyRate: court.peakHourlyRate || 80000,
+            monthlyRate: court.monthlyRate || 45000,
             floorMaterial: court.floorMaterial || 'PVC_MAT',
             lightingQuality: court.lightingQuality || 'LED 400 Lux',
             description: court.description || '',
@@ -2864,6 +2987,9 @@
             const idx = courts.value.findIndex(c => c.id === d.id);
             if (idx !== -1) {
               courts.value[idx].name = d.name.trim();
+              courts.value[idx].hourlyRate = Number(d.hourlyRate) || 50000;
+              courts.value[idx].peakHourlyRate = Number(d.peakHourlyRate) || 80000;
+              courts.value[idx].monthlyRate = Number(d.monthlyRate) || 45000;
               courts.value[idx].floorMaterial = d.floorMaterial;
               courts.value[idx].lightingQuality = d.lightingQuality;
               courts.value[idx].description = d.description;
@@ -2873,6 +2999,9 @@
               id: Date.now(),
               courtNumber: d.courtNumber || (courts.value.length + 1),
               name: d.name.trim(),
+              hourlyRate: Number(d.hourlyRate) || 50000,
+              peakHourlyRate: Number(d.peakHourlyRate) || 80000,
+              monthlyRate: Number(d.monthlyRate) || 45000,
               floorMaterial: d.floorMaterial || 'PVC_MAT',
               lightingQuality: d.lightingQuality || 'LED 400 Lux',
               description: d.description || '',
@@ -3104,12 +3233,22 @@
         };
 
         const triggerCheckout = (court) => {
+          if (!court || !court.session) return;
+          const checkIn = new Date(court.session.checkInTime);
+          const now = new Date();
+          const feeResult = calculateDynamicCourtFee(checkIn, now, court);
+          court.session.calculatedCourtFee = feeResult.totalFee;
+          court.session.slotBreakdown = feeResult.breakdownList;
+
           const serviceTotal = calculateServiceTotal(court.session.services);
           const total = (court.session.calculatedCourtFee || 0) + serviceTotal;
           modals.value.checkout.court = court;
           modals.value.checkout.totalBill = total;
           modals.value.checkout.paymentMethod = 'CASH';
           modals.value.checkout.open = true;
+          setTimeout(() => {
+            try { if (window.lucide) lucide.createIcons(); } catch(e) {}
+          }, 100);
         };
 
         const finishCheckout = (court) => {
@@ -3275,12 +3414,137 @@
           };
         };
 
+        // ================= XUẤT ẢNH GỬI ZALO (KHÔNG CẦN MÁY IN) =================
+        const isExportingImage = ref(false);
+
+        const exportElementAsImage = async (elementId, defaultFilename, title, onlyDownload = false) => {
+          const el = document.getElementById(elementId);
+          if (!el) {
+            alert('Không tìm thấy mẫu phiếu để xuất ảnh!');
+            return;
+          }
+
+          if (typeof html2canvas === 'undefined') {
+            alert('Đang tải tiện ích xử lý ảnh. Vui lòng bấm lại sau 2 giây...');
+            return;
+          }
+
+          isExportingImage.value = true;
+
+          try {
+            // Render DOM to Canvas với scale 2 (độ nét cao chuẩn Retina để quét QR rõ nét)
+            const canvas = await html2canvas(el, {
+              scale: 2,
+              useCORS: true,
+              allowTaint: true,
+              backgroundColor: '#ffffff',
+              logging: false
+            });
+
+            canvas.toBlob(async (blob) => {
+              isExportingImage.value = false;
+              if (!blob) {
+                alert('Có lỗi khi tạo ảnh! Vui lòng thử lại.');
+                return;
+              }
+
+              const safeFilename = defaultFilename || `Hoa-don-${Date.now()}.png`;
+              const file = new File([blob], safeFilename, { type: 'image/png' });
+
+              // Nếu người dùng chỉ muốn tải ảnh về máy
+              if (onlyDownload) {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = safeFilename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                return;
+              }
+
+              // Trên điện thoại (iOS / Android): Sử dụng Web Share API để mở thẳng ứng dụng Zalo, Messenger
+              if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                  await navigator.share({
+                    files: [file],
+                    title: title || 'Hóa Đơn Tiền Sân',
+                    text: `${title || 'Hóa đơn'} - ${clubInfo.value.name || 'Sân Cầu Lông'}`
+                  });
+                  return;
+                } catch(shareErr) {
+                  if (shareErr.name === 'AbortError') return; // Người dùng tự hủy hộp thoại chia sẻ
+                }
+              }
+
+              // Trên máy tính bàn hoặc trình duyệt không hỗ trợ Web Share:
+              // 1. Tự động sao chép ảnh vào Clipboard để người dùng mở Zalo PC/Web và ấn Ctrl + V gửi ngay!
+              let copied = false;
+              if (navigator.clipboard && window.ClipboardItem) {
+                try {
+                  await navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': blob })
+                  ]);
+                  copied = true;
+                } catch(clipErr) {
+                  console.log('Clipboard error:', clipErr);
+                }
+              }
+
+              // 2. Đồng thời tải file ảnh về máy
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = safeFilename;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+              if (copied) {
+                alert('📸 ĐÃ TẠO ẢNH HÓA ĐƠN THÀNH CÔNG!\n\n1. Ảnh đã được tải về máy của bạn.\n2. Ảnh đã được SAO CHÉP sẵn vào bộ nhớ tạm. Bạn chỉ cần mở Zalo rồi ấn [Ctrl + V] để dán gửi cho khách!');
+              } else {
+                alert('📸 ĐÃ TẢI ẢNH HÓA ĐƠN VỀ MÁY!\n\nẢnh đã lưu trong thư mục tải về của bạn để gửi qua Zalo.');
+              }
+            }, 'image/png', 0.95);
+          } catch(err) {
+            isExportingImage.value = false;
+            console.error('Lỗi xuất ảnh:', err);
+            alert('Có lỗi khi xuất ảnh: ' + (err.message || err));
+          }
+        };
+
+        const exportBillImage = (court) => {
+          const courtName = court?.name ? court.name.replace(/\s+/g, '-') : 'San';
+          const timeStr = new Date().toISOString().slice(0, 10);
+          exportElementAsImage('printable-receipt', `Hoa-don-${courtName}-${timeStr}.png`, `Hóa Đơn ${court?.name || 'Sân Cầu Lông'}`);
+        };
+
+        const downloadBillImageOnly = (court) => {
+          const courtName = court?.name ? court.name.replace(/\s+/g, '-') : 'San';
+          const timeStr = new Date().toISOString().slice(0, 10);
+          exportElementAsImage('printable-receipt', `Hoa-don-${courtName}-${timeStr}.png`, `Hóa Đơn ${court?.name || 'Sân Cầu Lông'}`, true);
+        };
+
+        const exportShiftReceiptImage = (shiftName) => {
+          const timeStr = new Date().toISOString().slice(0, 10);
+          const label = shiftName === 'MORNING' ? 'ca-sang' : 'ca-lam-viec';
+          exportElementAsImage('printable-shift-receipt', `Ban-giao-${label}-${timeStr}.png`, `Phiếu Bàn Giao Ca`);
+        };
+
+        const downloadShiftReceiptOnly = (shiftName) => {
+          const timeStr = new Date().toISOString().slice(0, 10);
+          const label = shiftName === 'MORNING' ? 'ca-sang' : 'ca-lam-viec';
+          exportElementAsImage('printable-shift-receipt', `Ban-giao-${label}-${timeStr}.png`, `Phiếu Bàn Giao Ca`, true);
+        };
+
         const printShiftReceipt = () => {
-          window.print();
+          exportShiftReceiptImage(modals.value.shiftSummary.shift);
         };
 
         const printReceipt = () => {
-          window.print();
+          exportBillImage(modals.value.checkout.court);
         };
 
         const checkInReservation = (court) => {
@@ -3597,6 +3861,11 @@
           triggerCheckout,
           finishCheckout,
           printReceipt,
+          isExportingImage,
+          exportBillImage,
+          downloadBillImageOnly,
+          exportShiftReceiptImage,
+          downloadShiftReceiptOnly,
           checkInReservation,
           cancelSingleSession,
           cancelSingleSessionFromContract,
