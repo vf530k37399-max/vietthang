@@ -166,7 +166,7 @@
               :class="activeTab === 'customer' ? 'bg-amber-600 text-white shadow-md' : 'text-slate-400 hover:text-white'"
               class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition">
               <i data-lucide="smartphone" class="w-4 h-4"></i>
-              <span>Khách Đặt Sân</span>
+              <span>Đặt Sân Nhanh</span>
             </button>
             <button 
               v-if="hasPermission('canManageInventory')"
@@ -182,7 +182,7 @@
               :class="activeTab === 'monthly' ? 'bg-purple-600 text-white shadow-md' : 'text-slate-400 hover:text-white'"
               class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition">
               <i data-lucide="calendar" class="w-4 h-4"></i>
-              <span>Khách Quen</span>
+              <span>Thuê Tháng</span>
             </button>
             <button 
               v-if="hasPermission('canManagePricing')"
@@ -245,8 +245,17 @@
         @click="activeTab = 'customer'" 
         :class="activeTab === 'customer' ? 'text-amber-400 font-black' : 'text-slate-400'"
         class="flex flex-col items-center justify-center py-1 px-1.5 rounded-xl transition">
-        <i data-lucide="smartphone" class="w-5 h-5 mb-0.5"></i>
-        <span class="text-[10px]">Khách Đặt</span>
+        <i data-lucide="calendar-plus" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px]">Đặt Sân</span>
+      </button>
+
+      <button 
+        v-if="hasPermission('canManageMonthly')"
+        @click="activeTab = 'monthly'" 
+        :class="activeTab === 'monthly' ? 'text-purple-400 font-black' : 'text-slate-400'"
+        class="flex flex-col items-center justify-center py-1 px-1.5 rounded-xl transition">
+        <i data-lucide="calendar" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px]">Thuê Tháng</span>
       </button>
 
       <button 
@@ -271,24 +280,217 @@
     <!-- Main Content Body (Được cộng thêm khoảng trống dưới pb-24 để không bị thanh Bottom Bar che) -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 space-y-6 pb-24 md:pb-8">
       
-      <!-- ================= 1. TAB: NHÂN VIÊN SÂN (LƯỚI 2x2 TRỰC QUAN) ================= -->
+      <!-- ================= 1. TAB: TỔNG QUAN SƠ ĐỒ SÂN & CHI TIẾT SÂN ================= -->
       <div v-if="activeTab === 'staff'" class="space-y-5">
         
+        <!-- ================= CHI TIẾT RIÊNG CỦA SÂN (KHI BẤM VÀO SÂN) ================= -->
+        <div v-if="selectedCourtDetail" class="space-y-5">
+          <!-- Header Bar with Back Button -->
+          <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/80 p-4 sm:p-5 rounded-2xl border border-slate-800 shadow-xl">
+            <div class="flex items-center gap-3">
+              <button 
+                @click="closeCourtDetail" 
+                class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold rounded-xl text-xs transition flex items-center gap-1.5 border border-slate-700 shadow-sm">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span>← Quay Lại Tổng Quan</span>
+              </button>
+              <div>
+                <h2 class="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+                  <span>CHI TIẾT {{ selectedCourtDetail.name }}</span>
+                  <span 
+                    :class="[
+                      'text-xs font-black px-2.5 py-0.5 rounded-full border',
+                      selectedCourtDetail.status === 'AVAILABLE' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' : '',
+                      selectedCourtDetail.status === 'PLAYING' ? 'bg-rose-500/20 text-rose-400 border-rose-500/40 animate-pulse' : '',
+                      selectedCourtDetail.status === 'RESERVED' ? 'bg-amber-500/20 text-amber-400 border-amber-500/40' : '',
+                      selectedCourtDetail.status === 'FIXED' ? 'bg-purple-500/20 text-purple-400 border-purple-500/40' : '',
+                      selectedCourtDetail.status === 'MAINTENANCE' ? 'bg-slate-800 text-slate-400 border-slate-700' : ''
+                    ]">
+                    {{ getStatusLabel(selectedCourtDetail.status) }}
+                  </span>
+                </h2>
+                <p class="text-xs text-slate-400 mt-0.5">
+                  {{ selectedCourtDetail.floorMaterial === 'PVC_MAT' ? 'Thảm PVC Chuẩn BWF' : (selectedCourtDetail.floorMaterial || 'Thảm PVC') }} &bull; 
+                  {{ selectedCourtDetail.lightingQuality || 'LED 400 Lux' }} &bull; 
+                  Giá thường: <strong class="text-emerald-400">{{ formatCurrency(selectedCourtDetail.hourlyRate || 50000) }}/h</strong> &bull; 
+                  Giờ vàng: <strong class="text-amber-400">{{ formatCurrency(selectedCourtDetail.peakHourlyRate || 80000) }}/h</strong>
+                </p>
+              </div>
+            </div>
+
+            <!-- Quick Action Buttons on Detail Header -->
+            <div class="flex items-center gap-2 flex-wrap text-xs">
+              <button 
+                v-if="selectedCourtDetail.status === 'AVAILABLE' && hasPermission('canManageCourts')"
+                @click="openStartPlayModal(selectedCourtDetail)" 
+                class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold rounded-xl transition flex items-center gap-1.5 shadow-lg shadow-emerald-600/25">
+                <i data-lucide="play" class="w-3.5 h-3.5 fill-white"></i>
+                <span>Vào Chơi Ngay</span>
+              </button>
+              <button 
+                @click="activeTab = 'customer'; customerBooking.courtId = selectedCourtDetail.id" 
+                class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl transition flex items-center gap-1.5 border border-slate-700">
+                <i data-lucide="calendar-plus" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>+ Đặt Sân Mới</span>
+              </button>
+              <button 
+                v-if="selectedCourtDetail.status === 'PLAYING' && hasPermission('canManageCourts')"
+                @click="openAddServiceModal(selectedCourtDetail)" 
+                class="px-3.5 py-2 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 font-bold rounded-xl transition flex items-center gap-1.5 border border-indigo-500/40">
+                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                <span>Thêm Nước / Cầu</span>
+              </button>
+              <button 
+                v-if="selectedCourtDetail.status === 'PLAYING' && hasPermission('canCheckout')"
+                @click="triggerCheckout(selectedCourtDetail)" 
+                class="px-3.5 py-2 bg-gradient-to-r from-amber-600 to-rose-600 hover:opacity-90 text-white font-black rounded-xl transition flex items-center gap-1.5 shadow-lg shadow-amber-600/25">
+                <i data-lucide="receipt" class="w-3.5 h-3.5"></i>
+                <span>Thanh Toán Bill</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Dòng Thời Gian Hôm Nay (Timeline) -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3 shadow-lg">
+            <div class="flex items-center justify-between text-xs flex-wrap gap-2">
+              <h3 class="font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                <i data-lucide="clock" class="w-4 h-4 text-emerald-400"></i>
+                <span>DÒNG THỜI GIAN HÔM NAY ({{ new Date().toLocaleDateString('vi-VN') }})</span>
+              </h3>
+              <span class="text-slate-400 text-[11px]">Khung giờ hoạt động: 06:00 - 24:00</span>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 overflow-x-auto">
+              <div class="flex items-center gap-2 min-w-[650px] text-xs">
+                <!-- Slot 1: Sáng -->
+                <div class="flex-1 bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-center text-slate-500">
+                  <div class="font-bold">06:00 - 14:00</div>
+                  <div class="text-[10px]">Ca sáng đã xong</div>
+                </div>
+                <!-- Slot 2: Chiều -->
+                <div 
+                  :class="selectedCourtDetail.status === 'AVAILABLE' ? 'bg-emerald-950/40 border-emerald-600/40 text-emerald-300' : 'bg-slate-900 border-slate-800 text-slate-400'"
+                  class="flex-1 border rounded-xl p-2.5 text-center">
+                  <div class="font-bold">14:00 - 17:00</div>
+                  <div class="text-[10px] font-semibold">{{ selectedCourtDetail.status === 'AVAILABLE' ? '🟢 Sẵn sàng phục vụ' : 'Đang bận' }}</div>
+                </div>
+                <!-- Slot 3: Vàng 1 -->
+                <div 
+                  :class="selectedCourtDetail.status === 'PLAYING' ? 'bg-rose-950/40 border-rose-600/40 text-rose-300' : (selectedCourtDetail.reservation ? 'bg-amber-950/40 border-amber-600/40 text-amber-300' : 'bg-emerald-950/40 border-emerald-600/40 text-emerald-300')"
+                  class="flex-1 border rounded-xl p-2.5 text-center">
+                  <div class="font-bold">17:00 - 20:00</div>
+                  <div class="text-[10px] font-semibold">
+                    {{ selectedCourtDetail.session ? selectedCourtDetail.session.customerName : (selectedCourtDetail.reservation ? selectedCourtDetail.reservation.customerName : '🟢 Khung giờ trống') }}
+                  </div>
+                </div>
+                <!-- Slot 4: Cố định -->
+                <div 
+                  :class="selectedCourtDetail.fixedSchedule ? 'bg-purple-950/40 border-purple-600/40 text-purple-300' : 'bg-slate-900 border-slate-800 text-slate-500'"
+                  class="flex-1 border rounded-xl p-2.5 text-center">
+                  <div class="font-bold">20:00 - 22:00</div>
+                  <div class="text-[10px] font-semibold">{{ selectedCourtDetail.fixedSchedule ? selectedCourtDetail.fixedSchedule.groupName : 'Trống' }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Danh Sách Lịch Sắp Tới Của Sân Này -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3 shadow-lg">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <h3 class="font-bold text-slate-300 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                <i data-lucide="calendar" class="w-4 h-4 text-amber-400"></i>
+                <span>LỊCH HẸN & CA CHƠI CỦA {{ selectedCourtDetail.name }}</span>
+              </h3>
+              <span class="text-[11px] text-slate-400">Tự động khóa lịch &bull; Chống trùng tuyệt đối</span>
+            </div>
+
+            <div class="divide-y divide-slate-800 border border-slate-800 rounded-xl overflow-hidden bg-slate-950 text-xs">
+              <!-- Item 1: Nếu đang chơi -->
+              <div v-if="selectedCourtDetail.session" class="p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-rose-950/20">
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2">
+                    <span class="font-black text-rose-400">🔴 ĐANG SỬ DỤNG</span>
+                    <span class="text-slate-300">Khách: <strong>{{ selectedCourtDetail.session.customerName }}</strong></span>
+                  </div>
+                  <p class="text-slate-400 text-[11px]">
+                    Giờ vào: <strong>{{ formatTime(selectedCourtDetail.session.checkInTime) }}</strong> &bull; 
+                    Đã chơi: <strong class="text-rose-400 font-mono">{{ formatTimer(selectedCourtDetail.session.elapsedSeconds) }}</strong> &bull; 
+                    Tạm tính: <strong class="text-white">{{ formatCurrency(selectedCourtDetail.session.calculatedCourtFee) }}</strong>
+                  </p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button @click="openAddServiceModal(selectedCourtDetail)" class="px-3 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 rounded-lg font-bold border border-indigo-500/40">Thêm Nước</button>
+                  <button @click="triggerCheckout(selectedCourtDetail)" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg font-bold">Thanh Toán</button>
+                </div>
+              </div>
+
+              <!-- Item 2: Nếu có lịch hẹn đặt trước -->
+              <div v-if="selectedCourtDetail.reservation" class="p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-amber-950/20">
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2">
+                    <span class="font-black text-amber-400">🟡 LỊCH HẸN ĐÃ ĐẶT</span>
+                    <span class="text-slate-200">Khách: <strong>{{ selectedCourtDetail.reservation.customerName }}</strong> ({{ selectedCourtDetail.reservation.phone }})</span>
+                  </div>
+                  <p class="text-slate-400 text-[11px]">
+                    Khung giờ: <strong class="text-amber-300 font-mono">{{ selectedCourtDetail.reservation.startTime }} - {{ selectedCourtDetail.reservation.endTime }}</strong> &bull; 
+                    Đã cọc VietQR: <strong class="text-emerald-400">{{ formatCurrency(selectedCourtDetail.reservation.deposit) }}</strong>
+                  </p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button @click="checkInReservation(selectedCourtDetail)" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold">Nhận Sân</button>
+                  <button @click="cancelSingleSession(selectedCourtDetail)" class="px-2.5 py-1.5 bg-slate-800 hover:bg-rose-900/50 text-rose-400 rounded-lg font-bold border border-slate-700">Hủy Lịch</button>
+                </div>
+              </div>
+
+              <!-- Item 3: Nếu có cố định tháng -->
+              <div v-if="selectedCourtDetail.fixedSchedule" class="p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-purple-950/20">
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2">
+                    <span class="font-black text-purple-400">🟣 HỢP ĐỒNG THUÊ THÁNG</span>
+                    <span class="text-slate-200">CLB: <strong>{{ selectedCourtDetail.fixedSchedule.groupName }}</strong> ({{ selectedCourtDetail.fixedSchedule.repName }})</span>
+                  </div>
+                  <p class="text-slate-400 text-[11px]">
+                    Lịch: <strong class="text-purple-300">{{ selectedCourtDetail.fixedSchedule.days }}</strong> &bull; 
+                    Giờ: <strong class="font-mono text-white">{{ selectedCourtDetail.fixedSchedule.startTime }} - {{ selectedCourtDetail.fixedSchedule.endTime }}</strong> &bull; 
+                    Trạng thái: <strong class="text-emerald-400">Đã đóng quỹ tháng</strong>
+                  </p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button @click="cancelSingleSession(selectedCourtDetail)" class="px-3 py-1.5 bg-slate-800 hover:bg-purple-900/50 text-purple-300 rounded-lg font-bold border border-slate-700">Khách Báo Nghỉ Buổi Lẻ</button>
+                </div>
+              </div>
+
+              <!-- Empty state if available -->
+              <div v-if="!selectedCourtDetail.session && !selectedCourtDetail.reservation && !selectedCourtDetail.fixedSchedule" class="p-6 text-center text-slate-400 space-y-2">
+                <i data-lucide="check-circle-2" class="w-8 h-8 text-emerald-400 mx-auto"></i>
+                <p class="font-bold text-slate-200">Sân đang hoàn toàn trống!</p>
+                <p class="text-[11px] text-slate-500">Chưa có lịch đặt tiếp theo trong ngày hôm nay. Sẵn sàng đón khách mới.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= TỔNG QUAN TẤT CẢ CÁC SÂN (MẶC ĐỊNH) ================= -->
+        <div v-else class="space-y-5">
+
         <!-- Legend & Dynamic Pricing Notice -->
         <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800">
           <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-xs">
             <span class="text-slate-400 font-semibold">Trạng thái:</span>
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold">
-              <span class="w-2 h-2 rounded-full bg-emerald-400"></span> 🟢 Sân Trống
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span> 🟢 {{ availableCourtsCount }} Sân Trống
             </span>
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/30 font-bold">
-              <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span> 🔴 Đang Chơi
+              <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span> 🔴 {{ playingCourtsCount }} Đang Chơi
             </span>
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 font-bold">
-              <span class="w-2 h-2 rounded-full bg-amber-400"></span> 🟡 Chờ Check-in
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span> 🟡 {{ reservedCourtsCount }} Chờ Check-in
             </span>
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/30 font-bold">
-              <span class="w-2 h-2 rounded-full bg-purple-400"></span> 🟣 Cố Định Tháng
+              <span class="w-2 h-2 rounded-full bg-purple-400"></span> 🟣 {{ fixedCourtsCount }} Cố Định Tháng
+            </span>
+            <span v-if="maintenanceCourtsCount > 0" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-bold">
+              <span class="w-2 h-2 rounded-full bg-slate-500"></span> ⚪ {{ maintenanceCourtsCount }} Bảo Trì
             </span>
           </div>
 
@@ -497,6 +699,37 @@
 
             </div>
 
+            <!-- Smart Availability & Next Slot Notice -->
+            <div class="mt-4 p-2.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-between text-xs">
+              <div class="truncate pr-2">
+                <div v-if="court.status === 'AVAILABLE'" class="text-emerald-400 font-bold flex items-center gap-1.5 truncate">
+                  <i data-lucide="clock" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                  <span class="truncate">⏱️ {{ getCourtAvailabilityText(court) }}</span>
+                </div>
+                <div v-else-if="court.status === 'PLAYING'" class="text-rose-400 font-bold flex items-center gap-1.5 truncate">
+                  <i data-lucide="activity" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                  <span class="truncate">Đang chơi &bull; Hết lúc ~{{ getEstimatedEndTime(court) }}</span>
+                </div>
+                <div v-else-if="court.status === 'RESERVED'" class="text-amber-400 font-bold flex items-center gap-1.5 truncate">
+                  <i data-lucide="calendar" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                  <span class="truncate">Hẹn: {{ court.reservation?.startTime }}-{{ court.reservation?.endTime }} ({{ court.reservation?.customerName }})</span>
+                </div>
+                <div v-else-if="court.status === 'FIXED'" class="text-purple-400 font-bold flex items-center gap-1.5 truncate">
+                  <i data-lucide="users" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                  <span class="truncate">Tháng: {{ court.fixedSchedule?.startTime }}-{{ court.fixedSchedule?.endTime }}</span>
+                </div>
+                <div v-else class="text-slate-400">
+                  <span>🔧 Đang bảo trì</span>
+                </div>
+              </div>
+              <button 
+                @click.stop="openCourtDetail(court)" 
+                class="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 text-[11px] font-bold transition flex items-center gap-1 border border-slate-700 flex-shrink-0 shadow-sm">
+                <i data-lucide="eye" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>Chi Tiết Sân</span>
+              </button>
+            </div>
+
             <!-- Card Actions -->
             <div class="mt-5 pt-4 border-t border-slate-800">
               <div v-if="court.status === 'AVAILABLE'" class="space-y-2">
@@ -628,16 +861,18 @@
           </div>
         </div>
 
+        </div> <!-- Đóng v-else của Tổng Quan Tất Cả Sân -->
+
       </div>
 
-      <!-- ================= 2. TAB: KHÁCH ĐẶT SÂN ONLINE (USER APP/WEB) ================= -->
+      <!-- ================= 2. TAB: ĐẶT SÂN NHANH CHO KHÁCH (CHỦ SÂN / THU NGÂN NHẬP) ================= -->
       <div v-if="activeTab === 'customer'" class="max-w-2xl mx-auto space-y-6">
         <div class="bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent p-5 rounded-3xl border border-amber-500/30">
           <h2 class="text-xl font-black text-white flex items-center gap-2">
-            <i data-lucide="smartphone" class="w-6 h-6 text-amber-400"></i>
-            ĐẶT LỊCH SÂN TRỰC TUYẾN 24/7 (SÂN 1 - {{ courts.length }})
+            <i data-lucide="calendar-plus" class="w-6 h-6 text-amber-400"></i>
+            ĐẶT SÂN NHANH CHO KHÁCH (CHỐNG TRÙNG & GHÉP SÂN)
           </h2>
-          <p class="text-xs text-slate-400 mt-1">Đồng bộ trực tuyến với nhân viên quầy. Quét mã VietQR nhận cọc tự động giữ chỗ trong 2 giây!</p>
+          <p class="text-xs text-slate-400 mt-1">Chủ sân và thu ngân trực tiếp nhập đơn, tự xếp sân/ghép sân, ghi nhận cọc thực nhận và xuất phiếu gửi Zalo ngay!</p>
         </div>
 
         <div class="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-2xl space-y-5">
@@ -776,15 +1011,19 @@
         </div>
       </div>
 
-      <!-- ================= 4. TAB: LỊCH CỐ ĐỊNH THÁNG ================= -->
+      <!-- ================= 4. TAB: QUẢN LÝ THUÊ THÁNG ================= -->
       <div v-if="activeTab === 'monthly'" class="space-y-5">
         <div class="flex justify-between items-center bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
           <div>
-            <h2 class="text-lg font-black text-white">Quản Lý Khách Quen Thuê Cố Định Theo Tháng</h2>
-            <p class="text-xs text-slate-400">Theo dõi quỹ tháng & Tính năng nhả sân online khi khách báo bận</p>
+            <h2 class="text-lg font-black text-white flex items-center gap-2">
+              <i data-lucide="calendar" class="w-5 h-5 text-purple-400"></i>
+              <span>QUẢN LÝ THUÊ THÁNG (HỢP ĐỒNG CỐ ĐỊNH)</span>
+            </h2>
+            <p class="text-xs text-slate-400">Quản lý hợp đồng kỳ hạn, sinh từng buổi cụ thể & Tính năng khách báo nghỉ mở bán buổi thuê lại!</p>
           </div>
-          <button @click="openAddContractModal" class="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 rounded-xl text-xs font-bold text-white transition">
-            + Thêm Nhóm Cố Định
+          <button @click="openAddContractModal" class="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 rounded-xl text-xs font-bold text-white transition flex items-center gap-1.5 shadow-md">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>+ Thêm Hợp Đồng Thuê Tháng</span>
           </button>
         </div>
 
@@ -924,6 +1163,39 @@
             <div class="sm:col-span-2">
               <label class="block font-bold uppercase text-slate-400 mb-1">Địa chỉ & Hotline in trên Bill K80</label>
               <input type="text" v-model="clubInfo.address" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-cyan-500">
+            </div>
+
+            <!-- QR Code Mode Options (Mã VietQR động vs Ảnh QR tự tải) -->
+            <div class="sm:col-span-2 pt-3 border-t border-slate-800 space-y-3">
+              <label class="block font-bold uppercase text-amber-400">Hình thức hiển thị mã QR thanh toán:</label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label class="flex items-start gap-2.5 p-3 rounded-2xl bg-slate-950 border cursor-pointer transition" :class="clubInfo.qrMode !== 'CUSTOM_UPLOAD' ? 'border-emerald-500/60 bg-emerald-950/20 text-emerald-300' : 'border-slate-800 text-slate-400'">
+                  <input type="radio" value="DYNAMIC_VIETQR" v-model="clubInfo.qrMode" class="mt-0.5 accent-emerald-500">
+                  <div>
+                    <div class="font-bold text-xs">Mã VietQR Động (Khuyên dùng)</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">Tự động điền đúng số tiền và mã đơn khi khách quét app ngân hàng.</div>
+                  </div>
+                </label>
+                <label class="flex items-start gap-2.5 p-3 rounded-2xl bg-slate-950 border cursor-pointer transition" :class="clubInfo.qrMode === 'CUSTOM_UPLOAD' ? 'border-emerald-500/60 bg-emerald-950/20 text-emerald-300' : 'border-slate-800 text-slate-400'">
+                  <input type="radio" value="CUSTOM_UPLOAD" v-model="clubInfo.qrMode" class="mt-0.5 accent-emerald-500">
+                  <div>
+                    <div class="font-bold text-xs">Dùng Ảnh Mã QR Tự Tải Lên</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">Sử dụng trực tiếp ảnh chụp mã QR có sẵn của quán/cá nhân bạn.</div>
+                  </div>
+                </label>
+              </div>
+
+              <!-- Upload field when CUSTOM_UPLOAD is selected -->
+              <div v-if="clubInfo.qrMode === 'CUSTOM_UPLOAD'" class="p-3 bg-slate-950 rounded-2xl border border-dashed border-slate-700 flex items-center justify-between flex-wrap gap-3">
+                <div>
+                  <span class="text-xs font-bold text-slate-300 block mb-1">Chọn tệp ảnh mã QR của bạn (PNG / JPG):</span>
+                  <input type="file" accept="image/*" @change="handleQrUpload" class="text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500 cursor-pointer">
+                </div>
+                <div v-if="clubInfo.customQrImageUrl" class="flex items-center gap-2">
+                  <span class="text-[11px] text-slate-400">Xem trước:</span>
+                  <img :src="clubInfo.customQrImageUrl" class="w-14 h-14 object-contain rounded-xl border border-slate-700 bg-white p-1 shadow">
+                </div>
+              </div>
             </div>
           </div>
 
@@ -2263,8 +2535,59 @@
           address: '45 Đường Cầu Lông, P. Linh Trung, TP. Thủ Đức &bull; Hotline: 0988.xxx.xxx',
           depositAmount: 50000,
           bankId: 'MB',
-          bankAccountNo: '0988776655'
+          bankAccountNo: '0988776655',
+          qrMode: 'DYNAMIC_VIETQR',
+          customQrImageUrl: ''
         });
+
+        // Chi Tiết Sân Riêng Biệt (Court Detail View)
+        const selectedCourtDetail = ref(null);
+        const openCourtDetail = (court) => {
+          selectedCourtDetail.value = court;
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          nextTick(() => {
+            if (window.renderLucideIcons) window.renderLucideIcons();
+          });
+        };
+        const closeCourtDetail = () => {
+          selectedCourtDetail.value = null;
+          nextTick(() => {
+            if (window.renderLucideIcons) window.renderLucideIcons();
+          });
+        };
+
+        const availableCourtsCount = computed(() => courts.value.filter(c => c.status === 'AVAILABLE').length);
+        const playingCourtsCount = computed(() => courts.value.filter(c => c.status === 'PLAYING').length);
+        const reservedCourtsCount = computed(() => courts.value.filter(c => c.status === 'RESERVED').length);
+        const fixedCourtsCount = computed(() => courts.value.filter(c => c.status === 'FIXED').length);
+        const maintenanceCourtsCount = computed(() => courts.value.filter(c => c.status === 'MAINTENANCE').length);
+
+        const getCourtAvailabilityText = (court) => {
+          if (court.reservation) {
+            return `Trống đến ${court.reservation.startTime} hôm nay`;
+          }
+          if (court.fixedSchedule) {
+            return `Trống đến ${court.fixedSchedule.startTime} hôm nay`;
+          }
+          return 'Trống cả ngày hôm nay';
+        };
+
+        const getCourtNextSlotText = (court) => {
+          if (court.reservation) {
+            return `Lượt tiếp: ${court.reservation.startTime} - ${court.reservation.customerName} (${court.reservation.phone})`;
+          }
+          if (court.fixedSchedule) {
+            return `Lượt tiếp: ${court.fixedSchedule.startTime} - ${court.fixedSchedule.groupName}`;
+          }
+          return 'Chưa có lịch đặt tiếp theo';
+        };
+
+        const getEstimatedEndTime = (court) => {
+          if (!court.session || !court.session.checkInTime) return '19:00';
+          const start = new Date(court.session.checkInTime);
+          const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+          return end.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        };
 
         // Dynamic Pricing Slots Configuration
         const pricingSlots = ref([
@@ -3662,10 +3985,26 @@
         };
 
         const generateVietQRUrl = (amount, memo) => {
+          if (clubInfo.value.qrMode === 'CUSTOM_UPLOAD' && clubInfo.value.customQrImageUrl) {
+            return clubInfo.value.customQrImageUrl;
+          }
           const bankId = clubInfo.value.bankId || 'MB';
           const accountNo = clubInfo.value.bankAccountNo || '0988776655';
           const accName = encodeURIComponent(clubInfo.value.name || 'SAN CAU LONG THANG PRO');
           return `https://img.vietqr.io/image/${bankId}-${accountNo}-compact.png?amount=${amount}&addInfo=${encodeURIComponent(memo)}&accountName=${accName}`;
+        };
+
+        const handleQrUpload = (event) => {
+          const file = event.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            clubInfo.value.customQrImageUrl = e.target.result;
+            clubInfo.value.qrMode = 'CUSTOM_UPLOAD';
+            saveToLocalStorage();
+            alert('✅ Đã nạp ảnh mã QR nhận tiền của quán thành công!');
+          };
+          reader.readAsDataURL(file);
         };
 
         const openShareQrModal = () => {
@@ -3939,7 +4278,19 @@
           saveExpenseForm,
           deleteExpense,
           openShiftSummaryModal,
-          printShiftReceipt
+          printShiftReceipt,
+          selectedCourtDetail,
+          openCourtDetail,
+          closeCourtDetail,
+          availableCourtsCount,
+          playingCourtsCount,
+          reservedCourtsCount,
+          fixedCourtsCount,
+          maintenanceCourtsCount,
+          getCourtAvailabilityText,
+          getCourtNextSlotText,
+          getEstimatedEndTime,
+          handleQrUpload
         };
       }
     }).mount('#app');
