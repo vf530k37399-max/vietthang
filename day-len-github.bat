@@ -1,49 +1,33 @@
 @echo off
 chcp 65001 >nul
-title DONG BO DU LIEU LEN GITHUB - QUAN LY SAN CAU LONG
+title DONG BO DU LIEU LEN SAN VIET THANG & GITHUB
 color 0A
 
 echo ========================================================
-echo       HE THONG DONG BO TU DONG LEN GITHUB PAGES
-echo       Web: https://vf530k37399-max.github.io/vietthang/
+echo       HE THONG DONG BO TU DONG SAN VIET THANG
+echo       Web 1: https://sanvietthang.web.app
+echo       Web 2: https://vf530k37399-max.github.io/vietthang/
 echo ========================================================
 echo.
 
-cd /d D:\viet thang
+cd /d "D:\viet thang"
 
-echo [1/4] Dong bo giao dien cac thu muc...
-if exist index.html (
-    copy /y index.html public\index.html >nul
-)
-copy /y "%~f0" "%USERPROFILE%\Desktop\DAY-LEN-GITHUB.bat" >nul 2>&1
+echo [1/3] Dong bo giao dien thu muc public...
+copy /y index.html public\index.html >nul
+copy /y vietthang-cloud-config.json public\vietthang-cloud-config.json >nul
 
-echo [2/4] Kiem tra cac thay doi moi nhat...
+echo [2/3] Day code len Google Firebase Hosting (sanvietthang.web.app)...
+cmd /c "npx firebase-tools deploy --project sanvietthang --only hosting --account o936315009@gmail.com"
+
+echo [3/3] Day code luu tru len GitHub...
 git add -A
-
-echo [3/4] Ghi nhan thay doi...
-git commit -m "Trien khai Giai doan 1 he thong 2.0: Mo rong san dong, CSDL PostgreSQL va chong trung san"
-
-echo [4/4] Dang day du lieu len mang GitHub...
-echo (Neu co cua so nho hien len hoi dang nhap, hay bam 'Sign in with your browser')
-echo.
-
+git commit -m "Cap nhat he thong sanvietthang.web.app"
 git push origin main
 
-if %ERRORLEVEL% EQU 0 (
-    echo.
-    echo ========================================================
-    echo   [THANH CONG] Du lieu da duoc day len GitHub thanh cong!
-    echo   Trang web online se cap nhat sau khoang 30 giay tai:
-    echo   https://vf530k37399-max.github.io/vietthang/
-    echo ========================================================
-) else (
-    echo.
-    echo ========================================================
-    echo   [CHU Y] Co the can xac thuc tai khoan tren trinh duyet!
-    echo   Vui long kiem tra cua so trinh duyet neu co thong bao.
-    echo ========================================================
-)
-
 echo.
-echo Nhan phim bat ky de thoat...
-pause >nul
+echo ========================================================
+echo   [HOAN TAT] Trang web da hoat dong truc tuyen 100% tai:
+echo   👉 https://sanvietthang.web.app
+echo ========================================================
+echo.
+pause
