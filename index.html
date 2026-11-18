@@ -1505,7 +1505,7 @@
             </div>
             <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
               <span class="text-[10px] uppercase font-bold text-slate-500 block">Vùng Dữ Liệu Sân (Node)</span>
-              <span class="font-mono text-cyan-300 font-black">badminton_vietthang</span>
+              <span class="font-mono text-cyan-300 font-black">clubs/vietthang</span>
               <span class="text-[9px] text-slate-400 block">(Độc lập & Bảo mật 100%)</span>
             </div>
             <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
@@ -1918,7 +1918,7 @@
         <div class="grid grid-cols-2 gap-2 text-[11px]">
           <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
             <span class="text-slate-500 block text-[9px] uppercase font-bold">Vùng Dữ Liệu Sân (Node)</span>
-            <span class="font-mono text-cyan-300 font-black">badminton_vietthang</span>
+            <span class="font-mono text-cyan-300 font-black">clubs/vietthang</span>
           </div>
           <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
             <span class="text-slate-500 block text-[9px] uppercase font-bold">Cập Nhật Gần Nhất</span>
@@ -3006,7 +3006,7 @@
           measurementId: "G-6HK3TLY2HW"
         };
         const CLOUD_STORAGE_KEY = 'badminton_vietthang_firebase_config';
-        const CLOUD_ROOT_NODE = 'badminton_vietthang';
+        const CLOUD_ROOT_NODE = 'clubs/vietthang';
 
         const cloudStatus = ref('INITIALIZING'); // 'INITIALIZING' | 'CONNECTED' | 'SYNCING' | 'DISCONNECTED' | 'ERROR'
         const lastCloudSync = ref('Vừa xong');
@@ -3735,7 +3735,7 @@
           cloudStatus.value = 'SYNCING';
           pushStateToCloud(true);
           setTimeout(() => {
-            alert('✅ ĐÃ ĐỒNG BỘ HAI CHIỀU THÀNH CÔNG VỚI GOOGLE FIREBASE!\n\n• Máy chủ: laptri-8e2b3\n• Vùng sân: badminton_vietthang\n• Trạng thái: Online 100% Realtime');
+            alert('✅ ĐÃ ĐỒNG BỘ HAI CHIỀU THÀNH CÔNG VỚI GOOGLE FIREBASE!\n\n• Máy chủ: laptri-8e2b3\n• Vùng sân: clubs/vietthang\n• Trạng thái: Online 100% Realtime');
           }, 600);
         };
 
