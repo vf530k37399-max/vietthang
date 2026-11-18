@@ -486,32 +486,32 @@
             </div>
           </div>
 
-          <!-- Lưới 4 Sân Trực Quan Trên 1 Hàng (Desktop / Laptop) -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <!-- Lưới 4 Sân Cùng Lúc: Điện Thoại 2x2 Siêu Gọn & Máy Tính 4 Cột Ngang -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2 lg:gap-2.5">
             <div 
               v-for="court in courts" 
               :key="court.id"
               :class="[
-                'rounded-2xl border-2 p-3.5 transition-all duration-200 flex flex-col justify-between shadow-xl min-h-[380px]',
-                court.status === 'AVAILABLE' ? 'bg-slate-900/90 border-emerald-500/40 hover:border-emerald-400' : '',
+                'rounded-xl border p-2 sm:p-2.5 transition-all duration-150 flex flex-col justify-between shadow-md relative',
+                court.status === 'AVAILABLE' ? 'bg-slate-900/95 border-emerald-500/40 hover:border-emerald-400' : '',
                 court.status === 'PLAYING' ? 'bg-slate-900/95 border-rose-500/70 shadow-rose-500/10 ring-1 ring-rose-500/30' : '',
-                court.status === 'RESERVED' ? 'bg-slate-900/90 border-amber-500/60 shadow-amber-500/10' : '',
-                court.status === 'FIXED' ? 'bg-slate-900/90 border-purple-500/60 shadow-purple-500/10' : '',
-                court.status === 'MAINTENANCE' ? 'bg-slate-900/90 border-slate-700 opacity-75' : ''
+                court.status === 'RESERVED' ? 'bg-slate-900/95 border-amber-500/60 shadow-amber-500/10' : '',
+                court.status === 'FIXED' ? 'bg-slate-900/95 border-purple-500/60 shadow-purple-500/10' : '',
+                court.status === 'MAINTENANCE' ? 'bg-slate-900/95 border-slate-700 opacity-75' : ''
               ]">
               
-              <!-- Card Top: Header & Status -->
+              <!-- Card Top: Header & Trạng thái -->
               <div>
-                <div class="flex items-center justify-between pb-2 border-b border-slate-800/80">
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-base sm:text-lg font-black text-white tracking-tight">{{ court.name }}</span>
-                    <button v-if="isOwner" @click="openEditCourtModal(court)" class="p-1 rounded text-slate-500 hover:text-white hover:bg-slate-800" title="Chỉnh sửa sân">
-                      <i data-lucide="edit-3" class="w-3 h-3"></i>
+                <div class="flex items-center justify-between pb-1 border-b border-slate-800/80">
+                  <div class="flex items-center gap-1">
+                    <span class="text-[11px] sm:text-xs lg:text-sm font-black text-white tracking-tight">{{ court.name }}</span>
+                    <button v-if="isOwner" @click="openEditCourtModal(court)" class="p-0.5 rounded text-slate-500 hover:text-white" title="Sửa sân">
+                      <i data-lucide="edit-3" class="w-2.5 h-2.5"></i>
                     </button>
                   </div>
                   <span 
                     :class="[
-                      'text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider',
+                      'text-[8px] sm:text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase tracking-wider',
                       court.status === 'AVAILABLE' ? 'bg-emerald-500 text-slate-950' : '',
                       court.status === 'PLAYING' ? 'bg-rose-500 text-white animate-pulse' : '',
                       court.status === 'RESERVED' ? 'bg-amber-500 text-slate-950' : '',
@@ -522,47 +522,46 @@
                   </span>
                 </div>
 
-                <!-- Rate line -->
-                <div class="text-[11px] font-bold mt-1.5 flex items-center justify-between">
+                <!-- Đơn giá sân -->
+                <div class="text-[9px] sm:text-[10px] font-bold mt-1 flex items-center justify-between">
                   <span class="text-emerald-400 font-extrabold">{{ formatCurrency(court.hourlyRate || 50000) }}/h</span>
-                  <span class="text-amber-400 text-[10px]">Vàng: {{ formatCurrency(court.peakHourlyRate || 80000) }}/h</span>
+                  <span class="text-amber-400 text-[8px] sm:text-[9px]">Vàng: {{ formatCurrency(court.peakHourlyRate || 80000) }}</span>
                 </div>
 
                 <!-- 🟢 1. TRẠNG THÁI SÂN TRỐNG -->
-                <div v-if="court.status === 'AVAILABLE'" class="py-4 text-center space-y-2">
-                  <div class="w-10 h-10 mx-auto rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-400">
-                    <i data-lucide="sparkles" class="w-5 h-5"></i>
+                <div v-if="court.status === 'AVAILABLE'" class="py-2 sm:py-3 text-center space-y-1">
+                  <div class="w-7 h-7 sm:w-8 sm:h-8 mx-auto rounded-lg bg-emerald-500/15 flex items-center justify-center text-emerald-400">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                   </div>
-                  <div class="text-xs font-bold text-emerald-300">Sẵn sàng đón khách</div>
-                  <div class="text-[11px] text-slate-400 bg-slate-950/80 px-2 py-1.5 rounded-lg border border-slate-800">
+                  <div class="text-[9px] sm:text-[10px] font-bold text-emerald-300">Sẵn sàng đón khách</div>
+                  <div class="text-[8px] sm:text-[9px] text-slate-400 bg-slate-950/80 px-1.5 py-1 rounded border border-slate-800/80 truncate">
                     ⏱️ {{ getCourtAvailabilityText(court) }}
                   </div>
                 </div>
 
                 <!-- 🔴 2. TRẠNG THÁI ĐANG CHƠI -->
-                <div v-if="court.status === 'PLAYING' && court.session" class="space-y-2 py-2">
-                  <!-- Timer & Fee -->
-                  <div class="bg-slate-950 rounded-xl p-2.5 border border-rose-500/30 flex items-center justify-between">
+                <div v-if="court.status === 'PLAYING' && court.session" class="space-y-1 py-1 sm:py-1.5">
+                  <div class="bg-slate-950 rounded-lg p-1.5 border border-rose-500/30 flex items-center justify-between">
                     <div>
-                      <span class="text-[10px] text-slate-400 block">Đã chơi</span>
-                      <span class="text-lg font-black font-mono text-rose-400">
+                      <span class="text-[8px] text-slate-400 block">Đã chơi</span>
+                      <span class="text-xs sm:text-sm font-black font-mono text-rose-400">
                         {{ formatTimer(court.session.elapsedSeconds) }}
                       </span>
                     </div>
                     <div class="text-right">
-                      <span class="text-[10px] text-slate-400 block">Tạm tính</span>
-                      <span class="text-sm font-black text-white">
+                      <span class="text-[8px] text-slate-400 block">Tạm tính</span>
+                      <span class="text-[10px] sm:text-xs font-black text-white">
                         {{ formatCurrency(court.session.calculatedCourtFee) }}
                       </span>
                     </div>
                   </div>
 
-                  <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800 text-[11px] space-y-1">
+                  <div class="bg-slate-950/60 p-1.5 rounded border border-slate-800/80 text-[8px] sm:text-[9px] space-y-0.5">
                     <div class="flex justify-between">
-                      <span class="text-slate-400 truncate max-w-[100px]">Khách: <strong class="text-slate-200">{{ court.session.customerName || 'Vãng lai' }}</strong></span>
+                      <span class="text-slate-400 truncate max-w-[80px]">Khách: <strong class="text-slate-200">{{ court.session.customerName || 'Vãng lai' }}</strong></span>
                       <span class="text-slate-400">Vào: <strong class="text-slate-200 font-mono">{{ formatTime(court.session.checkInTime) }}</strong></span>
                     </div>
-                    <div class="flex justify-between text-slate-400 pt-1 border-t border-slate-800/80">
+                    <div class="flex justify-between text-slate-400 pt-0.5 border-t border-slate-800/80">
                       <span>Dịch vụ:</span>
                       <span class="font-bold text-amber-400">{{ formatCurrency(calculateServiceTotal(court.session.services)) }}</span>
                     </div>
@@ -570,145 +569,145 @@
                 </div>
 
                 <!-- 🟡 3. TRẠNG THÁI ĐẶT TRƯỚC (CHỜ CHECK-IN) -->
-                <div v-if="court.status === 'RESERVED' && court.reservation" class="space-y-2 py-2">
-                  <div class="bg-slate-950 rounded-xl p-2.5 border border-amber-500/30 space-y-1.5">
+                <div v-if="court.status === 'RESERVED' && court.reservation" class="space-y-1 py-1 sm:py-1.5">
+                  <div class="bg-slate-950 rounded-lg p-1.5 border border-amber-500/30 space-y-1">
                     <div class="flex justify-between items-start">
                       <div class="truncate pr-1">
-                        <span class="text-[9px] text-amber-400 font-bold uppercase block">Đã cọc trước</span>
-                        <h4 class="text-xs font-black text-white truncate">{{ court.reservation.customerName }}</h4>
-                        <p class="text-[10px] text-slate-400 font-mono">{{ court.reservation.phone }}</p>
+                        <span class="text-[8px] text-amber-400 font-bold uppercase block">Đã cọc trước</span>
+                        <h4 class="text-[9px] sm:text-[10px] font-black text-white truncate">{{ court.reservation.customerName }}</h4>
+                        <p class="text-[8px] text-slate-400 font-mono">{{ court.reservation.phone }}</p>
                       </div>
-                      <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-black flex-shrink-0">
+                      <span class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 text-[8px] sm:text-[9px] font-black flex-shrink-0">
                         {{ formatCurrency(court.reservation.deposit) }}
                       </span>
                     </div>
-                    <div class="pt-1 border-t border-slate-800 flex justify-between text-[11px]">
+                    <div class="pt-0.5 border-t border-slate-800 flex justify-between text-[8px] sm:text-[9px]">
                       <span class="text-slate-400">Giờ hẹn:</span>
-                      <span class="font-bold text-amber-300 font-mono">{{ court.reservation.startTime }} - {{ court.reservation.endTime }}</span>
+                      <span class="font-bold text-amber-300 font-mono">{{ court.reservation.startTime }}-{{ court.reservation.endTime }}</span>
                     </div>
                   </div>
                 </div>
 
                 <!-- 🟣 4. TRẠNG THÁI CỐ ĐỊNH THÁNG -->
-                <div v-if="court.status === 'FIXED' && court.fixedSchedule" class="space-y-2 py-2">
-                  <div class="bg-slate-950 rounded-xl p-2.5 border border-purple-500/30 space-y-1.5">
+                <div v-if="court.status === 'FIXED' && court.fixedSchedule" class="space-y-1 py-1 sm:py-1.5">
+                  <div class="bg-slate-950 rounded-lg p-1.5 border border-purple-500/30 space-y-1">
                     <div class="flex justify-between items-start">
                       <div class="truncate pr-1">
-                        <span class="text-[9px] text-purple-400 font-bold uppercase block">HĐ Tháng ({{ court.fixedSchedule.days }})</span>
-                        <h4 class="text-xs font-black text-white truncate">{{ court.fixedSchedule.groupName }}</h4>
-                        <p class="text-[10px] text-slate-400 truncate">{{ court.fixedSchedule.repName }}</p>
+                        <span class="text-[8px] text-purple-400 font-bold uppercase block">HĐ Tháng ({{ court.fixedSchedule.days }})</span>
+                        <h4 class="text-[9px] sm:text-[10px] font-black text-white truncate">{{ court.fixedSchedule.groupName }}</h4>
+                        <p class="text-[8px] text-slate-400 truncate">{{ court.fixedSchedule.repName }}</p>
                       </div>
-                      <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[9px] font-bold flex-shrink-0">
+                      <span class="px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-400 text-[8px] font-bold flex-shrink-0">
                         Đã đóng
                       </span>
                     </div>
-                    <div class="pt-1 border-t border-slate-800 flex justify-between text-[11px]">
+                    <div class="pt-0.5 border-t border-slate-800 flex justify-between text-[8px] sm:text-[9px]">
                       <span class="text-slate-400">Giờ:</span>
-                      <span class="font-bold text-purple-300 font-mono">{{ court.fixedSchedule.startTime }} - {{ court.fixedSchedule.endTime }}</span>
+                      <span class="font-bold text-purple-300 font-mono">{{ court.fixedSchedule.startTime }}-{{ court.fixedSchedule.endTime }}</span>
                     </div>
                   </div>
                 </div>
 
                 <!-- ⚪ 5. TRẠNG THÁI BẢO TRÌ -->
-                <div v-if="court.status === 'MAINTENANCE'" class="py-6 text-center space-y-2">
-                  <i data-lucide="wrench" class="w-8 h-8 text-amber-400 mx-auto"></i>
-                  <div class="text-xs font-bold text-amber-300">Đang bảo trì thảm/đèn</div>
+                <div v-if="court.status === 'MAINTENANCE'" class="py-3 text-center space-y-1">
+                  <i data-lucide="wrench" class="w-5 h-5 text-amber-400 mx-auto"></i>
+                  <div class="text-[9px] font-bold text-amber-300">Đang bảo trì</div>
                 </div>
 
               </div>
 
-              <!-- Card Bottom: Detail Link & Action Buttons -->
-              <div class="mt-3 pt-2.5 border-t border-slate-800 space-y-2">
-                <div class="flex items-center justify-between text-[10px]">
-                  <span class="text-slate-500 truncate max-w-[130px]">{{ getCourtNextSlotText(court) }}</span>
+              <!-- Card Bottom: Detail Link & Nút Bấm Thao Tác -->
+              <div class="mt-1.5 pt-1.5 border-t border-slate-800/80 space-y-1">
+                <div class="flex items-center justify-between text-[8px] sm:text-[9px]">
+                  <span class="text-slate-500 truncate max-w-[100px]">{{ getCourtNextSlotText(court) }}</span>
                   <button 
                     @click.stop="openCourtDetail(court)" 
                     class="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-0.5 transition flex-shrink-0">
-                    <i data-lucide="eye" class="w-3 h-3"></i>
+                    <i data-lucide="eye" class="w-2.5 h-2.5"></i>
                     <span>Chi Tiết</span>
                   </button>
                 </div>
 
-                <!-- Actions for AVAILABLE -->
-                <div v-if="court.status === 'AVAILABLE'" class="grid grid-cols-2 gap-1.5">
+                <!-- Nút cho SÂN TRỐNG -->
+                <div v-if="court.status === 'AVAILABLE'" class="grid grid-cols-2 gap-1">
                   <button 
                     v-if="hasPermission('canManageCourts')"
                     @click="openStartPlayModal(court)" 
-                    class="py-2 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-black text-xs shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-1">
-                    <i data-lucide="play" class="w-3 h-3 fill-white"></i>
+                    class="py-1 px-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-black text-[8px] sm:text-[9px] shadow-sm transition flex items-center justify-center gap-0.5">
+                    <i data-lucide="play" class="w-2.5 h-2.5 fill-white"></i>
                     <span>Vào Chơi</span>
                   </button>
-                  <div v-else class="py-2 px-1 text-[10px] text-slate-500 bg-slate-950 rounded-xl text-center">Khóa</div>
+                  <div v-else class="py-1 text-[8px] text-slate-500 bg-slate-950 rounded text-center">Khóa</div>
 
                   <button 
                     @click="activeTab = 'customer'; customerBooking.courtId = court.id" 
-                    class="py-2 px-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold text-xs transition flex items-center justify-center gap-1 border border-slate-700">
-                    <i data-lucide="calendar-plus" class="w-3 h-3 text-amber-400"></i>
+                    class="py-1 px-1 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold text-[8px] sm:text-[9px] transition flex items-center justify-center gap-0.5 border border-slate-700">
+                    <i data-lucide="calendar-plus" class="w-2.5 h-2.5 text-amber-400"></i>
                     <span>Đặt Sân</span>
                   </button>
                 </div>
 
-                <!-- Actions for PLAYING -->
-                <div v-if="court.status === 'PLAYING'" class="space-y-1.5">
-                  <div class="grid grid-cols-2 gap-1.5">
+                <!-- Nút cho SÂN ĐANG CHƠI -->
+                <div v-if="court.status === 'PLAYING'" class="space-y-1">
+                  <div class="grid grid-cols-2 gap-1">
                     <button 
                       v-if="hasPermission('canManageCourts')"
                       @click="openAddServiceModal(court)" 
-                      class="py-1.5 px-1.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-300 font-bold text-[11px] transition text-center">
-                      + Nước/Cầu
+                      class="py-1 px-0.5 rounded bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-300 font-bold text-[8px] sm:text-[9px] transition text-center truncate">
+                      + Đồ Uống
                     </button>
                     <button 
                       v-if="hasPermission('canManageCourts')"
                       @click="openSwitchCourtModal(court)" 
-                      class="py-1.5 px-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[11px] transition text-center">
+                      class="py-1 px-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[8px] sm:text-[9px] transition text-center truncate">
                       Đổi Sân
                     </button>
                   </div>
                   <button 
                     v-if="hasPermission('canCheckout')"
                     @click="triggerCheckout(court)" 
-                    class="w-full py-2 px-2 rounded-xl bg-gradient-to-r from-rose-600 to-red-500 hover:opacity-90 active:scale-95 text-white font-black text-xs shadow-lg shadow-rose-600/25 transition flex items-center justify-center gap-1.5">
-                    <i data-lucide="receipt" class="w-3.5 h-3.5"></i>
+                    class="w-full py-1.5 px-1 rounded-lg bg-gradient-to-r from-rose-600 to-red-500 hover:opacity-90 active:scale-95 text-white font-black text-[9px] sm:text-[10px] shadow transition flex items-center justify-center gap-1">
+                    <i data-lucide="receipt" class="w-3 h-3"></i>
                     <span>THANH TOÁN BILL</span>
                   </button>
-                  <div v-else class="text-center py-1.5 text-[10px] text-slate-500 bg-slate-950 rounded-lg">🔒 Khóa thu ngân</div>
+                  <div v-else class="text-center py-1 text-[8px] text-slate-500 bg-slate-950 rounded">🔒 Khóa thu ngân</div>
                 </div>
 
-                <!-- Actions for RESERVED -->
+                <!-- Nút cho SÂN ĐẶT TRƯỚC -->
                 <div v-if="court.status === 'RESERVED'">
                   <button 
                     v-if="hasPermission('canManageCourts')"
                     @click="checkInReservation(court)" 
-                    class="w-full py-2.5 px-2 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-xs shadow-md shadow-amber-500/25 transition flex items-center justify-center gap-1.5">
-                    <i data-lucide="check" class="w-4 h-4 font-black"></i>
+                    class="w-full py-1.5 px-1 rounded-lg bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-[9px] sm:text-[10px] shadow transition flex items-center justify-center gap-1">
+                    <i data-lucide="check" class="w-3 h-3 font-black"></i>
                     <span>NHẬN SÂN (CHECK-IN)</span>
                   </button>
-                  <div v-else class="text-center py-2 text-[10px] text-slate-500 bg-slate-950 rounded-lg">🔒 Khóa nhận sân</div>
+                  <div v-else class="text-center py-1 text-[8px] text-slate-500 bg-slate-950 rounded">🔒 Khóa nhận sân</div>
                 </div>
 
-                <!-- Actions for FIXED -->
-                <div v-if="court.status === 'FIXED'" class="grid grid-cols-2 gap-1.5">
+                <!-- Nút cho SÂN CỐ ĐỊNH THÁNG -->
+                <div v-if="court.status === 'FIXED'" class="grid grid-cols-2 gap-1">
                   <button 
                     v-if="hasPermission('canManageCourts')"
                     @click="openStartPlayModal(court)" 
-                    class="py-2 px-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs active:scale-95 transition flex items-center justify-center gap-1">
-                    <i data-lucide="play" class="w-3 h-3 fill-white"></i>
+                    class="py-1 px-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-[8px] sm:text-[9px] active:scale-95 transition flex items-center justify-center gap-0.5">
+                    <i data-lucide="play" class="w-2.5 h-2.5 fill-white"></i>
                     <span>Vào Chơi</span>
                   </button>
                   <button 
                     v-if="hasPermission('canManageMonthly')"
                     @click="cancelSingleSession(court)" 
-                    class="py-2 px-1.5 rounded-xl bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/40 text-amber-300 font-bold text-xs transition text-center">
+                    class="py-1 px-1 rounded-lg bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/40 text-amber-300 font-bold text-[8px] sm:text-[9px] transition text-center truncate">
                     Hủy Buổi
                   </button>
                 </div>
 
-                <!-- Actions for MAINTENANCE -->
+                <!-- Nút cho SÂN BẢO TRÌ -->
                 <div v-if="court.status === 'MAINTENANCE'">
                   <button 
                     v-if="isOwner"
                     @click="toggleCourtMaintenance(court)" 
-                    class="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-black text-xs text-white transition">
+                    class="w-full py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-black text-[9px] text-white transition">
                     Mở Lại Sân
                   </button>
                 </div>
@@ -868,64 +867,74 @@
       </div>
 
       <!-- ================= 4. TAB: QUẢN LÝ THUÊ THÁNG ================= -->
-      <div v-if="activeTab === 'monthly'" class="space-y-5">
-        <div class="flex justify-between items-center bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+      <div v-if="activeTab === 'monthly'" class="space-y-3 max-w-5xl mx-auto">
+        <div class="flex justify-between items-center bg-slate-900/80 p-2.5 sm:p-3 rounded-2xl border border-slate-800 shadow-sm">
           <div>
-            <h2 class="text-lg font-black text-white flex items-center gap-2">
-              <i data-lucide="calendar" class="w-5 h-5 text-purple-400"></i>
-              <span>QUẢN LÝ THUÊ THÁNG (HỢP ĐỒNG CỐ ĐỊNH)</span>
+            <h2 class="text-xs sm:text-sm font-black text-white flex items-center gap-1.5">
+              <i data-lucide="calendar" class="w-4 h-4 text-purple-400"></i>
+              <span>QUẢN LÝ THUÊ THÁNG (CỐ ĐỊNH)</span>
             </h2>
-            <p class="text-xs text-slate-400">Quản lý hợp đồng kỳ hạn, sinh từng buổi cụ thể & Tính năng khách báo nghỉ mở bán buổi thuê lại!</p>
+            <p class="text-[9px] text-slate-400 mt-0.5">Theo dõi hợp đồng nhóm cố định, báo nghỉ và mở bán buổi lẻ</p>
           </div>
-          <button @click="openAddContractModal" class="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 rounded-xl text-xs font-bold text-white transition flex items-center gap-1.5 shadow-md">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i>
-            <span>+ Thêm Hợp Đồng Thuê Tháng</span>
+          <button @click="openAddContractModal" class="px-2.5 py-1.5 bg-purple-600 hover:bg-purple-500 rounded-xl text-[9px] sm:text-[10px] font-bold text-white transition flex items-center gap-1 shadow-md active:scale-95">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+            <span>+ Thêm Hợp Đồng Mới</span>
           </button>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
           <div 
             v-for="contract in monthlyContracts" 
             :key="contract.id"
-            class="bg-slate-900 rounded-3xl p-5 border border-purple-500/30 space-y-4 shadow-xl">
+            class="bg-slate-900 rounded-xl p-2.5 sm:p-3 border border-purple-500/30 space-y-2 shadow-md">
             <div class="flex justify-between items-start">
               <div>
-                <span class="text-xs font-bold text-purple-400 uppercase tracking-wider">{{ contract.courtName }} &bull; {{ contract.days }}</span>
-                <h3 class="text-lg font-black text-white mt-1">{{ contract.groupName }}</h3>
-                <p class="text-xs text-slate-400">Đại diện: {{ contract.repName }} &bull; {{ contract.phone }}</p>
+                <span class="text-[8px] sm:text-[9px] font-black text-purple-400 uppercase tracking-wider">{{ contract.courtName }} &bull; {{ contract.days }}</span>
+                <h3 class="text-xs sm:text-sm font-black text-white mt-0.5">{{ contract.groupName }}</h3>
+                <p class="text-[8px] sm:text-[9px] text-slate-400">Đại diện: {{ contract.repName }} &bull; {{ contract.phone }}</p>
               </div>
               <span 
                 :class="contract.paid ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30'"
-                class="px-2.5 py-1 rounded-full border text-xs font-bold">
+                class="px-2 py-0.5 rounded-full border text-[8px] sm:text-[9px] font-bold">
                 {{ contract.paid ? 'Đã đóng quỹ' : 'Chưa nộp tiền' }}
               </span>
             </div>
 
-            <div class="grid grid-cols-3 gap-2 bg-slate-950 p-3 rounded-2xl border border-slate-800 text-xs">
+            <div class="grid grid-cols-3 gap-1 bg-slate-950 p-1.5 rounded-lg border border-slate-800 text-[8px] sm:text-[9px]">
               <div>
-                <span class="text-slate-400">Khung giờ:</span>
+                <span class="text-slate-400 block text-[8px]">Khung giờ:</span>
                 <p class="font-bold text-purple-300 font-mono">{{ contract.time }}</p>
               </div>
               <div>
-                <span class="text-slate-400">Số buổi:</span>
+                <span class="text-slate-400 block text-[8px]">Số buổi:</span>
                 <p class="font-bold text-white">{{ contract.totalSessions }} buổi</p>
               </div>
               <div>
-                <span class="text-slate-400">Tổng quỹ:</span>
+                <span class="text-slate-400 block text-[8px]">Tổng quỹ:</span>
                 <p class="font-bold text-emerald-400">{{ formatCurrency(contract.totalFund) }}</p>
               </div>
             </div>
 
-            <div class="flex gap-2">
+            <div class="flex items-center gap-1 pt-1 border-t border-slate-800/80 text-[8px] sm:text-[9px]">
               <button 
                 @click="toggleContractPayment(contract)" 
-                class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition">
-                {{ contract.paid ? 'Hủy đánh dấu đóng tiền' : 'Xác nhận ĐÃ ĐÓNG QUỸ' }}
+                class="flex-1 py-1 px-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold transition text-center truncate">
+                {{ contract.paid ? 'Hủy nộp' : 'Xác nhận ĐÃ NỘP' }}
               </button>
               <button 
                 @click="cancelSingleSessionFromContract(contract)" 
-                class="py-2.5 px-3 rounded-xl bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/40 text-amber-300 text-xs font-bold transition">
-                Hủy Buổi Lẻ Hôm Nay
+                class="py-1 px-1.5 rounded bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/40 text-amber-300 font-bold transition truncate">
+                Hủy Buổi Hôm Nay
+              </button>
+              <button 
+                @click="openEditContractModal(contract)" 
+                class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300" title="Sửa hợp đồng">
+                <i data-lucide="edit-3" class="w-3 h-3"></i>
+              </button>
+              <button 
+                @click="deleteContract(contract)" 
+                class="p-1 rounded bg-slate-800 hover:bg-rose-900/50 text-slate-400 hover:text-rose-400" title="Xóa hợp đồng">
+                <i data-lucide="trash-2" class="w-3 h-3"></i>
               </button>
             </div>
           </div>
@@ -972,63 +981,225 @@
           </div>
         </div>
 
-        <!-- ================= SUB-TAB 1: BẢNG GIÁ THEO KHUNG GIỜ ================= -->
+        <!-- ================= SUB-TAB 1: THIẾT LẬP BẢNG GIÁ SÂN (GIÁ CHUNG HOẶC GIÁ RIÊNG) ================= -->
         <div v-if="configSubTab === 'pricing'" class="space-y-4">
-          <div class="flex justify-between items-center bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800">
-            <div>
-              <h3 class="text-sm font-black text-white flex items-center gap-2">
-                <i data-lucide="clock" class="w-4 h-4 text-cyan-400"></i>
-                Bảng Đơn Giá Sân Theo Khung Giờ (24/24)
-              </h3>
-              <p class="text-[11px] text-slate-400 mt-0.5">Tự động tính tiền đa khung giờ vàng chính xác theo từng phút</p>
+
+          <!-- 1. Thanh Lựa Chọn: GIÁ CHUNG TOÀN HỆ THỐNG vs GIÁ RIÊNG TỪNG SÂN -->
+          <div class="bg-slate-900/95 p-3.5 sm:p-4 rounded-2xl border border-slate-800 shadow-xl space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2.5">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+                  <i data-lucide="tag" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <h4 class="text-xs sm:text-sm font-black text-white flex items-center gap-1.5 uppercase tracking-wide">
+                    <span>CHẾ ĐỘ THIẾT LẬP ĐƠN GIÁ SÂN</span>
+                    <span class="text-[9px] px-2 py-0.2 rounded-full font-black uppercase"
+                      :class="pricingMode === 'UNIFIED' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'">
+                      {{ pricingMode === 'UNIFIED' ? '🌐 ĐANG DÙNG GIÁ CHUNG' : '🎯 ĐANG DÙNG GIÁ RIÊNG TỪNG SÂN' }}
+                    </span>
+                  </h4>
+                  <p class="text-[9px] sm:text-[10px] text-slate-400">Chọn áp dụng 1 bảng giá chung cho toàn bộ sân hoặc cài đặt đơn giá độc lập cho từng sân</p>
+                </div>
+              </div>
+
+              <!-- Hai Nút Chuyển Đổi Trực Quan -->
+              <div class="inline-flex bg-slate-950 p-1 rounded-xl border border-slate-800 gap-1 text-[10px] sm:text-xs font-bold">
+                <button 
+                  type="button"
+                  @click="setPricingMode('UNIFIED')"
+                  :class="pricingMode === 'UNIFIED' ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black shadow-md ring-1 ring-emerald-500/50' : 'text-slate-400 hover:text-white'"
+                  class="px-2.5 sm:px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                  <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                  <span>1. Áp Dụng Giá Chung (Tất cả sân)</span>
+                </button>
+                
+                <button 
+                  type="button"
+                  @click="setPricingMode('PER_COURT')"
+                  :class="pricingMode === 'PER_COURT' ? 'bg-gradient-to-r from-amber-600 to-rose-600 text-white font-black shadow-md ring-1 ring-amber-500/50' : 'text-slate-400 hover:text-white'"
+                  class="px-2.5 sm:px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                  <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                  <span>2. Cấu Hình Giá Riêng Từng Sân</span>
+                </button>
+              </div>
             </div>
-            <button @click="openAddPricingSlotModal" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs rounded-xl shadow-md flex items-center gap-1.5 transition">
-              <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
-              <span>+ Thêm Khung Giờ Mới</span>
-            </button>
           </div>
 
-          <!-- Pricing Slots Table -->
-        <div class="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-2xl space-y-4">
-          <div class="flex justify-between items-center">
-            <h3 class="text-base font-black text-white flex items-center gap-2">
-              <i data-lucide="clock" class="w-4 h-4 text-cyan-400"></i>
-              Bảng Đơn Giá Sân Theo Khung Giờ (24/24)
-            </h3>
-            <span class="text-xs text-slate-400">{{ pricingSlots.length }} khung giờ đang chạy</span>
+          <!-- ================= CHẾ ĐỘ 1: BẢNG GIÁ CHUNG CHO TẤT CẢ CÁC SÂN ================= -->
+          <div v-if="pricingMode === 'UNIFIED'" class="space-y-3">
+            <!-- Banner Giải Thích Chế Độ Giá Chung -->
+            <div class="flex flex-wrap justify-between items-center bg-emerald-950/30 p-3 rounded-2xl border border-emerald-500/30 gap-2">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <div>
+                  <span class="text-xs font-black text-emerald-300 block">CHẾ ĐỘ GIÁ CHUNG TOÀN HỆ THỐNG</span>
+                  <span class="text-[9px] sm:text-[10px] text-slate-300">Tất cả {{ courts.length }} sân (Sân 1, Sân 2...) đều tự động tính tiền theo các khung giờ sáng/chiều/vàng/đêm bên dưới.</span>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 flex-wrap">
+                <!-- Công tắc bật tắt Chế độ Ngày Lễ -->
+                <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border cursor-pointer select-none transition"
+                  :class="isHolidayMode ? 'bg-rose-500/20 border-rose-500/50 text-rose-300 ring-1 ring-rose-500/40' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-300'">
+                  <input type="checkbox" v-model="isHolidayMode" class="w-3.5 h-3.5 rounded accent-rose-500">
+                  <span class="text-[10px] font-black uppercase flex items-center gap-1">
+                    <span>🎉 Chế Độ Ngày Lễ:</span>
+                    <span :class="isHolidayMode ? 'text-rose-400 font-extrabold' : 'text-slate-500'">{{ isHolidayMode ? 'ĐANG BẬT' : 'TẮT' }}</span>
+                  </span>
+                </label>
+
+                <button @click="syncUnifiedPriceToAllCourts" class="px-2.5 py-1.5 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/40 font-bold text-[10px] sm:text-xs rounded-xl shadow flex items-center gap-1 transition">
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                  <span>🔄 Đồng Bộ Bảng Giá Này Cho Mọi Sân</span>
+                </button>
+
+                <button @click="openAddPricingSlotModal" class="px-2.5 py-1.5 bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white font-black text-[10px] sm:text-xs rounded-xl shadow flex items-center gap-1 transition">
+                  <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                  <span>+ Thêm Khung Giờ</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Bảng Khung Giờ Chuẩn 24/24 (Chuẩn Typography CLB Lập Trí 8px - 10px) -->
+            <div class="bg-slate-900/90 rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-[9px] sm:text-[10px]">
+                  <thead class="text-[8px] sm:text-[9px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-800 bg-slate-950/70">
+                    <tr>
+                      <th class="py-2.5 px-3">Tên Khung Giờ</th>
+                      <th class="py-2.5 px-2 text-center">Khung Giờ</th>
+                      <th class="py-2.5 px-2.5 text-right text-emerald-400">Ngày Thường (T2-T6)</th>
+                      <th class="py-2.5 px-2.5 text-right text-amber-400">Thứ 7 & Chủ Nhật</th>
+                      <th class="py-2.5 px-2.5 text-right text-rose-400">Ngày Lễ / Tết</th>
+                      <th class="py-2.5 px-2.5 text-right text-cyan-300">Đang Áp Dụng</th>
+                      <th class="py-2.5 px-3 text-right">Thao Tác</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/80">
+                    <tr v-for="slot in pricingSlots" :key="slot.id" class="hover:bg-slate-800/40 transition">
+                      <td class="py-2 px-3 font-bold text-white whitespace-nowrap">
+                        <span class="inline-block w-2 h-2 rounded-full mr-1.5" :class="slot.isPeak ? 'bg-rose-500' : 'bg-emerald-400'"></span>
+                        <span>{{ slot.name }}</span>
+                        <span v-if="slot.isPeak" class="ml-1 text-[8px] px-1 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-black">VÀNG</span>
+                      </td>
+                      <td class="py-2 px-2 text-center font-mono font-bold text-slate-300 whitespace-nowrap">{{ slot.startTime }} - {{ slot.endTime }}</td>
+                      <td class="py-2 px-2.5 text-right font-black text-emerald-400 whitespace-nowrap">{{ formatCurrency(slot.rateWeekday || slot.rate) }}/h</td>
+                      <td class="py-2 px-2.5 text-right font-black text-amber-400 whitespace-nowrap">{{ formatCurrency(slot.rateWeekend || Math.round((slot.rateWeekday || slot.rate) * 1.3)) }}/h</td>
+                      <td class="py-2 px-2.5 text-right font-black text-rose-400 whitespace-nowrap">{{ formatCurrency(slot.rateHoliday || Math.round((slot.rateWeekday || slot.rate) * 1.5)) }}/h</td>
+                      <td class="py-2 px-2.5 text-right whitespace-nowrap">
+                        <span class="font-black text-cyan-300">{{ formatCurrency(getCurrentAppliedRate(slot)) }}/h</span>
+                        <span class="text-[8px] text-slate-500 block font-mono">({{ formatCurrency(Math.round(getCurrentAppliedRate(slot) / 60)) }}/p)</span>
+                      </td>
+                      <td class="py-2 px-3 text-right space-x-1 whitespace-nowrap">
+                        <button @click="openEditPricingSlotModal(slot)" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[9px] font-bold text-slate-200">Sửa</button>
+                        <button @click="deletePricingSlot(slot)" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-rose-900/50 text-[9px] font-bold text-rose-400">Xóa</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Ghi chú giải thích chân bảng -->
+              <div class="p-2.5 bg-slate-950/60 border-t border-slate-800 flex flex-wrap items-center justify-between text-[9px] text-slate-400 gap-2">
+                <div class="flex items-center gap-3">
+                  <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Thứ 2 - Thứ 6: Đơn giá thường</span>
+                  <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Thứ 7 & CN: Phụ thu cuối tuần</span>
+                  <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Ngày Lễ / Tết: Tự động tính khi bật công tắc Lễ</span>
+                </div>
+                <span class="text-cyan-400 font-bold">* Hệ thống tự động nhận diện ngày hiện tại để áp dụng chính xác từng phút</span>
+              </div>
+            </div>
           </div>
 
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead class="text-[11px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-800 bg-slate-950/60">
-                <tr>
-                  <th class="py-3 px-4">Tên Khung Giờ</th>
-                  <th class="py-3 px-4">Từ Giờ</th>
-                  <th class="py-3 px-4">Đến Giờ</th>
-                  <th class="py-3 px-4">Đơn Giá / Giờ</th>
-                  <th class="py-3 px-4">Giá / Phút</th>
-                  <th class="py-3 px-4 text-right">Thao Tác</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-800/80">
-                <tr v-for="slot in pricingSlots" :key="slot.id" class="hover:bg-slate-800/40 transition">
-                  <td class="py-3.5 px-4 font-bold text-white">
-                    <span class="inline-block w-2.5 h-2.5 rounded-full mr-2" :class="slot.isPeak ? 'bg-rose-500' : 'bg-emerald-400'"></span>
-                    {{ slot.name }}
-                  </td>
-                  <td class="py-3.5 px-4 font-mono font-bold text-slate-300">{{ slot.startTime }}</td>
-                  <td class="py-3.5 px-4 font-mono font-bold text-slate-300">{{ slot.endTime }}</td>
-                  <td class="py-3.5 px-4 font-black text-amber-400">{{ formatCurrency(slot.rate) }}/h</td>
-                  <td class="py-3.5 px-4 text-xs font-mono text-slate-400">{{ formatCurrency(Math.round(slot.rate / 60)) }}/p</td>
-                  <td class="py-3.5 px-4 text-right space-x-1">
-                    <button @click="openEditPricingSlotModal(slot)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200">Sửa</button>
-                    <button @click="deletePricingSlot(slot)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/50 text-xs font-bold text-rose-400">Xóa</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <!-- ================= CHẾ ĐỘ 2: CẤU HÌNH ĐƠN GIÁ RIÊNG CHO TỪNG SÂN ================= -->
+          <div v-if="pricingMode === 'PER_COURT'" class="space-y-3">
+            <!-- Banner Giải Thích Chế Độ Giá Riêng -->
+            <div class="flex flex-wrap justify-between items-center bg-amber-950/30 p-3 rounded-2xl border border-amber-500/30 gap-2">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                <div>
+                  <span class="text-xs font-black text-amber-300 block">CHẾ ĐỘ ĐỊNH GIÁ RIÊNG TỪNG SÂN (SÂN 1 - SÂN {{ courts.length }})</span>
+                  <span class="text-[9px] sm:text-[10px] text-slate-300">Từng sân có mức giá độc lập tùy chất lượng mặt thảm PVC / gỗ, hệ thống chiếu sáng và vị trí.</span>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 flex-wrap">
+                <!-- Công tắc bật tắt Chế độ Ngày Lễ -->
+                <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border cursor-pointer select-none transition"
+                  :class="isHolidayMode ? 'bg-rose-500/20 border-rose-500/50 text-rose-300 ring-1 ring-rose-500/40' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-300'">
+                  <input type="checkbox" v-model="isHolidayMode" class="w-3.5 h-3.5 rounded accent-rose-500">
+                  <span class="text-[10px] font-black uppercase flex items-center gap-1">
+                    <span>🎉 Ngày Lễ:</span>
+                    <span :class="isHolidayMode ? 'text-rose-400 font-extrabold' : 'text-slate-500'">{{ isHolidayMode ? 'BẬT' : 'TẮT' }}</span>
+                  </span>
+                </label>
+
+                <button @click="openAddCourtModal" class="px-2.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 active:scale-95 text-white font-black text-[10px] sm:text-xs rounded-xl shadow flex items-center gap-1 transition">
+                  <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                  <span>+ Thêm Sân Mới</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Bảng Danh Sách Đơn Giá Riêng Cho Từng Sân (Sân 1 -> Sân N) -->
+            <div class="bg-slate-900/90 rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-[9px] sm:text-[10px]">
+                  <thead class="text-[8px] sm:text-[9px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-800 bg-slate-950/70">
+                    <tr>
+                      <th class="py-2.5 px-3">Tên Sân & Tiêu Chuẩn</th>
+                      <th class="py-2.5 px-2.5 text-right text-emerald-400">Giờ Thường (T2-T6)</th>
+                      <th class="py-2.5 px-2.5 text-right text-amber-400">Giờ Vàng (Cao Điểm)</th>
+                      <th class="py-2.5 px-2.5 text-right text-yellow-300">Thứ 7 & Chủ Nhật</th>
+                      <th class="py-2.5 px-2.5 text-right text-rose-400">Ngày Lễ / Tết</th>
+                      <th class="py-2.5 px-2.5 text-right text-purple-300">Thuê Tháng</th>
+                      <th class="py-2.5 px-3 text-right">Thao Tác</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/80">
+                    <tr v-for="court in courts" :key="court.id" class="hover:bg-slate-800/40 transition">
+                      <td class="py-2 px-3 whitespace-nowrap">
+                        <div class="flex items-center gap-2">
+                          <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-[10px]">{{ court.courtNumber || court.id }}</span>
+                          <div>
+                            <span class="font-black text-white text-[11px] block">{{ court.name }}</span>
+                            <span class="text-[8px] text-slate-400">{{ court.floorMaterial === 'PVC_MAT' ? 'Thảm PVC BWF' : (court.floorMaterial === 'WOOD' ? 'Sàn Gỗ Thi Đấu' : 'Thảm PVC') }} &bull; {{ court.lightingQuality || 'LED 400 Lux' }}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="py-2 px-2.5 text-right font-black text-emerald-400 whitespace-nowrap">
+                        {{ formatCurrency(court.hourlyRate || 50000) }}/h
+                      </td>
+                      <td class="py-2 px-2.5 text-right font-black text-amber-400 whitespace-nowrap">
+                        {{ formatCurrency(court.peakHourlyRate || 80000) }}/h
+                      </td>
+                      <td class="py-2 px-2.5 text-right font-black text-yellow-300 whitespace-nowrap">
+                        {{ formatCurrency(court.weekendHourlyRate || Math.round((court.hourlyRate || 50000) * 1.3)) }}/h
+                      </td>
+                      <td class="py-2 px-2.5 text-right font-black text-rose-400 whitespace-nowrap">
+                        {{ formatCurrency(court.holidayHourlyRate || Math.round((court.hourlyRate || 50000) * 1.5)) }}/h
+                      </td>
+                      <td class="py-2 px-2.5 text-right font-black text-purple-300 whitespace-nowrap">
+                        {{ formatCurrency(court.monthlyRate || 45000) }}/h
+                      </td>
+                      <td class="py-2 px-3 text-right space-x-1 whitespace-nowrap">
+                        <button @click="openEditCourtModal(court)" class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-[9px] font-black">
+                          ✏️ Sửa Giá Sân Này
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="p-2.5 bg-slate-950/60 border-t border-slate-800 flex flex-wrap items-center justify-between text-[9px] text-slate-400 gap-2">
+                <span>* Bạn có thể bấm nút <strong>"✏️ Sửa Giá Sân Này"</strong> để cài đặt đơn giá cụ thể cho từng sân (Ví dụ: Sân 1: 50k, Sân 2: 60k, Sân 3: 40k, Sân 4: 80k...)</span>
+                <span class="text-amber-400 font-bold">Hệ thống tính tiền tự động theo giá riêng của sân đó khi đón khách</span>
+              </div>
+            </div>
           </div>
-        </div>
+
         </div>
 
         <!-- ================= SUB-TAB 2: PHÂN QUYỀN TÀI KHOẢN NHÂN VIÊN ================= -->
@@ -1621,22 +1792,33 @@
 
           <!-- Ma trận giá riêng cho sân này -->
           <div class="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
-            <span class="text-[11px] font-black text-amber-400 block uppercase">💰 Cấu hình đơn giá riêng của sân này:</span>
-            <div class="grid grid-cols-3 gap-2">
+            <span class="text-[11px] font-black text-amber-400 block uppercase">💰 Cấu hình đơn giá riêng của sân này (Khi bật Chế độ Giá Riêng):</span>
+            <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="block text-[10px] font-bold text-slate-400 mb-1">Giờ thường (đ/h)</label>
-                <input type="number" step="1000" v-model.number="modals.courtForm.data.hourlyRate" placeholder="50000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-black text-emerald-400 focus:outline-none focus:border-emerald-500">
+                <label class="block text-[10px] font-bold text-emerald-400 mb-1">1. Giờ Thường T2-T6 (đ/h)</label>
+                <input type="number" step="5000" v-model.number="modals.courtForm.data.hourlyRate" placeholder="50000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-black text-emerald-400 focus:outline-none focus:border-emerald-500">
               </div>
               <div>
-                <label class="block text-[10px] font-bold text-slate-400 mb-1">Giờ vàng (đ/h)</label>
-                <input type="number" step="1000" v-model.number="modals.courtForm.data.peakHourlyRate" placeholder="80000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-black text-amber-400 focus:outline-none focus:border-amber-500">
-              </div>
-              <div>
-                <label class="block text-[10px] font-bold text-slate-400 mb-1">Thuê tháng (đ/h)</label>
-                <input type="number" step="1000" v-model.number="modals.courtForm.data.monthlyRate" placeholder="45000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-black text-purple-400 focus:outline-none focus:border-purple-500">
+                <label class="block text-[10px] font-bold text-amber-400 mb-1">2. Giờ Vàng Cao Điểm (đ/h)</label>
+                <input type="number" step="5000" v-model.number="modals.courtForm.data.peakHourlyRate" placeholder="80000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-black text-amber-400 focus:outline-none focus:border-amber-500">
               </div>
             </div>
-            <p class="text-[10px] text-slate-500 italic">* Ví dụ: Sân 1: 50k/h, Sân 2: 60k/h, Sân 3: 40k/h, Sân 4: 80k/h</p>
+
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label class="block text-[10px] font-bold text-yellow-300 mb-1">3. Thứ 7 & CN (đ/h)</label>
+                <input type="number" step="5000" v-model.number="modals.courtForm.data.weekendHourlyRate" placeholder="70000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-black text-yellow-300 focus:outline-none focus:border-yellow-500">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-rose-400 mb-1">4. Ngày Lễ/Tết (đ/h)</label>
+                <input type="number" step="5000" v-model.number="modals.courtForm.data.holidayHourlyRate" placeholder="80000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-black text-rose-400 focus:outline-none focus:border-rose-500">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-purple-400 mb-1">5. Thuê Tháng (đ/h)</label>
+                <input type="number" step="5000" v-model.number="modals.courtForm.data.monthlyRate" placeholder="45000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-black text-purple-400 focus:outline-none focus:border-purple-500">
+              </div>
+            </div>
+            <p class="text-[9px] text-slate-500 italic">* Bạn có thể cài các mức giá khác nhau tùy chất lượng thảm và vị trí từng sân.</p>
           </div>
 
           <div>
@@ -1717,45 +1899,72 @@
       </div>
     </div>
 
-    <!-- Modal: Thêm / Sửa Khung Giờ Giá Sân -->
-    <div v-if="modals.pricingForm.open" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl">
-        <div class="flex justify-between items-center">
-          <h3 class="text-lg font-black text-white">{{ modals.pricingForm.isEdit ? 'Sửa Khung Giờ' : 'Thêm Khung Giờ Mới' }}</h3>
-          <button @click="modals.pricingForm.open = false" class="text-slate-400 hover:text-white text-xl">&times;</button>
+    <!-- Modal: Thêm / Sửa Khung Giờ Giá Sân (Đầy đủ Ngày Thường, Thứ 7 - CN, Ngày Lễ) -->
+    <div v-if="modals.pricingForm.open" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 max-w-md w-full space-y-4 shadow-2xl">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+          <h3 class="text-sm sm:text-base font-black text-white flex items-center gap-1.5">
+            <i data-lucide="clock" class="w-4 h-4 text-cyan-400"></i>
+            <span>{{ modals.pricingForm.isEdit ? 'SỬA KHUNG GIỜ GIÁ SÂN' : '+ THÊM KHUNG GIỜ MỚI' }}</span>
+          </h3>
+          <button @click="modals.pricingForm.open = false" class="text-slate-400 hover:text-white text-lg leading-none">&times;</button>
         </div>
 
         <div class="space-y-3 text-xs">
           <div>
-            <label class="block font-bold uppercase text-slate-400 mb-1">Tên khung giờ *</label>
-            <input type="text" v-model="modals.pricingForm.data.name" placeholder="Ví dụ: Giờ Sáng, Giờ Vàng Chiều Tối..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-cyan-500">
+            <label class="block font-bold uppercase text-[10px] text-slate-400 mb-1">Tên khung giờ *</label>
+            <input type="text" v-model="modals.pricingForm.data.name" placeholder="Ví dụ: Giờ Sáng, Giờ Vàng Chiều Tối..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500">
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-2 gap-2.5">
             <div>
-              <label class="block font-bold uppercase text-slate-400 mb-1">Từ Giờ (HH:mm) *</label>
-              <input type="time" v-model="modals.pricingForm.data.startTime" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-mono">
+              <label class="block font-bold uppercase text-[10px] text-slate-400 mb-1">Từ Giờ (HH:mm) *</label>
+              <input type="time" v-model="modals.pricingForm.data.startTime" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-2 text-xs text-white font-mono">
             </div>
             <div>
-              <label class="block font-bold uppercase text-slate-400 mb-1">Đến Giờ (HH:mm) *</label>
-              <input type="time" v-model="modals.pricingForm.data.endTime" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-mono">
+              <label class="block font-bold uppercase text-[10px] text-slate-400 mb-1">Đến Giờ (HH:mm) *</label>
+              <input type="time" v-model="modals.pricingForm.data.endTime" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-2 text-xs text-white font-mono">
             </div>
           </div>
 
-          <div>
-            <label class="block font-bold uppercase text-slate-400 mb-1">Đơn giá áp dụng (đ / Giờ) *</label>
-            <input type="number" v-model.number="modals.pricingForm.data.rate" step="5000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-base font-black text-amber-400 focus:border-cyan-500">
+          <!-- 3 Mức Giá: Ngày Thường, Thứ 7 & CN, Ngày Lễ -->
+          <div class="space-y-2 p-3 bg-slate-950/80 rounded-2xl border border-slate-800/80">
+            <span class="text-[10px] font-black uppercase text-cyan-400 block tracking-wider">Cấu Hình Đơn Giá Chi Tiết Theo Ngày:</span>
+            
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <label class="font-bold text-[10px] text-emerald-400 uppercase">1. Ngày Thường (Thứ 2 - Thứ 6) *</label>
+                <span class="text-[9px] text-slate-500 font-mono">đ / Giờ</span>
+              </div>
+              <input type="number" v-model.number="modals.pricingForm.data.rateWeekday" step="5000" placeholder="50000" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-black text-emerald-400 focus:border-emerald-500">
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <label class="font-bold text-[10px] text-amber-400 uppercase">2. Thứ 7 & Chủ Nhật (Cuối Tuần) *</label>
+                <span class="text-[9px] text-slate-500 font-mono">đ / Giờ</span>
+              </div>
+              <input type="number" v-model.number="modals.pricingForm.data.rateWeekend" step="5000" placeholder="70000" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-black text-amber-400 focus:border-amber-500">
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <label class="font-bold text-[10px] text-rose-400 uppercase">3. Ngày Lễ / Tết (Phụ thu Lễ) *</label>
+                <span class="text-[9px] text-slate-500 font-mono">đ / Giờ</span>
+              </div>
+              <input type="number" v-model.number="modals.pricingForm.data.rateHoliday" step="5000" placeholder="80000" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-black text-rose-400 focus:border-rose-500">
+            </div>
           </div>
 
           <div class="flex items-center gap-2 pt-1">
-            <input type="checkbox" id="isPeak" v-model="modals.pricingForm.data.isPeak" class="w-4 h-4 rounded text-rose-500">
-            <label for="isPeak" class="text-slate-300 font-bold">Đánh dấu đây là Khung Giờ Vàng (Cao điểm)</label>
+            <input type="checkbox" id="isPeak" v-model="modals.pricingForm.data.isPeak" class="w-4 h-4 rounded text-rose-500 accent-rose-500">
+            <label for="isPeak" class="text-slate-300 font-bold text-[10px] cursor-pointer">Đánh dấu đây là Khung Giờ Vàng (Cao điểm)</label>
           </div>
         </div>
 
-        <div class="flex gap-2 pt-2">
-          <button @click="modals.pricingForm.open = false" class="flex-1 py-3 bg-slate-800 rounded-xl text-xs font-bold text-slate-300">Hủy</button>
-          <button @click="savePricingSlotForm" class="flex-1 py-3 bg-cyan-600 hover:bg-cyan-500 rounded-xl text-xs font-black text-white">
+        <div class="flex gap-2 pt-2 border-t border-slate-800">
+          <button @click="modals.pricingForm.open = false" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-slate-300 transition">Hủy</button>
+          <button @click="savePricingSlotForm" class="flex-1 py-2.5 bg-cyan-600 hover:bg-cyan-500 active:scale-95 rounded-xl text-xs font-black text-white transition shadow-lg shadow-cyan-600/30">
             LƯU KHUNG GIỜ
           </button>
         </div>
@@ -1839,119 +2048,127 @@
       </div>
     </div>
 
-    <!-- Modal 4: Check-out & In Bill Chuẩn K80 -->
-    <div v-if="modals.checkout.open" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl">
+    <!-- Modal 4: Check-out & Xuất Hóa Đơn K80 Chống Tràn Lề Mọi Điện Thoại -->
+    <div v-if="modals.checkout.open" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-3 sm:p-4 max-w-sm w-full max-h-[94vh] overflow-y-auto space-y-2.5 shadow-2xl my-auto text-xs">
         
-        <div id="printable-receipt" class="bg-white text-slate-900 p-5 rounded-2xl font-mono text-xs shadow-inner space-y-3">
-          <div class="text-center pb-2 border-b border-dashed border-slate-400">
-            <h2 class="text-sm font-black uppercase tracking-wider">{{ clubInfo.name || 'SÂN CẦU LÔNG THẮNG PRO' }}</h2>
-            <p class="text-[10px] text-slate-600">{{ clubInfo.address || 'Sân 1 - Sân 4 &bull; Hotline: 0988.xxx.xxx' }}</p>
-            <p class="text-xs font-bold text-slate-800 mt-1">HÓA ĐƠN THANH TOÁN (K80)</p>
+        <div id="printable-receipt" class="max-w-[280px] sm:max-w-[310px] mx-auto bg-white text-slate-900 p-3 rounded-xl font-mono text-[9px] sm:text-[10px] leading-tight shadow space-y-2 border border-slate-200">
+          <div class="text-center pb-1.5 border-b border-dashed border-slate-400">
+            <h2 class="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-950">{{ clubInfo.name || 'SÂN CẦU LÔNG THẮNG PRO' }}</h2>
+            <p class="text-[8px] text-slate-600 truncate">{{ clubInfo.address || '45 Đường Cầu Lông &bull; Hotline: 0988.xxx.xxx' }}</p>
+            <p class="text-[10px] font-black text-slate-800 mt-0.5 uppercase tracking-wide">PHIẾU THANH TOÁN (BILL K80)</p>
           </div>
 
-          <div class="space-y-1 text-[11px]">
-            <div class="flex justify-between"><span>Sân:</span><strong class="text-xs">{{ modals.checkout.court?.name }}</strong></div>
-            <div class="flex justify-between"><span>Khách hàng:</span><strong>{{ modals.checkout.court?.session?.customerName || 'Vãng lai' }}</strong></div>
+          <div class="space-y-0.5 text-[9px] sm:text-[10px]">
+            <div class="flex justify-between"><span>Sân:</span><strong class="text-[10px] text-slate-950 font-black">{{ modals.checkout.court?.name }}</strong></div>
+            <div class="flex justify-between"><span>Khách:</span><strong class="text-slate-900 truncate max-w-[150px]">{{ modals.checkout.court?.session?.customerName || 'Vãng lai' }}</strong></div>
             <div class="flex justify-between"><span>Giờ vào:</span><span>{{ formatTime(modals.checkout.court?.session?.checkInTime) }}</span></div>
             <div class="flex justify-between"><span>Giờ ra:</span><span>{{ formatTime(new Date()) }}</span></div>
-            <div class="flex justify-between"><span>Tổng thời gian:</span><strong class="text-xs">{{ Math.ceil((modals.checkout.court?.session?.elapsedSeconds || 0) / 60) }} phút</strong></div>
+            <div class="flex justify-between font-bold"><span>Tổng thời gian:</span><span class="text-emerald-800 font-mono">{{ Math.ceil((modals.checkout.court?.session?.elapsedSeconds || 0) / 60) }} phút</span></div>
           </div>
 
           <!-- Chi tiết tách theo các khung giờ -->
-          <div class="pt-2 border-t border-dashed border-slate-300 space-y-1 text-[11px]">
-            <div class="font-bold uppercase text-[10px]">1. Tiền giờ sân (Tách khung giờ):</div>
-            <div v-for="b in modals.checkout.court?.session?.slotBreakdown" :key="b.name" class="flex justify-between pl-2">
-              <span>{{ b.name }} ({{ b.minutes }}p &bull; {{ formatCurrency(b.rate) }}/h):</span>
-              <span>{{ formatCurrency(b.fee) }}</span>
+          <div class="pt-1.5 border-t border-dashed border-slate-300 space-y-0.5 text-[9px]">
+            <div class="font-bold uppercase text-[8px] text-slate-600">1. Tiền giờ sân (Đa khung giờ):</div>
+            <div v-for="b in modals.checkout.court?.session?.slotBreakdown" :key="b.name" class="flex justify-between pl-1 text-slate-700">
+              <span class="truncate max-w-[170px]">{{ b.name }} ({{ b.minutes }}p):</span>
+              <span class="font-mono">{{ formatCurrency(b.fee) }}</span>
             </div>
-            <div class="flex justify-between font-bold pt-1">
+            <div class="flex justify-between font-black pt-0.5 border-t border-dotted border-slate-200 text-slate-950">
               <span>CỘNG TIỀN SÂN:</span>
-              <span>{{ formatCurrency(modals.checkout.court?.session?.calculatedCourtFee) }}</span>
+              <span class="font-mono">{{ formatCurrency(modals.checkout.court?.session?.calculatedCourtFee) }}</span>
             </div>
           </div>
 
           <!-- Chi tiết nước uống -->
-          <div v-if="modals.checkout.court?.session?.services && modals.checkout.court.session.services.length > 0" class="pt-2 border-t border-dashed border-slate-300 space-y-1 text-[11px]">
-            <div class="font-bold uppercase text-[10px]">2. Nước uống & Phụ kiện:</div>
-            <div v-for="item in modals.checkout.court.session.services" :key="item.id" class="flex justify-between pl-2">
-              <span>{{ item.name }} &times; {{ item.qty }}</span>
-              <span>{{ formatCurrency(item.qty * item.price) }}</span>
+          <div v-if="modals.checkout.court?.session?.services && modals.checkout.court.session.services.length > 0" class="pt-1.5 border-t border-dashed border-slate-300 space-y-0.5 text-[9px]">
+            <div class="font-bold uppercase text-[8px] text-slate-600">2. Nước uống & Phụ kiện:</div>
+            <div v-for="item in modals.checkout.court.session.services" :key="item.id" class="flex justify-between pl-1 text-slate-700">
+              <span class="truncate max-w-[170px]">{{ item.name }} &times; {{ item.qty }}</span>
+              <span class="font-mono">{{ formatCurrency(item.qty * item.price) }}</span>
             </div>
-            <div class="flex justify-between font-bold pt-1">
+            <div class="flex justify-between font-black pt-0.5 border-t border-dotted border-slate-200 text-slate-950">
               <span>CỘNG DỊCH VỤ:</span>
-              <span>{{ formatCurrency(calculateServiceTotal(modals.checkout.court.session.services)) }}</span>
+              <span class="font-mono">{{ formatCurrency(calculateServiceTotal(modals.checkout.court.session.services)) }}</span>
             </div>
           </div>
 
-          <div class="pt-2 border-t-2 border-slate-900 space-y-1 text-xs font-black">
-            <div class="flex justify-between text-sm">
-              <span>TỔNG CỘNG:</span>
-              <span class="text-emerald-700">{{ formatCurrency(modals.checkout.totalBill) }}</span>
+          <div class="pt-1.5 border-t-2 border-slate-900 space-y-0.5">
+            <div class="flex justify-between text-xs font-black text-slate-950">
+              <span>TỔNG THANH TOÁN:</span>
+              <span class="text-emerald-800 text-sm font-mono">{{ formatCurrency(modals.checkout.totalBill) }}</span>
             </div>
-            <div class="flex justify-between text-[11px] font-normal text-slate-700 pt-1 border-t border-dashed border-slate-300">
-              <span>Hình thức thanh toán:</span>
-              <strong :class="modals.checkout.paymentMethod === 'VIETQR' ? 'text-cyan-800' : 'text-emerald-800'">
+            <div class="flex justify-between text-[8px] font-bold text-slate-600 pt-0.5 border-t border-dashed border-slate-300">
+              <span>Hình thức:</span>
+              <span :class="modals.checkout.paymentMethod === 'VIETQR' ? 'text-cyan-800 font-black' : 'text-emerald-800 font-black'">
                 {{ modals.checkout.paymentMethod === 'VIETQR' ? '📱 Chuyển Khoản (VietQR)' : '💵 Tiền Mặt' }}
-              </strong>
+              </span>
             </div>
           </div>
 
-          <!-- QR VietQR -->
-          <div v-show="modals.checkout.paymentMethod === 'VIETQR'" class="text-center pt-3 border-t border-dashed border-slate-400">
-            <div class="w-32 h-32 mx-auto bg-slate-100 rounded-lg p-2 border border-slate-300 flex items-center justify-center">
+          <!-- QR VietQR Siêu Gọn -->
+          <div v-show="modals.checkout.paymentMethod === 'VIETQR'" class="text-center pt-1.5 border-t border-dashed border-slate-300">
+            <div class="w-24 h-24 mx-auto bg-slate-50 rounded-lg p-1 border border-slate-300 flex items-center justify-center">
               <img :src="generateVietQRUrl(modals.checkout.totalBill, 'THANHTOAN ' + modals.checkout.court?.name)" alt="VietQR" crossorigin="anonymous" class="w-full h-full object-contain">
             </div>
-            <p class="text-[10px] text-slate-500 mt-1 font-bold">Khách quét mã VietQR để chuyển tiền trực tiếp</p>
+            <p class="text-[8px] text-slate-500 mt-0.5 font-bold">Khách mở App Ngân Hàng để quét mã</p>
+          </div>
+
+          <div class="pt-1 border-t border-dashed border-slate-300 text-center text-[8px] text-slate-500 italic">
+            Cảm ơn quý khách & Hẹn gặp lại!
           </div>
         </div>
 
         <!-- Chọn phương thức thanh toán -->
-        <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-1.5">
-          <label class="text-[11px] font-bold text-slate-400 block uppercase">Hình thức khách thanh toán:</label>
-          <div class="grid grid-cols-2 gap-2">
+        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 space-y-1">
+          <label class="text-[9px] font-bold text-slate-400 block uppercase">Hình thức khách thanh toán:</label>
+          <div class="grid grid-cols-2 gap-1.5">
             <button 
               type="button"
               @click="modals.checkout.paymentMethod = 'CASH'"
-              :class="modals.checkout.paymentMethod === 'CASH' ? 'bg-emerald-600 text-white font-black border-emerald-400 ring-2 ring-emerald-500/50' : 'bg-slate-800 text-slate-400 border-slate-700'"
-              class="py-2.5 px-3 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 transition">
+              :class="modals.checkout.paymentMethod === 'CASH' ? 'bg-emerald-600 text-white font-black border-emerald-400 ring-1 ring-emerald-500/50' : 'bg-slate-800 text-slate-400 border-slate-700'"
+              class="py-2 px-2 rounded-lg text-[10px] font-bold border flex items-center justify-center gap-1 transition">
               <span>💵 Tiền Mặt</span>
             </button>
             <button 
               type="button"
               @click="modals.checkout.paymentMethod = 'VIETQR'"
-              :class="modals.checkout.paymentMethod === 'VIETQR' ? 'bg-cyan-600 text-white font-black border-cyan-400 ring-2 ring-cyan-500/50' : 'bg-slate-800 text-slate-400 border-slate-700'"
-              class="py-2.5 px-3 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 transition">
+              :class="modals.checkout.paymentMethod === 'VIETQR' ? 'bg-cyan-600 text-white font-black border-cyan-400 ring-1 ring-cyan-500/50' : 'bg-slate-800 text-slate-400 border-slate-700'"
+              class="py-2 px-2 rounded-lg text-[10px] font-bold border flex items-center justify-center gap-1 transition">
               <span>📱 VietQR Chuyển Khoản</span>
             </button>
           </div>
         </div>
 
         <!-- Xuất Ảnh Gửi Zalo (Không cần máy in) & Hoàn Tất -->
-        <div class="space-y-2">
+        <div class="space-y-1.5 pt-0.5">
           <button 
             @click="exportBillImage(modals.checkout.court)" 
             :disabled="isExportingImage"
-            class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 active:scale-98 text-white font-black text-sm shadow-xl shadow-blue-600/30 flex items-center justify-center gap-2 transition">
-            <i data-lucide="share-2" class="w-5 h-5 flex-shrink-0"></i>
+            class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 active:scale-98 text-white font-black text-xs shadow-lg shadow-blue-600/30 flex items-center justify-center gap-1.5 transition">
+            <i data-lucide="share-2" class="w-4 h-4 flex-shrink-0"></i>
             <span v-if="!isExportingImage">📸 XUẤT ẢNH HÓA ĐƠN GỬI ZALO</span>
             <span v-else>Đang tạo ảnh hóa đơn...</span>
           </button>
 
-          <div class="grid grid-cols-2 gap-2">
+          <div class="grid grid-cols-2 gap-1.5">
             <button 
               @click="downloadBillImageOnly(modals.checkout.court)" 
-              class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-xs text-slate-300 flex items-center justify-center gap-1.5 transition">
-              <i data-lucide="download" class="w-4 h-4"></i>
-              <span>Tải Ảnh PNG</span>
+              class="py-2 px-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-[10px] text-slate-300 flex items-center justify-center gap-1 transition border border-slate-700">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <span>Tải PNG</span>
             </button>
             <button 
               @click="finishCheckout(modals.checkout.court)" 
-              class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 font-black text-xs text-white shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-1.5 transition">
-              <i data-lucide="check-circle" class="w-4 h-4"></i>
-              <span>TRẢ SÂN & LƯU SỔ</span>
+              class="py-2 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 font-black text-[10px] text-white shadow-md flex items-center justify-center gap-1 transition">
+              <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+              <span>TRẢ SÂN & LƯU</span>
             </button>
           </div>
+
+          <button @click="modals.checkout.open = false" class="w-full py-1 text-center text-[10px] text-slate-500 hover:text-slate-300">
+            Đóng cửa sổ
+          </button>
         </div>
       </div>
     </div>
@@ -2068,6 +2285,88 @@
         </div>
 
         <button @click="modals.shareQr.open = false" class="w-full py-2.5 bg-slate-800 rounded-xl text-xs font-bold text-slate-200">Đóng</button>
+      </div>
+    </div>
+
+    <!-- Modal Thêm / Sửa Hợp Đồng Thuê Tháng (CLB Cố Định) -->
+    <div v-if="modals.contractForm && modals.contractForm.open" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 max-w-md w-full space-y-3.5 shadow-2xl my-auto text-xs">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+          <h3 class="text-xs sm:text-sm font-black text-white flex items-center gap-1.5">
+            <i data-lucide="calendar" class="w-4 h-4 text-purple-400"></i>
+            <span>{{ modals.contractForm.isEdit ? 'SỬA HỢP ĐỒNG THUÊ THÁNG' : '+ THÊM HỢP ĐỒNG THUÊ THÁNG' }}</span>
+          </h3>
+          <button @click="modals.contractForm.open = false" class="text-slate-400 hover:text-white p-1 rounded">✕</button>
+        </div>
+
+        <div class="space-y-2.5">
+          <div>
+            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tên CLB / Nhóm Đánh Cố Định</label>
+            <input type="text" v-model="modals.contractForm.data.groupName" placeholder="Ví dụ: CLB Cầu Lông Phong Trào" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-purple-500">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Người Đại Diện</label>
+              <input type="text" v-model="modals.contractForm.data.repName" placeholder="Ví dụ: Anh Hùng" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-purple-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Số Điện Thoại</label>
+              <input type="tel" v-model="modals.contractForm.data.phone" placeholder="0988.777.666" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-purple-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Chọn Sân Cố Định</label>
+              <select v-model="modals.contractForm.data.courtId" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-2 text-xs font-bold text-white focus:border-purple-500">
+                <option v-for="c in courts" :key="c.id" :value="c.id">{{ c.name }} ({{ formatCurrency(c.hourlyRate) }}/h)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Lịch Các Ngày Đánh</label>
+              <input type="text" v-model="modals.contractForm.data.days" placeholder="Thứ 2 - 4 - 6" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-purple-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Giờ Bắt Đầu</label>
+              <select v-model="modals.contractForm.data.startTime" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white focus:border-purple-500">
+                <option v-for="h in availableHours" :key="'start-'+h" :value="h">{{ h }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Giờ Kết Thúc</label>
+              <select v-model="modals.contractForm.data.endTime" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white focus:border-purple-500">
+                <option v-for="h in availableHours" :key="'end-'+h" :value="h">{{ h }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Số Buổi Trong Tháng</label>
+              <input type="number" v-model.number="modals.contractForm.data.totalSessions" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-white focus:border-purple-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tổng Quỹ Tháng (VNĐ)</label>
+              <input type="number" step="50000" v-model.number="modals.contractForm.data.totalFund" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-amber-400 focus:border-purple-500">
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-950 border border-slate-800">
+            <input type="checkbox" id="contractPaid" v-model="modals.contractForm.data.paid" class="w-4 h-4 rounded accent-emerald-500">
+            <label for="contractPaid" class="text-[11px] font-bold text-slate-300 cursor-pointer">CLB đã đóng đủ tiền quỹ tháng này</label>
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-2 border-t border-slate-800">
+          <button @click="modals.contractForm.open = false" class="flex-1 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs">Hủy</button>
+          <button @click="saveContractForm" class="flex-1 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 active:scale-95 text-white font-black text-xs shadow-md shadow-purple-600/30">
+            LƯU HỢP ĐỒNG
+          </button>
+        </div>
       </div>
     </div>
 
@@ -2564,13 +2863,17 @@
           return end.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
         };
 
-        // Dynamic Pricing Slots Configuration
+        // Dynamic Pricing Slots Configuration (Ngày Thường - Thứ 7/CN - Ngày Lễ)
         const pricingSlots = ref([
-          { id: 1, name: 'Khung Giờ Sáng', startTime: '06:00', endTime: '14:00', rate: 50000, isPeak: false },
-          { id: 2, name: 'Khung Giờ Chiều Thường', startTime: '14:00', endTime: '17:00', rate: 60000, isPeak: false },
-          { id: 3, name: 'Khung Giờ Vàng (Cao Điểm)', startTime: '17:00', endTime: '22:00', rate: 90000, isPeak: true },
-          { id: 4, name: 'Khung Giờ Đêm', startTime: '22:00', endTime: '24:00', rate: 60000, isPeak: false }
+          { id: 1, name: 'Khung Giờ Sáng', startTime: '06:00', endTime: '14:00', rateWeekday: 50000, rateWeekend: 70000, rateHoliday: 80000, rate: 50000, isPeak: false },
+          { id: 2, name: 'Khung Giờ Chiều Thường', startTime: '14:00', endTime: '17:00', rateWeekday: 60000, rateWeekend: 80000, rateHoliday: 90000, rate: 60000, isPeak: false },
+          { id: 3, name: 'Khung Giờ Vàng (Cao Điểm)', startTime: '17:00', endTime: '22:00', rateWeekday: 90000, rateWeekend: 120000, rateHoliday: 130000, rate: 90000, isPeak: true },
+          { id: 4, name: 'Khung Giờ Đêm', startTime: '22:00', endTime: '24:00', rateWeekday: 60000, rateWeekend: 80000, rateHoliday: 90000, rate: 60000, isPeak: false }
         ]);
+        const isHolidayMode = ref(false);
+
+        // Chế độ thiết lập bảng giá: 'UNIFIED' (Giá chung toàn bộ sân) hoặc 'PER_COURT' (Giá riêng cho từng sân)
+        const pricingMode = ref('UNIFIED');
 
         // Default initial courts với mức giá riêng từng sân (Sân 1: 50k, Sân 2: 60k, Sân 3: 40k, Sân 4: 80k...)
         const courts = ref([
@@ -2580,6 +2883,8 @@
             name: 'SÂN 1',
             hourlyRate: 50000,
             peakHourlyRate: 80000,
+            weekendHourlyRate: 70000,
+            holidayHourlyRate: 80000,
             monthlyRate: 45000,
             floorMaterial: 'PVC_MAT',
             lightingQuality: 'LED 400 Lux',
@@ -2594,6 +2899,8 @@
             name: 'SÂN 2',
             hourlyRate: 60000,
             peakHourlyRate: 95000,
+            weekendHourlyRate: 85000,
+            holidayHourlyRate: 95000,
             monthlyRate: 55000,
             floorMaterial: 'PVC_MAT',
             lightingQuality: 'LED 500 Lux Chuẩn BWF',
@@ -2618,6 +2925,8 @@
             name: 'SÂN 3',
             hourlyRate: 40000,
             peakHourlyRate: 70000,
+            weekendHourlyRate: 55000,
+            holidayHourlyRate: 70000,
             monthlyRate: 35000,
             floorMaterial: 'PVC_MAT',
             lightingQuality: 'LED 300 Lux Phong Trào',
@@ -2639,6 +2948,8 @@
             name: 'SÂN 4',
             hourlyRate: 80000,
             peakHourlyRate: 120000,
+            weekendHourlyRate: 110000,
+            holidayHourlyRate: 130000,
             monthlyRate: 75000,
             floorMaterial: 'WOOD',
             lightingQuality: 'LED 500 Lux VIP',
@@ -2762,6 +3073,24 @@
           switchCourt: { open: false, court: null },
           checkout: { open: false, court: null, totalBill: 0, paymentMethod: 'CASH' },
           bookingSlip: { open: false },
+          contractForm: {
+            open: false,
+            isEdit: false,
+            data: {
+              id: null,
+              courtId: 1,
+              courtName: 'SÂN 1',
+              groupName: '',
+              repName: '',
+              phone: '',
+              days: 'Thứ 2 - 4 - 6',
+              startTime: '18:00',
+              endTime: '20:00',
+              totalSessions: 12,
+              totalFund: 2160000,
+              paid: false
+            }
+          },
           onlineQR: { open: false, refCode: '', courtId: 1 },
           shareQr: { open: false },
           productForm: { open: false, isEdit: false, data: {} },
@@ -3069,6 +3398,7 @@
           try {
             localStorage.setItem('badminton_clubInfo', JSON.stringify(clubInfo.value));
             localStorage.setItem('badminton_pricingSlots', JSON.stringify(pricingSlots.value));
+            localStorage.setItem('badminton_pricingMode', pricingMode.value);
             localStorage.setItem('badminton_products', JSON.stringify(products.value));
             localStorage.setItem('badminton_courts', JSON.stringify(courts.value));
             localStorage.setItem('badminton_monthlyContracts', JSON.stringify(monthlyContracts.value));
@@ -3088,6 +3418,9 @@
             const savedSlots = localStorage.getItem('badminton_pricingSlots');
             if (savedSlots) pricingSlots.value = JSON.parse(savedSlots);
 
+            const savedMode = localStorage.getItem('badminton_pricingMode');
+            if (savedMode) pricingMode.value = savedMode;
+
             const savedProducts = localStorage.getItem('badminton_products');
             if (savedProducts) products.value = JSON.parse(savedProducts);
 
@@ -3095,17 +3428,20 @@
             if (savedCourts) {
               const parsedCourts = JSON.parse(savedCourts);
               const defaultRates = [
-                { rate: 50000, peak: 80000, month: 45000 },
-                { rate: 60000, peak: 95000, month: 55000 },
-                { rate: 40000, peak: 70000, month: 35000 },
-                { rate: 80000, peak: 120000, month: 75000 }
+                { rate: 50000, peak: 80000, weekend: 70000, holiday: 80000, month: 45000 },
+                { rate: 60000, peak: 95000, weekend: 85000, holiday: 95000, month: 55000 },
+                { rate: 40000, peak: 70000, weekend: 55000, holiday: 70000, month: 35000 },
+                { rate: 80000, peak: 120000, weekend: 110000, holiday: 130000, month: 75000 }
               ];
               courts.value = parsedCourts.map((c, i) => {
-                const def = defaultRates[i] || { rate: 50000, peak: 80000, month: 45000 };
+                const def = defaultRates[i] || { rate: 50000, peak: 80000, weekend: 70000, holiday: 80000, month: 45000 };
+                const hRate = c.hourlyRate || def.rate;
                 return {
                   ...c,
-                  hourlyRate: c.hourlyRate || def.rate,
+                  hourlyRate: hRate,
                   peakHourlyRate: c.peakHourlyRate || def.peak,
+                  weekendHourlyRate: c.weekendHourlyRate || def.weekend || Math.round(hRate * 1.3),
+                  holidayHourlyRate: c.holidayHourlyRate || def.holiday || Math.round(hRate * 1.5),
                   monthlyRate: c.monthlyRate || def.month
                 };
               });
@@ -3163,18 +3499,68 @@
           } catch(e) {}
         };
 
-        // Realtime Fee Calculation Engine based on Dynamic Pricing Slots & Per-Court Rates
+        // Chuyển đổi qua lại giữa 2 chế độ: GIÁ CHUNG TOÀN HỆ THỐNG vs GIÁ RIÊNG TỪNG SÂN
+        const setPricingMode = (mode) => {
+          pricingMode.value = mode;
+          saveToLocalStorage();
+          nextTick(() => {
+            if (window.renderLucideIcons) window.renderLucideIcons();
+          });
+        };
+
+        // Đồng bộ toàn bộ bảng giá chung sang cho tất cả các sân
+        const syncUnifiedPriceToAllCourts = () => {
+          const normalSlot = pricingSlots.value.find(s => !s.isPeak) || pricingSlots.value[0];
+          const peakSlot = pricingSlots.value.find(s => s.isPeak) || pricingSlots.value[pricingSlots.value.length - 1];
+          const normalRate = normalSlot ? (Number(normalSlot.rateWeekday) || Number(normalSlot.rate) || 50000) : 50000;
+          const peakRate = peakSlot ? (Number(peakSlot.rateWeekday) || Number(peakSlot.rate) || 80000) : 80000;
+          const weekendRate = normalSlot ? (Number(normalSlot.rateWeekend) || Math.round(normalRate * 1.3)) : 70000;
+          const holidayRate = normalSlot ? (Number(normalSlot.rateHoliday) || Math.round(normalRate * 1.5)) : 80000;
+
+          courts.value.forEach(court => {
+            court.hourlyRate = normalRate;
+            court.peakHourlyRate = peakRate;
+            court.weekendHourlyRate = weekendRate;
+            court.holidayHourlyRate = holidayRate;
+          });
+          saveToLocalStorage();
+          alert('✅ ĐÃ ĐỒNG BỘ BẢNG GIÁ CHUNG CHO TẤT CẢ ' + courts.value.length + ' SÂN THÀNH CÔNG!\n\n• Giờ thường (T2-T6): ' + formatCurrency(normalRate) + '/h\n• Giờ vàng: ' + formatCurrency(peakRate) + '/h\n• Cuối tuần (T7-CN): ' + formatCurrency(weekendRate) + '/h\n• Ngày Lễ/Tết: ' + formatCurrency(holidayRate) + '/h');
+        };
+
+        // Helper xác định đơn giá thực tế đang áp dụng (Ngày Thường / Thứ 7 & CN / Ngày Lễ)
+        const getCurrentAppliedRate = (slot, targetDate = new Date()) => {
+          if (!slot) return 0;
+          if (isHolidayMode.value) {
+            return slot.rateHoliday || Math.round((slot.rateWeekday || slot.rate || 50000) * 1.5);
+          }
+          const day = targetDate.getDay(); // 0: Chủ Nhật, 6: Thứ Bảy
+          if (day === 0 || day === 6) {
+            return slot.rateWeekend || Math.round((slot.rateWeekday || slot.rate || 50000) * 1.3);
+          }
+          return slot.rateWeekday || slot.rate || 50000;
+        };
+
+        // Realtime Fee Calculation Engine: Tự Động Nhận Diện Chế Độ Giá Chung vs Giá Riêng Từng Sân
         const calculateDynamicCourtFee = (checkInDate, checkOutDate, court = null) => {
           const breakdown = {};
-          const courtBaseRate = court?.hourlyRate || null;
-          const courtPeakRate = court?.peakHourlyRate || null;
+          const courtBaseRate = court?.hourlyRate || 50000;
+          const courtPeakRate = court?.peakHourlyRate || 80000;
+          const courtWeekendRate = court?.weekendHourlyRate || Math.round(courtBaseRate * 1.3);
+          const courtHolidayRate = court?.holidayHourlyRate || Math.round(courtBaseRate * 1.5);
 
           pricingSlots.value.forEach(s => {
-            let slotRate = s.rate;
-            if (s.isPeak && courtPeakRate) {
-              slotRate = courtPeakRate;
-            } else if (!s.isPeak && courtBaseRate) {
-              slotRate = courtBaseRate;
+            let slotRate = getCurrentAppliedRate(s, checkInDate);
+            if (pricingMode.value === 'PER_COURT' && court) {
+              if (isHolidayMode.value) {
+                slotRate = s.isPeak ? Math.round(courtPeakRate * 1.35) : courtHolidayRate;
+              } else {
+                const day = new Date(checkInDate).getDay();
+                if (day === 0 || day === 6) {
+                  slotRate = s.isPeak ? Math.round(courtPeakRate * 1.25) : courtWeekendRate;
+                } else {
+                  slotRate = s.isPeak ? courtPeakRate : courtBaseRate;
+                }
+              }
             }
             breakdown[s.name] = { name: s.name, minutes: 0, rate: slotRate, fee: 0 };
           });
@@ -3184,19 +3570,25 @@
             const curH = cur.getHours().toString().padStart(2, '0');
             const curM = cur.getMinutes().toString().padStart(2, '0');
             const curTimeStr = `${curH}:${curM}`;
+            const curDay = cur.getDay();
+            const isWeekend = (curDay === 0 || curDay === 6);
 
-            // Match slot
+            // Match slot theo giờ trong ngày
             let matchedSlot = pricingSlots.value.find(s => curTimeStr >= s.startTime && curTimeStr < s.endTime);
             if (!matchedSlot && pricingSlots.value.length > 0) {
               matchedSlot = pricingSlots.value[0];
             }
 
             if (matchedSlot) {
-              let slotRate = matchedSlot.rate;
-              if (matchedSlot.isPeak && courtPeakRate) {
-                slotRate = courtPeakRate;
-              } else if (!matchedSlot.isPeak && courtBaseRate) {
-                slotRate = courtBaseRate;
+              let slotRate = getCurrentAppliedRate(matchedSlot, cur);
+              if (pricingMode.value === 'PER_COURT' && court) {
+                if (isHolidayMode.value) {
+                  slotRate = matchedSlot.isPeak ? Math.round(courtPeakRate * 1.35) : courtHolidayRate;
+                } else if (isWeekend) {
+                  slotRate = matchedSlot.isPeak ? Math.round(courtPeakRate * 1.25) : courtWeekendRate;
+                } else {
+                  slotRate = matchedSlot.isPeak ? courtPeakRate : courtBaseRate;
+                }
               }
 
               if (!breakdown[matchedSlot.name]) {
@@ -3212,6 +3604,13 @@
           Object.values(breakdown).forEach(item => {
             if (item.minutes > 0) {
               item.fee = Math.round((item.minutes / 60) * item.rate);
+              totalFee += item.fee;
+              breakdownList.push(item);
+            }
+          });
+
+          return { totalFee, breakdownList };
+        };
               totalFee += item.fee;
               breakdownList.push(item);
             }
@@ -3295,6 +3694,8 @@
             name: `SÂN ${nextCourtNum}`,
             hourlyRate: 50000,
             peakHourlyRate: 80000,
+            weekendHourlyRate: 70000,
+            holidayHourlyRate: 80000,
             monthlyRate: 45000,
             floorMaterial: 'PVC_MAT',
             lightingQuality: 'LED 400 Lux',
@@ -3312,12 +3713,15 @@
 
         const openEditCourtModal = (court) => {
           modals.value.courtForm.isEdit = true;
+          const hRate = court.hourlyRate || 50000;
           modals.value.courtForm.data = {
             id: court.id,
             courtNumber: court.courtNumber || court.id,
             name: court.name,
-            hourlyRate: court.hourlyRate || 50000,
+            hourlyRate: hRate,
             peakHourlyRate: court.peakHourlyRate || 80000,
+            weekendHourlyRate: court.weekendHourlyRate || Math.round(hRate * 1.3),
+            holidayHourlyRate: court.holidayHourlyRate || Math.round(hRate * 1.5),
             monthlyRate: court.monthlyRate || 45000,
             floorMaterial: court.floorMaterial || 'PVC_MAT',
             lightingQuality: court.lightingQuality || 'LED 400 Lux',
@@ -3337,13 +3741,21 @@
             return;
           }
 
+          const hRate = Number(d.hourlyRate) || 50000;
+          const peakRate = Number(d.peakHourlyRate) || 80000;
+          const weekendRate = Number(d.weekendHourlyRate) || Math.round(hRate * 1.3);
+          const holidayRate = Number(d.holidayHourlyRate) || Math.round(hRate * 1.5);
+          const mRate = Number(d.monthlyRate) || 45000;
+
           if (modals.value.courtForm.isEdit) {
             const idx = courts.value.findIndex(c => c.id === d.id);
             if (idx !== -1) {
               courts.value[idx].name = d.name.trim();
-              courts.value[idx].hourlyRate = Number(d.hourlyRate) || 50000;
-              courts.value[idx].peakHourlyRate = Number(d.peakHourlyRate) || 80000;
-              courts.value[idx].monthlyRate = Number(d.monthlyRate) || 45000;
+              courts.value[idx].hourlyRate = hRate;
+              courts.value[idx].peakHourlyRate = peakRate;
+              courts.value[idx].weekendHourlyRate = weekendRate;
+              courts.value[idx].holidayHourlyRate = holidayRate;
+              courts.value[idx].monthlyRate = mRate;
               courts.value[idx].floorMaterial = d.floorMaterial;
               courts.value[idx].lightingQuality = d.lightingQuality;
               courts.value[idx].description = d.description;
@@ -3353,13 +3765,20 @@
               id: Date.now(),
               courtNumber: d.courtNumber || (courts.value.length + 1),
               name: d.name.trim(),
-              hourlyRate: Number(d.hourlyRate) || 50000,
-              peakHourlyRate: Number(d.peakHourlyRate) || 80000,
-              monthlyRate: Number(d.monthlyRate) || 45000,
+              hourlyRate: hRate,
+              peakHourlyRate: peakRate,
+              weekendHourlyRate: weekendRate,
+              holidayHourlyRate: holidayRate,
+              monthlyRate: mRate,
               floorMaterial: d.floorMaterial || 'PVC_MAT',
               lightingQuality: d.lightingQuality || 'LED 400 Lux',
               description: d.description || '',
               status: 'AVAILABLE',
+              session: null,
+              reservation: null,
+              fixedSchedule: null
+            };
+            courts.value.push(newCourt);
               session: null,
               reservation: null,
               fixedSchedule: null
@@ -3465,7 +3884,7 @@
           saveToLocalStorage();
         };
 
-        // Pricing Slots Operations
+        // Pricing Slots Operations (Đầy đủ 3 mức giá: Ngày Thường, T7-CN, Ngày Lễ)
         const openAddPricingSlotModal = () => {
           modals.value.pricingForm.isEdit = false;
           modals.value.pricingForm.data = {
@@ -3473,24 +3892,39 @@
             name: '',
             startTime: '17:00',
             endTime: '22:00',
-            rate: 90000,
-            isPeak: true
+            rateWeekday: 60000,
+            rateWeekend: 80000,
+            rateHoliday: 90000,
+            rate: 60000,
+            isPeak: false
           };
           modals.value.pricingForm.open = true;
         };
 
         const openEditPricingSlotModal = (slot) => {
           modals.value.pricingForm.isEdit = true;
-          modals.value.pricingForm.data = { ...slot };
+          const weekday = slot.rateWeekday || slot.rate || 50000;
+          modals.value.pricingForm.data = {
+            ...slot,
+            rateWeekday: weekday,
+            rateWeekend: slot.rateWeekend || Math.round(weekday * 1.3),
+            rateHoliday: slot.rateHoliday || Math.round(weekday * 1.5),
+            rate: weekday
+          };
           modals.value.pricingForm.open = true;
         };
 
         const savePricingSlotForm = () => {
           const d = modals.value.pricingForm.data;
-          if (!d.name || !d.startTime || !d.endTime || !d.rate) {
-            alert('Vui lòng điền đầy đủ thông tin khung giờ!');
+          if (!d.name || !d.startTime || !d.endTime) {
+            alert('Vui lòng điền đầy đủ Tên khung giờ và Thời gian!');
             return;
           }
+          d.rateWeekday = Number(d.rateWeekday) || Number(d.rate) || 50000;
+          d.rateWeekend = Number(d.rateWeekend) || Math.round(d.rateWeekday * 1.3);
+          d.rateHoliday = Number(d.rateHoliday) || Math.round(d.rateWeekday * 1.5);
+          d.rate = d.rateWeekday;
+
           if (modals.value.pricingForm.isEdit) {
             const idx = pricingSlots.value.findIndex(s => s.id === d.id);
             if (idx !== -1) pricingSlots.value[idx] = { ...d };
@@ -4240,6 +4674,88 @@
           }
         };
 
+        const openAddContractModal = () => {
+          modals.value.contractForm.isEdit = false;
+          modals.value.contractForm.data = {
+            id: Date.now(),
+            courtId: courts.value[0]?.id || 1,
+            courtName: courts.value[0]?.name || 'SÂN 1',
+            groupName: '',
+            repName: '',
+            phone: '',
+            days: 'Thứ 2 - 4 - 6',
+            startTime: '18:00',
+            endTime: '20:00',
+            totalSessions: 12,
+            totalFund: 2160000,
+            paid: false
+          };
+          modals.value.contractForm.open = true;
+          nextTick(() => {
+            if (window.renderLucideIcons) window.renderLucideIcons();
+          });
+        };
+
+        const openEditContractModal = (contract) => {
+          modals.value.contractForm.isEdit = true;
+          modals.value.contractForm.data = JSON.parse(JSON.stringify(contract));
+          modals.value.contractForm.open = true;
+          nextTick(() => {
+            if (window.renderLucideIcons) window.renderLucideIcons();
+          });
+        };
+
+        const saveContractForm = () => {
+          const d = modals.value.contractForm.data;
+          if (!d.groupName || !d.repName || !d.phone) {
+            alert('⚠️ Vui lòng nhập Tên CLB, Người đại diện và Số điện thoại!');
+            return;
+          }
+          const court = courts.value.find(c => c.id === d.courtId);
+          if (court) {
+            d.courtName = court.name;
+          }
+          d.time = d.startTime + ' - ' + d.endTime;
+
+          if (modals.value.contractForm.isEdit) {
+            const idx = monthlyContracts.value.findIndex(c => c.id === d.id);
+            if (idx !== -1) {
+              monthlyContracts.value[idx] = { ...d };
+            }
+          } else {
+            monthlyContracts.value.unshift({ ...d });
+          }
+
+          // Cập nhật lên sân nếu đang là lịch cố định của sân
+          if (court) {
+            court.fixedSchedule = {
+              groupName: d.groupName,
+              repName: d.repName,
+              phone: d.phone,
+              days: d.days,
+              startTime: d.startTime,
+              endTime: d.endTime,
+              paid: d.paid
+            };
+          }
+
+          saveToLocalStorage();
+          modals.value.contractForm.open = false;
+          alert('✅ Đã lưu Hợp Đồng Thuê Tháng thành công!');
+        };
+
+        const deleteContract = (contract) => {
+          if (!confirm('Bạn có chắc chắn muốn xóa Hợp đồng thuê tháng của "' + contract.groupName + '"?')) return;
+          monthlyContracts.value = monthlyContracts.value.filter(c => c.id !== contract.id);
+          const court = courts.value.find(c => c.id === contract.courtId);
+          if (court && court.fixedSchedule && court.fixedSchedule.groupName === contract.groupName) {
+            court.fixedSchedule = null;
+            if (court.status === 'FIXED') court.status = 'AVAILABLE';
+          }
+          saveToLocalStorage();
+          alert('✅ Đã xóa hợp đồng thuê tháng thành công!');
+        };
+
         onMounted(() => {
           loadFromLocalStorage();
 
@@ -4254,6 +4770,10 @@
         });
 
         return {
+          openAddContractModal,
+          openEditContractModal,
+          saveContractForm,
+          deleteContract,
           bookingSlipData,
           isExportingSlip,
           exportBookingSlipImage,
@@ -4266,6 +4786,11 @@
           dailyRevenue,
           clubInfo,
           pricingSlots,
+          pricingMode,
+          setPricingMode,
+          syncUnifiedPriceToAllCourts,
+          isHolidayMode,
+          getCurrentAppliedRate,
           courts,
           products,
           monthlyContracts,
