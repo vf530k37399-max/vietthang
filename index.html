@@ -139,19 +139,19 @@
         <!-- Header Actions & Tabs (Desktop) -->
         <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
           
-          <!-- Cloud Realtime Status Badge (Chuẩn CLB Lập Trí - Online 100%) -->
+          <!-- Cloud Realtime Status Badge (Đám Mây Riêng Biệt Việt Thắng - Online 100%) -->
           <button 
             @click="openCloudModal" 
-            :title="cloudStatus === 'CONNECTED' ? 'Đã kết nối Google Firebase (Online 100%): Mọi thay đổi đồng bộ tức thì' : (cloudStatus === 'SYNCING' ? 'Đang lưu dữ liệu lên đám mây...' : 'Đang kết nối lại đám mây...')"
+            :title="cloudStatus === 'CONNECTED' ? 'Đã kết nối máy chủ Đám mây độc lập Việt Thắng (Online 100%): Mọi thay đổi đồng bộ tức thì' : (cloudStatus === 'SYNCING' ? 'Đang lưu dữ liệu lên đám mây...' : 'Cài đặt kết nối Đám mây độc lập Việt Thắng')"
             class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition shadow-sm flex-shrink-0 cursor-pointer active:scale-95"
-            :class="cloudStatus === 'CONNECTED' ? 'bg-emerald-950/80 hover:bg-emerald-900 border-emerald-500/50 text-emerald-300 ring-1 ring-emerald-500/30' : (cloudStatus === 'SYNCING' ? 'bg-amber-950/80 hover:bg-amber-900 border-amber-500/50 text-amber-300' : 'bg-rose-950/80 hover:bg-rose-900 border-rose-500/50 text-rose-300')">
+            :class="cloudStatus === 'CONNECTED' ? 'bg-emerald-950/80 hover:bg-emerald-900 border-emerald-500/50 text-emerald-300 ring-1 ring-emerald-500/30' : (cloudStatus === 'SYNCING' ? 'bg-amber-950/80 hover:bg-amber-900 border-amber-500/50 text-amber-300' : 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-300')">
             <span class="relative flex h-2 w-2">
               <span v-if="cloudStatus === 'CONNECTED'" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2" :class="cloudStatus === 'CONNECTED' ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : (cloudStatus === 'SYNCING' ? 'bg-amber-400 animate-spin' : 'bg-rose-500')"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2" :class="cloudStatus === 'CONNECTED' ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : (cloudStatus === 'SYNCING' ? 'bg-amber-400 animate-spin' : 'bg-slate-400')"></span>
             </span>
             <i data-lucide="cloud" class="w-3.5 h-3.5"></i>
-            <span class="hidden sm:inline font-extrabold">{{ cloudStatus === 'CONNECTED' ? 'Online 100%' : (cloudStatus === 'SYNCING' ? 'Đang lưu...' : 'Mất mạng') }}</span>
-            <span class="sm:hidden font-extrabold text-[10px]">{{ cloudStatus === 'CONNECTED' ? 'Online' : 'Offline' }}</span>
+            <span class="hidden sm:inline font-extrabold">{{ cloudStatus === 'CONNECTED' ? 'VIỆT THẮNG CLOUD (100%)' : (cloudStatus === 'SYNCING' ? 'Đang lưu...' : 'Đám Mây Riêng') }}</span>
+            <span class="sm:hidden font-extrabold text-[10px]">{{ cloudStatus === 'CONNECTED' ? 'Cloud OK' : 'Cloud' }}</span>
           </button>
 
           <!-- User / Account Button -->
@@ -1466,7 +1466,7 @@
         </div>
       </div>
 
-      <!-- ================= SUB-TAB 4: ĐỒNG BỘ ĐÁM MÂY GOOGLE FIREBASE (ONLINE 100%) ================= -->
+      <!-- ================= SUB-TAB 4: ĐỒNG BỘ ĐÁM MÂY GOOGLE FIREBASE (ONLINE 100% ĐỘC LẬP) ================= -->
       <div v-if="configSubTab === 'cloud'" class="space-y-4">
         <!-- Cloud Status Main Card -->
         <div class="bg-slate-900 rounded-3xl p-5 sm:p-6 border border-emerald-500/30 shadow-2xl space-y-4">
@@ -1477,13 +1477,13 @@
               </div>
               <div>
                 <div class="flex items-center gap-2">
-                  <h3 class="text-base font-black text-white">Google Firebase Realtime Cloud Engine</h3>
+                  <h3 class="text-base font-black text-white">Máy Chủ Đám Mây Độc Lập: SÂN THẮNG PRO</h3>
                   <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border"
-                    :class="cloudStatus === 'CONNECTED' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' : (cloudStatus === 'SYNCING' ? 'bg-amber-500/20 text-amber-400 border-amber-500/40' : 'bg-rose-500/20 text-rose-400 border-rose-500/40')">
-                    {{ cloudStatus === 'CONNECTED' ? '🟢 ĐÃ KẾT NỐI ONLINE 100%' : (cloudStatus === 'SYNCING' ? '🟡 ĐANG LƯU DỮ LIỆU...' : '🔴 MẤT KẾT NỐI MẠNG') }}
+                    :class="cloudStatus === 'CONNECTED' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' : (cloudStatus === 'SYNCING' ? 'bg-amber-500/20 text-amber-400 border-amber-500/40' : 'bg-slate-800 text-slate-300 border-slate-700')">
+                    {{ cloudStatus === 'CONNECTED' ? '🟢 ĐÃ KẾT NỐI ONLINE 100%' : (cloudStatus === 'SYNCING' ? '🟡 ĐANG LƯU DỮ LIỆU...' : '⚪ ĐANG DÙNG BỘ NHỚ MÁY (OFFLINE)') }}
                   </span>
                 </div>
-                <p class="text-xs text-slate-400 mt-0.5">Dữ liệu sân, đơn giá, hóa đơn và tồn kho được đồng bộ tự động 2 chiều tức thì giữa Máy Tính & Điện Thoại</p>
+                <p class="text-xs text-slate-400 mt-0.5">Dữ liệu sân, đơn giá, hóa đơn và tồn kho được lưu trữ độc lập trên tài khoản Google của bạn</p>
               </div>
             </div>
 
@@ -1500,13 +1500,14 @@
           <!-- Cloud Info Specs -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-2">
             <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
-              <span class="text-[10px] uppercase font-bold text-slate-500 block">Máy chủ Realtime</span>
-              <span class="font-mono text-emerald-400 font-bold break-all">laptri-8e2b3-default-rtdb</span>
+              <span class="text-[10px] uppercase font-bold text-slate-500 block">Dự Án Đám Mây (Project)</span>
+              <span class="font-mono text-emerald-400 font-bold break-all">{{ activeFirebaseConfig?.projectId || 'vietthang-badminton' }}</span>
+              <span class="text-[9px] text-slate-400 block font-bold">Chính chủ độc lập 100%</span>
             </div>
             <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
               <span class="text-[10px] uppercase font-bold text-slate-500 block">Vùng Dữ Liệu Sân (Node)</span>
-              <span class="font-mono text-cyan-300 font-black">clubs/vietthang</span>
-              <span class="text-[9px] text-slate-400 block">(Độc lập & Bảo mật 100%)</span>
+              <span class="font-mono text-cyan-300 font-black">vietthang_data</span>
+              <span class="text-[9px] text-slate-400 block">(Bảo mật & Tách biệt hoàn toàn)</span>
             </div>
             <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
               <span class="text-[10px] uppercase font-bold text-slate-500 block">Lần Đồng Bộ Cuối</span>
@@ -1522,7 +1523,7 @@
                 <i data-lucide="smartphone" class="w-4 h-4"></i>
                 KẾT NỐI ĐIỆN THOẠI CỦA BẠN & NHÂN VIÊN
               </span>
-              <span class="text-[11px] text-slate-400">Sao chép đường link này và gửi qua Zalo. Khi mở trên điện thoại, hệ thống sẽ tự động kết nối trực tuyến 100% vào sân Thắng Pro.</span>
+              <span class="text-[11px] text-slate-400">Sao chép đường link này gửi qua Zalo. Khi mở trên điện thoại, hệ thống sẽ tự động đồng bộ cấu hình đám mây riêng của Sân Thắng Pro.</span>
             </div>
             <button 
               @click="copyMobileSyncUrl" 
@@ -1532,38 +1533,42 @@
             </button>
           </div>
 
-          <!-- Tùy Biến Cấu Hình Nâng Cao (Tùy Chọn) -->
-          <details class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 text-xs">
-            <summary class="font-bold text-slate-300 cursor-pointer flex items-center justify-between select-none">
-              <span class="flex items-center gap-1.5">
-                <i data-lucide="settings-2" class="w-4 h-4 text-slate-400"></i>
-                <span>Tùy Chỉnh Cấu Hình Google Firebase Riêng (Nâng Cao)</span>
-              </span>
-              <span class="text-[10px] text-slate-500 font-mono">Bấm để mở rộng ▼</span>
-            </summary>
-            <div class="mt-3 space-y-3 pt-3 border-t border-slate-800">
-              <p class="text-slate-400 text-[11px]">
-                Mặc định hệ thống đã kết nối sẵn vào máy chủ Firebase Realtime Cloud của hệ sinh thái CLB Lập Trí với tốc độ cao và miễn phí vĩnh viễn. Nếu bạn có dự án Firebase riêng và muốn trỏ về đó, hãy dán đoạn mã cấu hình vào đây:
-              </p>
-              <textarea 
-                v-model="customFirebaseConfig" 
-                rows="4" 
-                placeholder='{\n  "apiKey": "AIzaSy...",\n  "databaseURL": "https://..."\n}' 
-                class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-emerald-400 focus:border-cyan-500"></textarea>
-              <div class="flex gap-2">
-                <button 
-                  @click="saveCustomFirebaseConfig" 
-                  class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs rounded-xl transition">
-                  Lưu & Kết Nối Lại
-                </button>
-                <button 
-                  @click="resetDefaultFirebaseConfig" 
-                  class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
-                  Khôi Phục Mặc Định
-                </button>
-              </div>
+          <!-- Hướng Dẫn & Ô Nhập Cấu Hình Firebase Chính Chủ -->
+          <div class="bg-slate-950 p-4 sm:p-5 rounded-2xl border border-slate-800 text-xs space-y-3">
+            <h4 class="font-black text-white text-sm flex items-center gap-2">
+              <i data-lucide="key" class="w-4 h-4 text-amber-400"></i>
+              <span>CẤU HÌNH GOOGLE FIREBASE CHÍNH CHỦ CỦA BẠN (HOÀN TOÀN MIỄN PHÍ)</span>
+            </h4>
+            
+            <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-slate-300 space-y-2 text-[11px]">
+              <p class="font-bold text-amber-400">📌 Hướng dẫn 3 bước cực nhanh (chỉ mất 1 phút):</p>
+              <ol class="list-decimal list-inside space-y-1 text-slate-300">
+                <li>Vào <a href="https://console.firebase.google.com" target="_blank" class="text-cyan-400 underline font-bold">console.firebase.google.com</a> bằng tài khoản Google của bạn.</li>
+                <li>Bấm <strong>"Add project"</strong> đặt tên dự án: <code class="text-emerald-400 bg-slate-950 px-1 py-0.5 rounded">vietthang-badminton</code> -> Tiếp tục -> Tạo dự án.</li>
+                <li>Vào mục <strong>Realtime Database</strong> -> <strong>Create Database</strong> (chọn Test mode: <code class="text-amber-300">read: true, write: true</code>). Sau đó bấm biểu tượng <strong>Cài đặt bánh răng ⚙️</strong> -> cuộn xuống mục <strong>Your apps</strong> bấm biểu tượng Web <strong>&lt;/&gt;</strong> -> Copy đoạn mã <code class="text-cyan-300">firebaseConfig = { ... }</code> và dán vào ô bên dưới:</li>
+              </ol>
             </div>
-          </details>
+
+            <textarea 
+              v-model="customFirebaseConfig" 
+              rows="5" 
+              placeholder='Dán đoạn mã firebaseConfig của bạn vào đây, ví dụ:&#10;const firebaseConfig = {&#10;  apiKey: "AIzaSy...",&#10;  databaseURL: "https://vietthang-badminton-default-rtdb.firebaseio.com",&#10;  projectId: "vietthang-badminton"&#10;};' 
+              class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-emerald-400 focus:border-cyan-500"></textarea>
+
+            <div class="flex flex-wrap gap-2 pt-1">
+              <button 
+                @click="saveCustomFirebaseConfig" 
+                class="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs rounded-xl shadow-lg transition flex items-center gap-1.5">
+                <i data-lucide="check" class="w-4 h-4"></i>
+                <span>LƯU & KẾT NỐI MÁY CHỦ RIÊNG</span>
+              </button>
+              <button 
+                @click="resetDefaultFirebaseConfig" 
+                class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
+                Xóa Cấu Hình Đám Mây
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1918,7 +1923,7 @@
         <div class="grid grid-cols-2 gap-2 text-[11px]">
           <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
             <span class="text-slate-500 block text-[9px] uppercase font-bold">Vùng Dữ Liệu Sân (Node)</span>
-            <span class="font-mono text-cyan-300 font-black">clubs/vietthang</span>
+            <span class="font-mono text-cyan-300 font-black">vietthang_data</span>
           </div>
           <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
             <span class="text-slate-500 block text-[9px] uppercase font-bold">Cập Nhật Gần Nhất</span>
@@ -1943,9 +1948,10 @@
               <span>Ép Đồng Bộ Ngay</span>
             </button>
             <button 
-              @click="closeCloudModal" 
-              class="py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
-              Đóng Cửa Sổ
+              @click="closeCloudModal(); activeTab = 'settings'; configSubTab = 'cloud';" 
+              class="py-2.5 bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1">
+              <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+              <span>Cài Đặt Mã Cloud</span>
             </button>
           </div>
         </div>
@@ -2993,25 +2999,25 @@
         const isOnline = ref(true);
 
         // ==========================================
-        // GOOGLE FIREBASE REALTIME CLOUD ENGINE (ONLINE 100%)
+        // GOOGLE FIREBASE REALTIME CLOUD ENGINE (ĐỘC LẬP CHO VIỆT THẮNG)
         // ==========================================
         const DEFAULT_FIREBASE_CONFIG = {
-          apiKey: "AIzaSyAQ08HDY7wi9jQnhTH7mHkoavdRzIas-lA",
-          authDomain: "laptri-8e2b3.firebaseapp.com",
-          databaseURL: "https://laptri-8e2b3-default-rtdb.firebaseio.com",
-          projectId: "laptri-8e2b3",
-          storageBucket: "laptri-8e2b3.firebasestorage.app",
-          messagingSenderId: "324734150204",
-          appId: "1:324734150204:web:6aa6524fa6cdabe8cfc539",
-          measurementId: "G-6HK3TLY2HW"
+          apiKey: "",
+          authDomain: "vietthang-badminton.firebaseapp.com",
+          databaseURL: "https://vietthang-badminton-default-rtdb.firebaseio.com",
+          projectId: "vietthang-badminton",
+          storageBucket: "vietthang-badminton.firebasestorage.app",
+          messagingSenderId: "",
+          appId: ""
         };
-        const CLOUD_STORAGE_KEY = 'badminton_vietthang_firebase_config';
-        const CLOUD_ROOT_NODE = 'clubs/vietthang';
+        const CLOUD_STORAGE_KEY = 'vietthang_custom_firebase_config';
+        const CLOUD_ROOT_NODE = 'vietthang_data';
 
-        const cloudStatus = ref('INITIALIZING'); // 'INITIALIZING' | 'CONNECTED' | 'SYNCING' | 'DISCONNECTED' | 'ERROR'
+        const cloudStatus = ref('INITIALIZING'); // 'INITIALIZING' | 'CONNECTED' | 'SYNCING' | 'DISCONNECTED' | 'OFFLINE' | 'ERROR'
         const lastCloudSync = ref('Vừa xong');
         const cloudModalOpen = ref(false);
         const customFirebaseConfig = ref('');
+        const activeFirebaseConfig = ref(null);
         let firebaseAppInstance = null;
         let firebaseDbInstance = null;
         let cloudSyncDebounceTimer = null;
@@ -3020,6 +3026,10 @@
 
         const openCloudModal = () => {
           cloudModalOpen.value = true;
+          const stored = getStoredFirebaseConfig();
+          if (stored) {
+            customFirebaseConfig.value = JSON.stringify(stored, null, 2);
+          }
           nextTick(() => {
             if (window.renderLucideIcons) window.renderLucideIcons();
           });
@@ -3727,33 +3737,84 @@
             });
         };
 
+        // Phân tích chuỗi cấu hình Firebase linh hoạt (hỗ trợ cả JSON và code JS)
+        const parseFirebaseConfigInput = (raw) => {
+          if (!raw || typeof raw !== 'string') return null;
+          const str = raw.trim();
+          try {
+            const parsed = JSON.parse(str);
+            if (parsed && typeof parsed === 'object') return parsed;
+          } catch(e) {}
+          const match = str.match(/\{[\s\S]*\}/);
+          if (match) {
+            try {
+              const cleaned = match[0]
+                .replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2":')
+                .replace(/'/g, '"')
+                .replace(/,\s*}/g, '}');
+              const parsed = JSON.parse(cleaned);
+              if (parsed && typeof parsed === 'object') return parsed;
+            } catch(e) {}
+          }
+          return null;
+        };
+
+        const getStoredFirebaseConfig = () => {
+          try {
+            const raw = localStorage.getItem(CLOUD_STORAGE_KEY);
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              if (parsed && typeof parsed === 'object' && parsed.apiKey) {
+                return parsed;
+              }
+            }
+          } catch(e) {}
+          return null;
+        };
+
         // Ép đồng bộ 2 chiều thủ công
         const forceCloudSync = () => {
+          const cfg = getStoredFirebaseConfig();
+          if (!cfg || !cfg.apiKey) {
+            alert('ℹ️ Hiện tại bạn chưa kết nối Google Firebase riêng. Dữ liệu đang được lưu an toàn 100% trong bộ nhớ máy của bạn.\n\nHãy vào Tab Cấu Hình -> Sub-tab 4 để dán mã Firebase chính chủ của bạn!');
+            activeTab.value = 'settings';
+            configSubTab.value = 'cloud';
+            return;
+          }
           if (!firebaseDbInstance) {
             initFirebaseEngine();
           }
           cloudStatus.value = 'SYNCING';
           pushStateToCloud(true);
           setTimeout(() => {
-            alert('✅ ĐÃ ĐỒNG BỘ HAI CHIỀU THÀNH CÔNG VỚI GOOGLE FIREBASE!\n\n• Máy chủ: laptri-8e2b3\n• Vùng sân: clubs/vietthang\n• Trạng thái: Online 100% Realtime');
+            alert('✅ ĐÃ ĐỒNG BỘ HAI CHIỀU THÀNH CÔNG VỚI MÁY CHỦ RIÊNG!\n\n• Dự án: ' + (cfg.projectId || 'vietthang-badminton') + '\n• Vùng dữ liệu: vietthang_data\n• Trạng thái: Online 100%');
           }, 600);
         };
 
-        // Sao chép liên kết chia sẻ cho điện thoại
+        // Sao chép liên kết chia sẻ cho điện thoại (Tự động kèm mã Cloud nếu có)
         const copyMobileSyncUrl = () => {
-          const url = window.location.origin + window.location.pathname + '?autocloud=1';
+          const cfg = getStoredFirebaseConfig();
+          const baseUrl = window.location.origin + window.location.pathname;
+          let syncUrl = baseUrl;
+          if (cfg && cfg.apiKey) {
+            const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
+            syncUrl = `${baseUrl}?cloud_cfg=${encodeURIComponent(encoded)}`;
+          } else {
+            syncUrl = `${baseUrl}?autocloud=1`;
+          }
+
           if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(url).then(() => {
-              alert('📋 ĐÃ SAO CHÉP ĐƯỜNG LINK ĐỒNG BỘ ĐÁM MÂY!\n\nHãy gửi link này qua Zalo và mở trên Điện thoại để tự động kết nối trực tuyến 100%:\n\n' + url);
+            navigator.clipboard.writeText(syncUrl).then(() => {
+              alert('📋 ĐÃ SAO CHÉP ĐƯỜNG LINK ĐỒNG BỘ ĐÁM MÂY VIỆT THẮNG!\n\nHãy gửi link này qua Zalo và mở trên Điện thoại để tự động kết nối trực tuyến 100%:\n\n' + syncUrl);
             }).catch(() => {
-              prompt('Sao chép link này gửi qua Zalo để mở trên Điện thoại:', url);
+              prompt('Sao chép link này gửi qua Zalo để mở trên Điện thoại:', syncUrl);
             });
           } else {
-            prompt('Sao chép link này gửi qua Zalo để mở trên Điện thoại:', url);
+            prompt('Sao chép link này gửi qua Zalo để mở trên Điện thoại:', syncUrl);
           }
         };
 
-        // Khởi tạo Realtime Cloud Engine
+        // Khởi tạo Realtime Cloud Engine Độc Lập
         const initFirebaseEngine = () => {
           try {
             if (typeof firebase === 'undefined') {
@@ -3762,14 +3823,17 @@
               return;
             }
 
-            let config = DEFAULT_FIREBASE_CONFIG;
-            const storedCfg = localStorage.getItem(CLOUD_STORAGE_KEY);
-            if (storedCfg) {
-              try { config = JSON.parse(storedCfg); } catch(e) {}
+            const storedCfg = getStoredFirebaseConfig();
+            if (!storedCfg || !storedCfg.apiKey) {
+              // Chưa có cấu hình Firebase chính chủ -> Ứng dụng chạy offline/local siêu mượt
+              cloudStatus.value = 'OFFLINE';
+              return;
             }
 
+            activeFirebaseConfig.value = storedCfg;
+
             if (!firebase.apps || firebase.apps.length === 0) {
-              firebaseAppInstance = firebase.initializeApp(config);
+              firebaseAppInstance = firebase.initializeApp(storedCfg);
             } else {
               firebaseAppInstance = firebase.apps[0];
             }
@@ -3787,7 +3851,7 @@
               }
             });
 
-            // 2. Lắng nghe dữ liệu thời gian thực của Sân Thắng Pro
+            // 2. Lắng nghe dữ liệu thời gian thực của Sân Thắng Pro trên node riêng
             const rootRef = firebaseDbInstance.ref(CLOUD_ROOT_NODE);
             rootRef.on('value', snapshot => {
               const cloudData = snapshot.val();
@@ -3818,19 +3882,20 @@
         };
 
         const saveCustomFirebaseConfig = () => {
-          try {
-            const parsed = JSON.parse(customFirebaseConfig.value);
-            localStorage.setItem(CLOUD_STORAGE_KEY, JSON.stringify(parsed));
-            alert('✅ Đã lưu cấu hình Firebase riêng! Ứng dụng sẽ tải lại trang để kết nối.');
-            window.location.reload();
-          } catch(e) {
-            alert('⚠️ Cấu hình không hợp lệ. Vui lòng kiểm tra định dạng JSON!');
+          const parsed = parseFirebaseConfigInput(customFirebaseConfig.value);
+          if (!parsed || !parsed.apiKey) {
+            alert('⚠️ Cấu hình không hợp lệ hoặc thiếu apiKey!\n\nVui lòng copy toàn bộ đoạn mã firebaseConfig từ Firebase Console và dán lại.');
+            return;
           }
+          localStorage.setItem(CLOUD_STORAGE_KEY, JSON.stringify(parsed));
+          alert('✅ ĐÃ KẾT NỐI DỰ ÁN GOOGLE FIREBASE RIÊNG: ' + (parsed.projectId || 'vietthang-badminton') + ' THÀNH CÔNG!\n\nỨng dụng sẽ tự động tải lại để kích hoạt đồng bộ đám mây trực tuyến 100%.');
+          window.location.reload();
         };
 
         const resetDefaultFirebaseConfig = () => {
+          if (!confirm('Bạn có chắc muốn xóa cấu hình đám mây riêng và quay về chế độ bộ nhớ máy?')) return;
           localStorage.removeItem(CLOUD_STORAGE_KEY);
-          alert('✅ Đã khôi phục cấu hình Firebase mặc định!');
+          alert('✅ Đã xóa cấu hình đám mây riêng!');
           window.location.reload();
         };
 
@@ -5194,7 +5259,24 @@
         onMounted(() => {
           loadFromLocalStorage();
 
-          // TỰ ĐỘNG KẾT NỐI GOOGLE FIREBASE REALTIME CLOUD 100%
+          // Tự động nhận diện cấu hình Firebase được chia sẻ từ link Zalo (nếu có)
+          const urlParams = new URLSearchParams(window.location.search);
+          const cloudCfgParam = urlParams.get('cloud_cfg');
+          if (cloudCfgParam) {
+            try {
+              const decoded = decodeURIComponent(cloudCfgParam);
+              const jsonStr = decodeURIComponent(escape(atob(decoded)));
+              const parsed = JSON.parse(jsonStr);
+              if (parsed && parsed.apiKey) {
+                localStorage.setItem(CLOUD_STORAGE_KEY, JSON.stringify(parsed));
+                console.log('Đã tự động nạp cấu hình Firebase Việt Thắng từ link Zalo');
+              }
+            } catch(e) {
+              console.warn('Không thể nạp cloud_cfg từ URL:', e);
+            }
+          }
+
+          // TỰ ĐỘNG KẾT NỐI GOOGLE FIREBASE REALTIME CLOUD ĐỘC LẬP
           initFirebaseEngine();
 
           // Tự động hồi phục kết nối khi thiết bị có mạng lại hoặc mở khóa điện thoại
@@ -5202,10 +5284,14 @@
             if (firebaseDbInstance && firebase.database) {
               try { firebase.database().goOnline(); } catch(e) {}
             }
-            cloudStatus.value = 'CONNECTED';
+            if (cloudStatus.value !== 'OFFLINE') {
+              cloudStatus.value = 'CONNECTED';
+            }
           });
           window.addEventListener('offline', () => {
-            cloudStatus.value = 'DISCONNECTED';
+            if (cloudStatus.value !== 'OFFLINE') {
+              cloudStatus.value = 'DISCONNECTED';
+            }
           });
           document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
@@ -5215,7 +5301,6 @@
             }
           });
 
-          const urlParams = new URLSearchParams(window.location.search);
           if (urlParams.get('tab') === 'customer') {
             activeTab.value = 'customer';
           }
@@ -5230,6 +5315,7 @@
           lastCloudSync,
           cloudModalOpen,
           customFirebaseConfig,
+          activeFirebaseConfig,
           openCloudModal,
           closeCloudModal,
           forceCloudSync,

@@ -1,0 +1,10 @@
+{
+  "projectId": "vietthang-badminton",
+  "authDomain": "vietthang-badminton.firebaseapp.com",
+  "databaseURL": "https://vietthang-badminton-default-rtdb.firebaseio.com",
+  "storageBucket": "vietthang-badminton.firebasestorage.app",
+  "apiKey": "",
+  "messagingSenderId": "",
+  "appId": "",
+  "note": "Khi bạn tạo dự án Firebase chính chủ trên https://console.firebase.google.com, hãy sao chép mã firebaseConfig và dán vào đây hoặc dán trực tiếp trong giao diện Cấu Hình của ứng dụng web!"
+}
