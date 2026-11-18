@@ -1501,7 +1501,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-2">
             <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
               <span class="text-[10px] uppercase font-bold text-slate-500 block">Dự Án Đám Mây (Project)</span>
-              <span class="font-mono text-emerald-400 font-bold break-all">{{ activeFirebaseConfig?.projectId || 'vietthang-badminton' }}</span>
+              <span class="font-mono text-emerald-400 font-bold break-all">{{ activeFirebaseConfig?.projectId || 'sanvietthang' }}</span>
               <span class="text-[9px] text-slate-400 block font-bold">Chính chủ độc lập 100%</span>
             </div>
             <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
@@ -1544,7 +1544,7 @@
               <p class="font-bold text-amber-400">📌 Hướng dẫn 3 bước cực nhanh (chỉ mất 1 phút):</p>
               <ol class="list-decimal list-inside space-y-1 text-slate-300">
                 <li>Vào <a href="https://console.firebase.google.com" target="_blank" class="text-cyan-400 underline font-bold">console.firebase.google.com</a> bằng tài khoản Google của bạn.</li>
-                <li>Bấm <strong>"Add project"</strong> đặt tên dự án: <code class="text-emerald-400 bg-slate-950 px-1 py-0.5 rounded">vietthang-badminton</code> -> Tiếp tục -> Tạo dự án.</li>
+                <li>Dự án Firebase chính chủ đã được liên kết: <code class="text-emerald-400 bg-slate-950 px-1 py-0.5 rounded">sanvietthang</code>.</li>
                 <li>Vào mục <strong>Realtime Database</strong> -> <strong>Create Database</strong> (chọn Test mode: <code class="text-amber-300">read: true, write: true</code>). Sau đó bấm biểu tượng <strong>Cài đặt bánh răng ⚙️</strong> -> cuộn xuống mục <strong>Your apps</strong> bấm biểu tượng Web <strong>&lt;/&gt;</strong> -> Copy đoạn mã <code class="text-cyan-300">firebaseConfig = { ... }</code> và dán vào ô bên dưới:</li>
               </ol>
             </div>
@@ -1552,7 +1552,7 @@
             <textarea 
               v-model="customFirebaseConfig" 
               rows="5" 
-              placeholder='Dán đoạn mã firebaseConfig của bạn vào đây, ví dụ:&#10;const firebaseConfig = {&#10;  apiKey: "AIzaSy...",&#10;  databaseURL: "https://vietthang-badminton-default-rtdb.firebaseio.com",&#10;  projectId: "vietthang-badminton"&#10;};' 
+              placeholder='Dán đoạn mã firebaseConfig của bạn vào đây, ví dụ:&#10;const firebaseConfig = {&#10;  apiKey: "AIzaSy...",&#10;  databaseURL: "https://sanvietthang-default-rtdb.firebaseio.com",&#10;  projectId: "sanvietthang"&#10;};' 
               class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-emerald-400 focus:border-cyan-500"></textarea>
 
             <div class="flex flex-wrap gap-2 pt-1">
@@ -2999,16 +2999,17 @@
         const isOnline = ref(true);
 
         // ==========================================
-        // GOOGLE FIREBASE REALTIME CLOUD ENGINE (ĐỘC LẬP CHO VIỆT THẮNG)
+        // GOOGLE FIREBASE REALTIME CLOUD ENGINE (ĐỘC LẬP CHO SÂN VIỆT THẮNG)
         // ==========================================
         const DEFAULT_FIREBASE_CONFIG = {
-          apiKey: "",
-          authDomain: "vietthang-badminton.firebaseapp.com",
-          databaseURL: "https://vietthang-badminton-default-rtdb.firebaseio.com",
-          projectId: "vietthang-badminton",
-          storageBucket: "vietthang-badminton.firebasestorage.app",
-          messagingSenderId: "",
-          appId: ""
+          apiKey: "AIzaSyB65Y0WlDWTPAaZRcobkVlb5D__S6mbXNU",
+          authDomain: "sanvietthang.firebaseapp.com",
+          databaseURL: "https://sanvietthang-default-rtdb.firebaseio.com",
+          projectId: "sanvietthang",
+          storageBucket: "sanvietthang.firebasestorage.app",
+          messagingSenderId: "148991094538",
+          appId: "1:148991094538:web:1d2b95f231d3b5a11254f3",
+          measurementId: "G-QFK2E2EYXT"
         };
         const CLOUD_STORAGE_KEY = 'vietthang_custom_firebase_config';
         const CLOUD_ROOT_NODE = 'vietthang_data';
@@ -3017,7 +3018,7 @@
         const lastCloudSync = ref('Vừa xong');
         const cloudModalOpen = ref(false);
         const customFirebaseConfig = ref('');
-        const activeFirebaseConfig = ref(null);
+        const activeFirebaseConfig = ref(DEFAULT_FIREBASE_CONFIG);
         let firebaseAppInstance = null;
         let firebaseDbInstance = null;
         let cloudSyncDebounceTimer = null;
@@ -3769,7 +3770,7 @@
               }
             }
           } catch(e) {}
-          return null;
+          return DEFAULT_FIREBASE_CONFIG;
         };
 
         // Ép đồng bộ 2 chiều thủ công
@@ -3787,7 +3788,7 @@
           cloudStatus.value = 'SYNCING';
           pushStateToCloud(true);
           setTimeout(() => {
-            alert('✅ ĐÃ ĐỒNG BỘ HAI CHIỀU THÀNH CÔNG VỚI MÁY CHỦ RIÊNG!\n\n• Dự án: ' + (cfg.projectId || 'vietthang-badminton') + '\n• Vùng dữ liệu: vietthang_data\n• Trạng thái: Online 100%');
+            alert('✅ ĐÃ ĐỒNG BỘ HAI CHIỀU THÀNH CÔNG VỚI MÁY CHỦ RIÊNG!\n\n• Dự án: ' + (cfg.projectId || 'sanvietthang') + '\n• Vùng dữ liệu: vietthang_data\n• Trạng thái: Online 100%');
           }, 600);
         };
 
@@ -3888,7 +3889,7 @@
             return;
           }
           localStorage.setItem(CLOUD_STORAGE_KEY, JSON.stringify(parsed));
-          alert('✅ ĐÃ KẾT NỐI DỰ ÁN GOOGLE FIREBASE RIÊNG: ' + (parsed.projectId || 'vietthang-badminton') + ' THÀNH CÔNG!\n\nỨng dụng sẽ tự động tải lại để kích hoạt đồng bộ đám mây trực tuyến 100%.');
+          alert('✅ ĐÃ KẾT NỐI DỰ ÁN GOOGLE FIREBASE RIÊNG: ' + (parsed.projectId || 'sanvietthang') + ' THÀNH CÔNG!\n\nỨng dụng sẽ tự động tải lại để kích hoạt đồng bộ đám mây trực tuyến 100%.');
           window.location.reload();
         };
 
